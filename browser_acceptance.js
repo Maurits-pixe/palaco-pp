@@ -56,7 +56,7 @@ async function runPPBrowserAcceptance(page) {
   check(offeredHistory.every((event) =>
     before.some((option) => option.id === event.detail.optionId
       && option.number === event.detail.ppNumber
-      && event.detail.color === (option.color.match(/(?:^|\\s)color-(blue|red|green|yellow)(?:\\s|$)/) || [])[1])),
+      && event.detail.color === (option.color.match(/(?:^|\s)color-(blue|red|green|yellow)(?:\s|$)/) || [])[1])),
   "offer history does not match the displayed batch");
   await page.reload();
   await page.getByTestId("pp-option-10").waitFor({ state: "visible" });
