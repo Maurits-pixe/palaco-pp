@@ -522,3 +522,7 @@ $("mail-refresh").addEventListener("click", async () => {
   try { await loadMailStatus(); } catch (error) { showError(error); } finally { setBusy(false); }
 });
 load();
+if ("serviceWorker" in navigator && window.isSecureContext) {
+  navigator.serviceWorker.register("/sw.js", { scope: "/" })
+    .catch(() => { /* Offline shell unavailable; online app still works. */ });
+}
