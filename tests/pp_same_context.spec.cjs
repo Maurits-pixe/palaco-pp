@@ -5,6 +5,8 @@
 const { test, expect } = require("@playwright/test");
 const { runPPBrowserAcceptance } = require("../browser_acceptance");
 
+test.use({ storageState: process.env.PP_TEST_STORAGE_STATE || undefined });
+
 test("P.P. same-context selection, reload, revoke, reselection denial", async ({ page }) => {
   test.skip(process.env.PP_DESTRUCTIVE_BROWSER_ACCEPTANCE !== "YES", "Explicit opt-in required");
   test.skip(!process.env.PP_TEST_STORAGE_STATE, "Approved test account storage state required");
