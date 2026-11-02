@@ -1,0 +1,35 @@
+name: PP safe pre-browser validation
+on:
+  pull_request:
+    paths:
+      - 'browser_acceptance.js'
+      - 'tests/pp_same_context.spec.cjs'
+      - 'playwright.config.cjs'
+      - 'server.py'
+      - 'test_*.py'
+      - '.github/workflows/pp-prebrowser.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  safe-prebrowser:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Syntax check (no browser, no account)
+        run: |
+          node --check browser_acceptance.js
+          node --check tests/pp_same_context.spec.cjs
+          node --check playwright.config.cjs
+      - name: Local engine unit tests (temporary test databases)
+        run: python -m unittest discover -v
+      - name: Enforce no destructive acceptance in CI
+        run: |
+          test "${PP_DESTRUCTIVE_BROWSER_ACCEPTANCE:-NO}" != "YES"
+          echo 'Browser acceptance not executed: HUMAN DECISION REQUIRED'
