@@ -13,11 +13,13 @@ async function runOfflineAtelierAcceptance(page) {
   const tag = "qa-" + Date.now();
   const title = "Hersteltest " + tag;
   const body = "Lokaal concept; geen P.P.-nummer of identiteit.";
-  const url = new URL("/offline.html", page.url()).toString();
+  const origin = new URL(page.url());
+  if (origin.hostname !== "127.0.0.1") throw Error("Only local loopback browser acceptance is permitted.");
+  const url = new URL("/offline.html", origin).toString();
   let switchedOffline = false;
   try {
     await page.goto(url);
-    await page.locator("#storage-state").getByText("Lokale conceptopslag beschikbaar").waitFor();
+    await page.waitForFunction(() => document.getElementById("storage-state")?.textContent === "Lokale conceptopslag beschikbaar");
     check(await page.locator("#connection-state").isVisible(), "status indicators visible");
     await page.locator("#title").fill(title);
     await page.locator("#body").fill(body);
@@ -50,9 +52,17 @@ async function runOfflineAtelierAcceptance(page) {
       name: "tampered.json", mimeType: "application/json",
       buffer: Buffer.from(JSON.stringify(tampered)),
     });
-    await page.getByText(/Integriteitscontrole mislukt/).waitFor();
+    await page.waitForFunction(() => document.getElementById("status")?.textContent.includes("Integriteitscontrole mislukt"));
     check(await page.getByText("INJECTED-" + tag, { exact: true }).count() === 0,
       "tampered import rejected");
+
+    // Wait for the offline shell to be controlled and cached before severing network.
+    await page.evaluate(async () => {
+      if (!("serviceWorker" in navigator)) throw Error("Service workers unavailable");
+      await navigator.serviceWorker.ready;
+      if (!await caches.match("/offline.html")) throw Error("Offline shell not cached");
+    });
+    check(true, "service worker offline shell cached");
 
     // Full network isolation after shell cache warm-up.
     await context.setOffline(true);
