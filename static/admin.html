@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PALACO / Backoffice</title>
+  <link rel="stylesheet" href="/style.css">
+  <link rel="stylesheet" href="/admin.css">
+  <script src="/admin.js" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/"><span class="brand-icon" aria-hidden="true">P.</span> PALACO <span class="brand-sub">BACKOFFICE</span></a>
+    <div class="header-account"><span id="admin-name"></span><button id="admin-logout" class="text-button" hidden>Afmelden</button></div>
+  </header>
+  <main class="admin-main">
+    <p class="eyebrow">BEHEER / LOKAAL PROTOTYPE</p>
+    <h1>Overzicht. Controle.<br><span>Bewust beheer.</span></h1>
+    <p class="lead">Beheer accounts en P.P.-registraties. Privé-notities zijn niet toegankelijk. Geen telecomactivatie.</p>
+    <p id="admin-notice" class="notice" role="status" aria-live="polite">Aanmeldstatus controleren...</p>
+    <section id="admin-login-panel" class="workspace auth-panel" hidden>
+      <div class="auth-copy"><h2>Beheerderslogin</h2><p>Afzonderlijk van consumentenaccounts. De sessie verloopt na acht uur.</p><p>Maak de eerste beheerder lokaal aan met <code>python .\server.py --create-admin</code>. Er is geen standaardwachtwoord.</p></div>
+      <form id="admin-login">
+        <label for="admin-username">Beheerdersnaam</label>
+        <input id="admin-username" autocomplete="username" required maxlength="32">
+        <label for="admin-password">Wachtwoord</label>
+        <input id="admin-password" type="password" autocomplete="current-password" required minlength="12" maxlength="128">
+        <button type="submit" class="primary">Veilig aanmelden</button>
+      </form>
+    </section>
+    <div id="admin-dashboard" hidden>
+      <section id="admin-counts" class="admin-counts" aria-label="Registratieaantallen"></section>
+      <section class="workspace">
+        <div class="section-heading"><h2>Accounts &amp; P.P.-registraties</h2><button id="admin-refresh" class="secondary">Vernieuwen</button></div>
+        <form id="admin-filters" class="admin-filters" role="search" aria-label="Registraties zoeken">
+          <div><label for="admin-search">Gebruikersnaam, consumer-ID of gekozen PP-nummer</label><input id="admin-search" type="search" maxlength="120" placeholder="Zoek op een deel van de tekst of het nummer"></div>
+          <div><label for="admin-status">PP-status</label><select id="admin-status"><option value="">Alle statussen</option value="NEW">NEW / Nog geen opties</option><option value="OFFERED">OFFERED / Opties aangeboden</option><option value="ACTIVE">ACTIVE / Actief</option><option value="REVOKED">REVOKED / Ingetrokken</option><option value="UNKNOWN">UNKNOWN / Onbekend</option></select></div>
+          <button type="submit" class="primary">Zoeken</button><button id="admin-filter-reset" type="button" class="secondary">Filters wissen</button>
+        </form>
+        <p class="auth-note">De aantallen bovenaan blijven het totaal van alle registraties. Hieronder staan alleen de zoekresultaten.</p>
+        <p id="admin-no-results" class="notice" hidden>Geen registraties gevonden met deze filters.</p>
+        <div class="admin-table-wrap"><table><thead><tr><th>Account / consumer-ID</th><th>P.P.-nummer</th><th>Status</th><th>Beheer</th></tr></thead><tbody id="admin-accounts"></tbody></table></div>
+        <div class="admin-pagination"><button id="accounts-prev" class="secondary">Vorige</button><span id="accounts-page"></span><button id="accounts-next" class="secondary">Volgende</button></div>
+      </section>
+      <section class="workspace">
+        <div class="section-heading"><h2>Engine-audit</h2><span class="count">Append-only / geen notitiegegevens</span></div>
+        <form id="audit-filters" class="admin-filters" role="search" aria-label="Audit zoeken">
+          <div><label for="audit-search">Zoek in gebeurtenis, account, beheerder, ID of reden</label><input id="audit-search" type="search" maxlength="120" placeholder="Bijvoorbeeld een beheerder of intrekkingsreden"></div>
+          <div><label for="audit-event">Gebeurtenis</label><select id="audit-event">
+            <option value="">Alle gebeurtenissen</option>
+            <option value="CONSUMER_CREATED">Consumer aangemaakt</option><option value="ACCOUNT_CREATED">Account aangemaakt</option>
+            <option value="ACCOUNT_LOGIN">Account aangemeld</option><option value="ACCOUNT_LOGOUT">Account afgemeld</option>
+            <option value="OPTIONS_OFFERED">Optieset aangeboden</option><option value="OPTION_OFFERED">Optie aangeboden</option>
+            <option value="NUMBER_SELECTED">Nummer gekozen</option><option value="NUMBER_REVOKED">Nummer ingetrokken</option>
+            <option value="NUMBER_CONFLICT">Nummerconflict</option><option value="ERROR">Fout</option>
+            <option value="ADMIN_CREATED">Beheerder aangemaakt</option><option value="ADMIN_LOGIN">Beheerder aangemeld</option>
+            <option value="ADMIN_LOGOUT">Beheerder afgemeld</option><option value="ADMIN_NUMBER_REVOKED">Intrekking door beheerder</option>
+            <option value="CONFIRMATION_MAIL_QUEUED">E-mail in wachtrij</option><option value="CONFIRMATION_MAIL_SENT">E-mail door mailserver aangenomen</option>
+            <option value="CONFIRMATION_MAIL_FAILED">E-mail mislukt</option><option value="CONFIRMATION_MAIL_UNKNOWN">E-mailuitkomst onbekend</option>
+          </select></div>
+          <div><label for="audit-status">PP-status bij gebeurtenis</label><select id="audit-status">
+            <option value="">Alle gebeurtenissen / statussen</option><option value="OFFERED">OFFERED / Aangeboden</option>
+            <option value="ACTIVE">ACTIVE / Gekozen</option><option value="REVOKED">REVOKED / Ingetrokken</option>
+          </select></div>
+          <button type="submit" class="primary">Audit zoeken</button><button id="audit-filter-reset" type="button" class="secondary">Auditfilters wissen</button>
+        </form>
+        <p class="auth-note">De status hoort bij de gebeurtenis, niet bij de huidige registratie. Aanmelden en andere niet-PP-gebeurtenissen hebben geen PP-status. Een beheerintrekking heeft zowel een levenscyclus-event als een beheer-event. Beheerders- en accountnamen worden uit de huidige registratie opgehaald.</p>
+        <p id="audit-no-results" class="notice" hidden>Geen auditgebeurtenissen gevonden met deze filters.</p>
+        <div class="admin-table-wrap"><table><thead><tr><th>Nr. / tijd</th><th>Gebeurtenis / status</th><th>Account / consumer-ID</th><th>Beheerder</th><th>Intrekkingsreden</th></tr></thead><tbody id="admin-audit"></tbody></table></div>
+        <div class="admin-pagination"><button id="audit-prev" class="secondary">Vorige</button><span id="audit-page"></span><button id="audit-next" class="secondary">Volgende</button></div>
+      </section>
+    </div>
+    <p class="auth-note">Lokale beheerdersdemo. Geen productiebeveiliging, MFA of wachtwoordherstel. Bescherm de onversleutelde database.</p>
+  </main>
+  <dialog id="admin-confirm-dialog" aria-labelledby="admin-confirm-title">
+    <form id="admin-revoke">
+      <p class="eyebrow">ONOMKEERBARE HANDELING</p>
+      <h2 id="admin-confirm-title">P.P.-nummer intrekken?</h2>
+      <p id="admin-target"></p>
+      <p>De registratie blijft bewaard. De consumer kan daarna geen nieuw nummer kiezen.</p>
+      <label for="admin-reason">Reden (5-240 tekens; geen geheimen)</label>
+      <textarea id="admin-reason" required minlength="5" maxlength="240" rows="3"></textarea>
+      <div class="dialog-actions"><button id="admin-cancel" type="button" class="secondary">Annuleren</button><button type="submit" class="primary">Definitief intrekken</button></div>
+    </form>
+  </dialog>
+</body>
+</html>

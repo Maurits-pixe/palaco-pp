@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#121a17">
+  <title>PALACO / Jouw P.P.-nummer</title>
+  <link rel="stylesheet" href="/style.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="PALACO startpagina"><span class="brand-icon" aria-hidden="true">P.</span> PALACO<span class="brand-divider">/</span><span class="brand-sub">PHONE</span></a>
+    <div class="header-account">
+      <span id="account-label" class="account-label" hidden></span>
+      <button id="logout" class="text-button" hidden>Afmelden</button>
+      <span class="prototype"><span class="dot"></span> LOKAAL PROTOTYPE <span class="version">v0.7</span></span>
+    </div>
+  </header>
+
+  <main>
+    <section class="intro" aria-labelledby="title">
+      <div class="intro-copy">
+        <p class="eyebrow">JOUW IDENTITEIT. JOUW NUMMER.</p>
+        <h1 id="title">Tien mogelijkheden.<br><span>Eén van jou.</span></h1>
+        <p class="lead">Kies het P.P.-nummer dat bij je past. Tien unieke opties, speciaal voor jouw lokale consumer-ID. Je maakt één definitieve keuze.</p>
+        <div class="steps" aria-label="Selectieproces">
+          <span id="step-one" class="step current"><b>01</b> Ontdek</span>
+          <span class="step-line"></span>
+          <span id="step-two" class="step"><b>02</b> Bevestig</span>
+          <span class="step-line"></span>
+          <span id="step-three" class="step"><b>03</b> Van jou</span>
+        </div>
+      </div>
+      <aside class="identity-card">
+        <div class="card-top"><span>PALACO PHONE</span><span class="card-mark" aria-hidden="true">P.</span></div>
+        <div class="card-middle"><span class="card-caption">PERSOONLIJK NUMMER</span><strong id="preview-number">Jouw keuze begint hier</strong></div>
+        <div class="card-bottom"><span id="preview-label">10 CIJFERS / 1 IDENTITEIT</span><span class="card-orbit" aria-hidden="true"></span></div>
+      </aside>
+    </section>
+
+    <div id="notice" class="notice" role="status" aria-live="polite">Je opties worden veilig geladen...</div>
+    <button id="retry" class="text-button" hidden>Opnieuw laden</button>
+
+    <section id="auth-panel" class="workspace auth-panel" aria-labelledby="auth-title" hidden>
+      <div class="auth-copy">
+        <p class="eyebrow">PERSOONLIJK ACCOUNT</p>
+        <h2 id="auth-title">Welkom bij PALACO Phone.</h2>
+        <p id="auth-description">Meld je aan om je P.P.-keuze te bekijken of te maken.</p>
+      </div>
+      <form id="auth-form" autocomplete="on">
+        <label for="username">Gebruikersnaam</label>
+        <input id="username" name="username" type="text" minlength="3" maxlength="32"
+          pattern="[A-Za-z0-9][A-Za-z0-9._-]{2,31}" autocomplete="username"
+          autocapitalize="none" spellcheck="false" required>
+        <label for="password">Wachtwoord</label>
+        <input id="password" name="password" type="password" minlength="12" maxlength="128"
+          autocomplete="current-password" required>
+        <p id="account-link-note" class="auth-note">Maak je account aan om de huidige demo-registratie en beschikbare nummeropties te behouden.</p>
+        <button id="auth-submit" type="submit" class="primary auth-submit">Aanmelden</button>
+        <p class="auth-switch-line"><span id="auth-switch-copy">Nog geen account?</span>
+          <button id="auth-switch" class="text-button" type="button">Account aanmaken</button></p>
+        <p class="auth-note">Lokaal account voor dit prototype. Geen e-mailherstel, geen officieel PALACO-ID.</p>
+      </form>
+    </section>
+
+    <section id="selection-panel" class="workspace" aria-labelledby="options-title" hidden>
+      <div class="section-heading"><div><p class="eyebrow">DE SELECTIE</p><h2 id="options-title">Welk nummer wordt van jou?</h2></div><span class="count">10 unieke opties</span></div>
+      <fieldset id="number-fieldset">
+        <legend class="sr-only">Kies één P.P.-nummer</legend>
+        <div id="numbers" class="number-grid"></div>
+      </fieldset>
+      <div class="selection-footer">
+        <p><span class="lock" aria-hidden="true">&#9670;</span> Eerst kiezen, daarna definitief bevestigen.</p>
+        <button id="review" class="primary" disabled>Bevestig je keuze <span aria-hidden="true">&#8594;</span></button>
+      </div>
+    </section>
+
+    <section id="result-panel" class="workspace result" aria-labelledby="result-title" hidden>
+      <span id="result-badge" class="result-badge">GEREGISTREERD</span>
+      <h2 id="result-title">Dit is jouw P.P.-nummer.</h2>
+      <p id="result-number" class="result-number"></p>
+      <p id="result-description"></p>
+      <p id="mail-status" class="auth-note"></p>
+      <button id="mail-refresh" type="button" class="text-button" hidden>E-mailstatus vernieuwen</button>
+      <div class="result-actions"><button id="copy" class="primary">Kopieer nummer</button><button id="revoke" class="text-button danger">Nummer intrekken</button></div>
+      <p id="consumer-reference" class="reference"></p>
+    </section>
+
+    <details id="history-panel" class="history-panel" hidden>
+      <summary><span>ENGINEHISTORIE</span><span id="history-count" class="count">0 gebeurtenissen</span></summary>
+      <ol id="history-events" class="history-events"></ol>
+    </details>
+
+    <section id="memory-panel" class="workspace memory-panel" aria-labelledby="memory-title" hidden>
+      <div class="section-heading">
+        <div><p class="eyebrow">JOUW PERSOONLIJKE GEHEUGENBANK</p><h2 id="memory-title">Bewaar wat voor jou telt.</h2></div>
+        <span class="private-badge"><span class="dot"></span> PRIVÉ / ALLEEN JIJ</span>
+      </div>
+      <p class="memory-intro">Jouw eigen notities, gekoppeld aan je account. Handmatig opgeslagen en alleen voor jou zichtbaar; ze veranderen niets aan je P.P.-nummer of rechten.</p>
+      <div class="memory-layout">
+        <form id="memory-form" class="memory-form">
+          <input id="memory-id" name="id" type="hidden">
+          <label for="memory-title-input">Titel</label>
+          <input id="memory-title-input" name="title" type="text" maxlength="120" required>
+          <label for="memory-tags">Tags <span class="field-help">komma-gescheiden, maximaal 8</span></label>
+          <input id="memory-tags" name="tags" type="text" maxlength="220" placeholder="bijvoorbeeld ideeën, later">
+          <label for="memory-content">Notitie</label>
+          <textarea id="memory-content" name="content" rows="7" maxlength="5000" required></textarea>
+          <div class="memory-form-footer"><span id="memory-char-count" class="field-help">0 / 5000</span><div><button id="memory-reset" class="secondary" type="button">Wissen</button> <button id="memory-save" class="primary" type="submit">Notitie opslaan</button></div></div>
+          <p class="memory-warning">Geen wachtwoorden, herstelcodes of andere geheimen opslaan. Notities staan lokaal onversleuteld in de database; ze worden niet door AI gelezen of verwerkt.</p>
+        </form>
+        <div class="memory-list-panel">
+          <div class="memory-list-heading"><h3>Opgeslagen notities</h3><span id="memory-count" class="count">0 / 100</span></div>
+          <p id="memory-empty" class="memory-empty">Nog geen notities. Voeg links je eerste notitie toe.</p>
+          <div id="memory-list" class="memory-list"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="principles" aria-label="Goed om te weten">
+      <article><span class="principle-index">01 / UNIEK</span><h3>Alleen voor jou</h3><p>Elk aangeboden nummer is centraal in deze lokale database vastgelegd en wordt niet opnieuw uitgegeven.</p></article>
+      <article><span class="principle-index">02 / DEFINITIEF</span><h3>Eén bewuste keuze</h3><p>Na bevestiging vervallen de andere negen opties. Opnieuw laden geeft je geen tweede keuze.</p></article>
+      <article><span class="principle-index">03 / TRANSPARANT</span><h3>Identiteit, geen bellijn</h3><p>Dit is een PALACO Phone-identificatie. Geen regulier telefoonnummer en geen verbinding met bellen, SMS of WhatsApp.</p></article>
+    </section>
+    <footer><span>PALACO <span class="footer-slash">/</span> PERSOONLIJK. BEWUST. VERBONDEN.</span><span>Lokale accountdemo &middot; geen geverifieerde identiteit &middot; <a href="/admin">Backoffice</a></span></footer>
+  </main>
+
+  <dialog id="confirm-dialog" aria-labelledby="dialog-title" aria-describedby="dialog-description">
+    <form id="confirm-form">
+      <p class="eyebrow" id="dialog-eyebrow">DE LAATSTE STAP</p>
+      <h2 id="dialog-title">Maak het van jou.</h2>
+      <p id="dialog-number" class="dialog-number"></p>
+      <p id="dialog-description">Dit wordt je definitieve P.P.-nummer. De andere negen opties vervallen. Je kunt daarna niet opnieuw kiezen, ook niet na intrekking.</p>
+      <div id="confirmation-email-group" hidden>
+        <label for="confirmation-email">Bevestiging per e-mail (optioneel)</label>
+        <input id="confirmation-email" type="email" maxlength="254" autocomplete="email" placeholder="jij@voorbeeld.nl">
+        <p id="confirmation-email-help" class="auth-note">Alleen voor deze keuzebevestiging, niet voor marketing of wachtwoordherstel. Het adres wordt lokaal onversleuteld in de mailwachtrij bewaard en via de ingestelde mailserver verwerkt.</p>
+      </div>
+      <div class="dialog-actions"><button type="button" id="cancel" class="secondary">Terug</button><button type="submit" id="confirm" class="primary">Definitief kiezen</button></div>
+    </form>
+  </dialog>
+</body>
+</html>
