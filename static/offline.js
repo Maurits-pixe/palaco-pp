@@ -41,6 +41,21 @@ async function sha256Hex(value) {
   return Array.from(new Uint8Array(hash), b => b.toString(16).padStart(2, "0")).join("");
 }
 const status = message => { $("status").textContent = message; };
+function updateConnection() {
+  $("connection-state").textContent = navigator.onLine
+    ? "Netwerksignaal beschikbaar · servertoegang niet bevestigd"
+    : "Geen netwerksignaal · lokale concepten blijven beschikbaar";
+}
+window.addEventListener("online", updateConnection);
+window.addEventListener("offline", updateConnection);
+updateConnection();
+let unsaved = false;
+$("draft-form").addEventListener("input", () => { unsaved = true; });
+window.addEventListener("beforeunload", event => {
+  if (!unsaved) return;
+  event.preventDefault();
+  event.returnValue = "";
+});
 async function render() {
   const drafts = (await all()).sort((a,b) => b.updatedAt.localeCompare(a.updatedAt));
   $("count").textContent = String(drafts.length);
@@ -68,7 +83,7 @@ $("draft-form").addEventListener("submit", async event => {
     const existing = await all();
     if (existing.length >= 100) { status("Maximaal 100 concepten; exporteer en verwijder eerst een concept."); return; }
     await put({ id: crypto.randomUUID(), title, body, updatedAt: new Date().toISOString() });
-    event.target.reset(); await render(); status("Concept alleen op dit apparaat opgeslagen.");
+    event.target.reset(); unsaved = false; await render(); status("Concept alleen op dit apparaat opgeslagen.");
   } catch { status("Offline opslag niet beschikbaar. Exporteer je tekst handmatig."); }
 });
 $("export").addEventListener("click", async () => {
@@ -113,4 +128,9 @@ $("import").addEventListener("change", async event => {
   } catch(e) { status("Import geweigerd: "+e.message); }
   finally { event.target.value=""; }
 });
-render().catch(() => status("Offline opslag is niet beschikbaar in deze browser."));
+render().then(() => {
+  $("storage-state").textContent = "Lokale conceptopslag beschikbaar";
+}).catch(() => {
+  $("storage-state").textContent = "Lokale opslag NIET beschikbaar";
+  status("Offline opslag is niet beschikbaar in deze browser.");
+});
