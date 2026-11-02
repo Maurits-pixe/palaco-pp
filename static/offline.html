@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#121a17">
+<title>PALACO Phone · Offline Atelier</title>
+<link rel="stylesheet" href="/offline.css">
+<script src="/offline.js" defer></script>
+</head>
+<body>
+<header><a href="/">P. PALACO / PHONE</a><span>OFFLINE ATELIER · CONCEPT</span></header>
+<main>
+<p class="eyebrow">VORM9EVIN9 / ZELFREDZAAM</p>
+<h1>Jouw ideeën.<br><em>Ook zonder internet.</em></h1>
+<p class="lede">Bewaar lokale conceptnotities op dit apparaat, exporteer een back-up en herstel die later. Dit zijn <strong>geen P.P.-nummerkeuzes, officiële identiteiten of toegangsrechten</strong>.</p>
+<div class="warning" role="note">De browser kan lokale gegevens wissen. Bewaar regelmatig een exportbestand. Sla hier geen wachtwoorden, herstelcodes of gevoelige persoonsgegevens op. Een P.P.-nummer is nooit een encryptiesleutel.</div>
+<section class="panel">
+<h2>Nieuw lokaal concept</h2>
+<form id="draft-form">
+<label for="title">Titel</label><input id="title" maxlength="120" required autocomplete="off">
+<label for="body">Notitie</label><textarea id="body" rows="5" maxlength="2000" required></textarea>
+<button type="submit">Bewaar op dit apparaat</button>
+</form>
+<p id="status" role="status" aria-live="polite"></p>
+</section>
+<section class="panel">
+<div class="split"><h2>Mijn offline concepten</h2><span id="count">0</span></div>
+<div id="drafts"></div>
+<div class="buttons"><button id="export" type="button">Exporteren als JSON</button>
+<label class="import" for="import">Importeren<input id="import" type="file" accept="application/json,.json"></label></div>
+</section>
+<p class="footer">Geen verbinding? Deze werkruimte blijft bruikbaar nadat zij één keer via de applicatie is opgeslagen. Serverregistraties worden niet offline gewijzigd. <a href="/">Terug naar PALACO Phone</a></p>
+</main>
+</body></html>
