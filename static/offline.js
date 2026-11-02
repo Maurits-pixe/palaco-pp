@@ -15,16 +15,31 @@ async function transaction(mode, operation) {
   try {
     return await new Promise((resolve, reject) => {
       const tx = db.transaction(STORE, mode);
-      const request = operation(tx.objectStore(STORE));
-      request.onsuccess = () => resolve(request.result);
-      request.onerror = () => reject(request.error);
-      tx.onabort = () => reject(tx.error);
+      let result;
+      tx.oncomplete = () => resolve(result);
+      tx.onabort = () => reject(tx.error || Error("Transactie afgebroken."));
+      tx.onerror = () => reject(tx.error || Error("Transactie mislukt."));
+      try {
+        const request = operation(tx.objectStore(STORE));
+        if (request) request.onsuccess = () => { result = request.result; };
+      } catch (error) {
+        tx.abort();
+        reject(error);
+      }
     });
   } finally { db.close(); }
 }
 const all = () => transaction("readonly", store => store.getAll());
 const put = draft => transaction("readwrite", store => store.put(draft));
 const drop = id => transaction("readwrite", store => store.delete(id));
+const putMany = drafts => transaction("readwrite", store => {
+  for (const draft of drafts) store.put(draft);
+});
+async function sha256Hex(value) {
+  if (!crypto.subtle) throw Error("SHA-256 niet beschikbaar in deze browser.");
+  const hash = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
+  return Array.from(new Uint8Array(hash), b => b.toString(16).padStart(2, "0")).join("");
+}
 const status = message => { $("status").textContent = message; };
 async function render() {
   const drafts = (await all()).sort((a,b) => b.updatedAt.localeCompare(a.updatedAt));
@@ -58,7 +73,12 @@ $("draft-form").addEventListener("submit", async event => {
 });
 $("export").addEventListener("click", async () => {
   try {
-    const data = JSON.stringify({ schema:"palaco.pp.offline-drafts.v1", drafts:await all() },null,2);
+    const drafts = await all();
+    const checksum = await sha256Hex(JSON.stringify(drafts));
+    const data = JSON.stringify({
+      schema:"palaco.pp.offline-drafts.v2", drafts,
+      integrity:{algorithm:"SHA-256",checksum}
+    },null,2);
     const url = URL.createObjectURL(new Blob([data],{type:"application/json"}));
     const link = document.createElement("a"); link.href=url; link.download="palaco-pp-offline-drafts.json";
     link.click(); setTimeout(()=>URL.revokeObjectURL(url),1000);
@@ -71,7 +91,14 @@ $("import").addEventListener("change", async event => {
   try {
     if (file.size > 1_000_000) throw Error("Bestand te groot.");
     const parsed = JSON.parse(await file.text());
-    if (parsed.schema !== "palaco.pp.offline-drafts.v1" || !Array.isArray(parsed.drafts) || parsed.drafts.length > 100) throw Error("Ongeldige export.");
+    if (!Array.isArray(parsed.drafts) || parsed.drafts.length > 100) throw Error("Ongeldige export.");
+    if (parsed.schema === "palaco.pp.offline-drafts.v2") {
+      if (parsed.integrity?.algorithm !== "SHA-256" || !/^[a-f0-9]{64}$/.test(parsed.integrity?.checksum || "")) throw Error("Integriteitscontrole ontbreekt.");
+      const actual = await sha256Hex(JSON.stringify(parsed.drafts));
+      if (actual !== parsed.integrity.checksum) throw Error("Integriteitscontrole mislukt: bestand gewijzigd of beschadigd.");
+    } else if (parsed.schema === "palaco.pp.offline-drafts.v1") {
+      if (!confirm("Oud exportbestand zonder integriteitscontrole. Alleen importeren als je de herkomst vertrouwt. Doorgaan?")) return;
+    } else throw Error("Onbekend exportschema.");
     const incoming = parsed.drafts;
     if (!incoming.every(d => d && typeof d.id==="string" && /^[0-9a-f-]{36}$/.test(d.id)
       && typeof d.title==="string" && d.title.length>0 && d.title.length<=120
@@ -81,7 +108,7 @@ $("import").addEventListener("change", async event => {
     const merged = new Map(existing.map(d=>[d.id,d]));
     for (const d of incoming) merged.set(d.id,d);
     if (merged.size > 100) throw Error("Maximaal 100 concepten.");
-    for (const d of incoming) await put({id:d.id,title:d.title,body:d.body,updatedAt:d.updatedAt});
+    await putMany(incoming.map(d => ({id:d.id,title:d.title,body:d.body,updatedAt:d.updatedAt})));
     await render(); status("Concepten geïmporteerd. Geen cloudregistratie gewijzigd.");
   } catch(e) { status("Import geweigerd: "+e.message); }
   finally { event.target.value=""; }
