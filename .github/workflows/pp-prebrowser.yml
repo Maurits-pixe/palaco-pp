@@ -30,6 +30,8 @@ jobs:
           node --check browser_acceptance.js
           node --check tests/pp_same_context.spec.cjs
           node --check playwright.config.cjs
+      - name: Install optional Microsoft test dependencies
+        run: python -m pip install -r requirements-mail.txt
       - name: Local engine unit tests (temporary test databases)
         run: python -m unittest discover -v
       - name: Enforce no destructive acceptance in CI
