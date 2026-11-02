@@ -7,9 +7,24 @@ Last Updated: 2026-11-02
 
 Controleert uitsluitend lokale **conceptnotities** in het Offline Atelier. De harness doet **geen** accountaanmaak, P.P.-nummerselectie, intrekking, Supabase-aanroep of officiële uitgifte.
 
-De bestaande server moet lokaal draaien op http://127.0.0.1:8765. Gebruik een afzonderlijk test-browserprofiel: testconcepten blijven bewust staan als inspecteerbaar bewijs. De test mag niet op een persoonlijk profiel met vertrouwelijke notities worden uitgevoerd.
+De bestaande server moet lokaal draaien op http://127.0.0.1:8765. Gebruik een afzonderlijk test-browserprofiel. De runner sluit zijn tijdelijke profiel na afloop; bij een zelf aangeleverde bestaande pagina blijven testconcepten in die browseropslag. Test nooit op een persoonlijk profiel met vertrouwelijke notities.
 
 ## Uitvoering
+
+### Rechtstreeks lokaal uitvoeren (nieuwe geïsoleerde testcontext)
+
+Start eerst de Python-server in een terminal: `python server.py`.
+Installeer in een ontwikkelomgeving Playwright en Chromium indien nog niet aanwezig:
+
+```powershell
+npm install --no-save playwright
+npx playwright install chromium
+node .\\run_offline_browser_acceptance.js
+```
+
+De runner maakt uitsluitend een nieuwe tijdelijke browsercontext voor synthetische conceptnotities. Hij logt niet in, raakt geen P.P.-registratie aan en sluit de browser na afloop. Hij vereist Node 18+ met ingebouwde `fetch`; Node 20+ aanbevolen.
+
+### Bestaande browsercontext
 
 Open in Playwright één bestaande pagina van dezelfde browsercontext op de lokale PALACO-origin. Roep vervolgens aan:
 
@@ -21,7 +36,7 @@ console.log(report);
 
 Voorwaarden:
 
-1. De testpagina staat reeds op een URL onder http://127.0.0.1:8765.
+1. Bij gebruik van de geëxporteerde helper staat de testpagina reeds op een URL onder http://127.0.0.1:8765.
 2. Playwright ondersteunt downloads, `download.path()`, `setInputFiles` en `context.setOffline`.
 3. De browser ondersteunt IndexedDB, Web Crypto en service workers.
 4. De offline shell wordt eerst online geladen; op de offline reload moet deze uit de service-worker-cache komen.
