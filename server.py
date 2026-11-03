@@ -24,6 +24,7 @@ import warnings
 from uuid import uuid4
 from urllib.parse import parse_qsl
 from microsoft_mail import MicrosoftMailError, configured_mailer
+from identity_outbox import initialize as initialize_identity_outbox, enqueue as enqueue_identity_event
 
 
 ROOT = Path(__file__).resolve().parent
@@ -203,6 +204,7 @@ class Store:
         self.path = str(path)
         with self.connection() as db:
             db.executescript(SCHEMA)
+            initialize_identity_outbox(db)
         self.migrate_legacy_sessions()
         self.migrate_option_history()
 
@@ -383,6 +385,16 @@ class Store:
             )
             session_token = self.issue_session(db, consumer, previous_token)
             self.audit(db, consumer, "ACCOUNT_CREATED", {"username": normalized})
+            # Atomic with account, session, and original audit event.
+            # Keep the local consumer ID and P.P. number out of lineage envelopes.
+            audit_sequence = db.execute("SELECT last_insert_rowid()").fetchone()[0]
+            enqueue_identity_event(
+                db,
+                source_event_ref=str(uuid4()),
+                event_type="PP_ACCOUNT_CREATED",
+                local_consumer_ref=str(uuid4()),
+                provenance_ref=f"local-audit-sequence-{audit_sequence}",
+            )
         return normalized, session_token
 
     def login_account(self, username, password, previous_token, *, admin=False):

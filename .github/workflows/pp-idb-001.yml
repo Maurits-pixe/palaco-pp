@@ -1,0 +1,28 @@
+name: PP-IDB-001 offline identity checks
+
+on:
+  push:
+    branches:
+      - feature/pp-idb-001-lineage-contract
+  pull_request:
+    paths:
+      - 'server.py'
+      - 'identity_outbox.py'
+      - 'test_identity_outbox.py'
+      - 'test_identity_integration.py'
+      - '.github/workflows/pp-idb-001.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  pp-idb-offline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Offline unit and integration tests
+        run: python -m unittest -v test_identity_outbox test_identity_integration
