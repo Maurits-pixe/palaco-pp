@@ -42,3 +42,16 @@ Do **not** infer an individual's identity from the username `maurits` or from th
 - Require independent review and a separate human GO before any production migration or official EDTR issuance.
 
 This branch intentionally does **not** change `server.py`, credentials, live data, account authorization, or existing sessions.
+
+
+## PP-IDB-002 — atomic local integration candidate
+
+The existing `Store.register_account()` now calls `enqueue_identity_event()` inside its existing SQLite `BEGIN IMMEDIATE` transaction, **after** the existing `ACCOUNT_CREATED` audit entry. A failed outbox insert rolls back the account, audit entry, and session rotation together. The lineage payload contains an independently random local reference; its provenance points to the local audit sequence. The local audit remains the authoritative account-to-event join **within this prototype**, not a verified PALACO Person ID.
+
+The integration intentionally does not send events, mark contact details verified, connect to Supabase, or grant authority. It does not backfill pre-existing accounts. Existing users need a separately reviewed migration strategy, not silent event forgery.
+
+Offline events currently carry only random references and event metadata; **encrypted storage at rest, trusted receipt verification, cross-device identity binding, and authenticated synchronization are not implemented**. SQLite append-only triggers prevent ordinary UPDATE/DELETE queries but do not protect against a privileged local filesystem attacker.
+
+Tests added in `test_identity_integration.py`: atomic registration, injected outbox failure rollback, duplicate registration, offline persistence across reopen, and SQL trigger rejection rollback. The separate CI workflow is `.github/workflows/pp-idb-001.yml`. A committed test file is not evidence of PASS: record the exact GitHub Actions run result before marking verification complete.
+
+**Release gate:** remain DRAFT / HOLD until tests execute successfully, the real app is smoke-tested, local database recovery is examined, and a human reviewer accepts changes.
