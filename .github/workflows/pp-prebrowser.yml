@@ -1,0 +1,84 @@
+name: PP safe pre-browser validation
+on:
+  pull_request:
+    paths:
+      - 'browser_acceptance.js'
+      - 'tests/pp_same_context.spec.cjs'
+      - 'tests/pp_ephemeral_ci.spec.cjs'
+      - 'playwright.config.cjs'
+      - 'server.py'
+      - 'test_*.py'
+      - '.github/workflows/pp-prebrowser.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  safe-prebrowser:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Syntax check (no browser, no account)
+        run: |
+          node --check browser_acceptance.js
+          node --check tests/pp_same_context.spec.cjs
+          node --check playwright.config.cjs
+      - name: Install optional Microsoft test dependencies
+        run: python -m pip install -r requirements-mail.txt
+      - name: Local engine unit tests (temporary test databases)
+        run: python -m unittest discover -v
+      - name: Enforce no destructive acceptance in CI
+        run: |
+          test "${PP_DESTRUCTIVE_BROWSER_ACCEPTANCE:-NO}" != "YES"
+          echo 'Browser acceptance not executed: HUMAN DECISION REQUIRED'
+
+  ephemeral-browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install isolated Playwright test runner
+        run: |
+          npm install --no-save --ignore-scripts --package-lock=false @playwright/test@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Start loopback-only disposable database server
+        shell: bash
+        run: |
+          python server.py --db "${RUNNER_TEMP}/pp-ephemeral-${GITHUB_RUN_ID}.sqlite3" --port 8765 > "${RUNNER_TEMP}/pp-server.log" 2>&1 &
+          echo $! > "${RUNNER_TEMP}/pp-server.pid"
+          for i in $(seq 1 60); do
+            if curl --fail --silent http://127.0.0.1:8765/ > /dev/null; then exit 0; fi
+            sleep 1
+          done
+          echo 'Ephemeral loopback server did not start'
+          exit 1
+      - name: Browser acceptance on disposable local account
+        env:
+          PP_EPHEMERAL_CI: 'YES'
+          PP_BASE_URL: http://127.0.0.1:8765/
+        run: npx playwright test tests/pp_ephemeral_ci.spec.cjs --config=playwright.config.cjs
+      - name: Tear down and remove temporary database
+        if: always()
+        shell: bash
+        run: |
+          if test -f "${RUNNER_TEMP}/pp-server.pid"; then kill "$(cat "${RUNNER_TEMP}/pp-server.pid")" 2>/dev/null || true; fi
+          rm -f "${RUNNER_TEMP}"/pp-ephemeral-*.sqlite3*
+      - name: Report gate boundary
+        if: always()
+        run: echo 'EPHEMERAL BROWSER EVIDENCE ONLY - PRODUCTION HOLD'

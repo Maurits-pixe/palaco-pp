@@ -56,14 +56,18 @@ async function runPPBrowserAcceptance(page) {
   check(offeredHistory.every((event) =>
     before.some((option) => option.id === event.detail.optionId
       && option.number === event.detail.ppNumber
-      && event.detail.color === option.color.replace("number-option color-", ""))),
+      && event.detail.color === (option.color.match(/(?:^|\s)color-(blue|red|green|yellow)(?:\s|$)/) || [])[1])),
   "offer history does not match the displayed batch");
   await page.reload();
   await page.getByTestId("pp-option-10").waitFor({ state: "visible" });
   check(JSON.stringify(before) === JSON.stringify(await snapshot()), "batch changed after reload");
 
   const chosen = before[2];
-  await page.getByTestId("pp-option-3").locator(".number-value").click();
+  // The decorative number-face overlays the native radio hit target.
+  // Exercise native keyboard semantics rather than bypassing hit testing.
+  const choice = page.getByTestId("pp-option-3").locator('input[type="radio"]');
+  await choice.focus();
+  await choice.press("Space");
   check(await page.getByTestId("pp-option-3").getByRole("radio").isChecked(), "radio not selected");
   await page.getByRole("button", { name: "Bevestig je keuze", exact: true }).click();
   await page.getByRole("dialog", { name: "Maak het van jou.", exact: true }).waitFor();
