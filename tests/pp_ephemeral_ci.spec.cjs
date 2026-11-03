@@ -18,8 +18,15 @@ test("ephemeral local P.P. acceptance: select / reload / revoke / 409", async ({
     const r = await fetch("/api/auth/me");
     return r.json();
   });
-  expect(previous.consumerId).toBeNull();
+  // The app bootstrap creates an anonymous local consumer on first page load.
+  expect(previous.consumerId).toEqual(expect.any(String));
   expect(previous.authenticated).toBe(false);
+  const initialState = await page.evaluate(async () => {
+    const r = await fetch("/api/pp/me");
+    return { status: r.status, body: await r.json() };
+  });
+  // A fresh database must have no selected identity or existing offers.
+  expect(initialState.status).toBe(401);
 
   const username = "ci_" + randomUUID().replaceAll("-","").slice(0,20);
   const password = randomUUID() + "_Pp-Local-Only!";
