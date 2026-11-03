@@ -63,7 +63,11 @@ async function runPPBrowserAcceptance(page) {
   check(JSON.stringify(before) === JSON.stringify(await snapshot()), "batch changed after reload");
 
   const chosen = before[2];
-  await page.getByTestId("pp-option-3").locator('input[type="radio"]').check();
+  // The decorative number-face overlays the native radio hit target.
+  // Exercise native keyboard semantics rather than bypassing hit testing.
+  const choice = page.getByTestId("pp-option-3").locator('input[type="radio"]');
+  await choice.focus();
+  await choice.press("Space");
   check(await page.getByTestId("pp-option-3").getByRole("radio").isChecked(), "radio not selected");
   await page.getByRole("button", { name: "Bevestig je keuze", exact: true }).click();
   await page.getByRole("dialog", { name: "Maak het van jou.", exact: true }).waitFor();
