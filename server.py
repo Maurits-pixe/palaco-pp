@@ -1400,10 +1400,14 @@ class Handler(BaseHTTPRequestHandler):
             if method == "POST" and self.headers.get("Origin") != f"http://{host}":
                 raise PPError("PP_ORIGIN_DENIED", 403)
             if method == "GET" and self.path in (
-                "/", "/app.js", "/style.css", "/admin", "/admin.js", "/admin.css"
+                "/", "/app.js", "/style.css", "/admin", "/admin.js", "/admin.css",
+                "/manifest.webmanifest", "/pp-icon-192.png", "/pp-icon-512.png"
             ):
                 name, mime = {
                     "/": ("index.html", "text/html; charset=utf-8"),
+                    "/manifest.webmanifest": ("manifest.webmanifest", "application/manifest+json"),
+                    "/pp-icon-192.png": ("pp-icon-192.png", "image/png"),
+                    "/pp-icon-512.png": ("pp-icon-512.png", "image/png"),
                     "/app.js": ("app.js", "text/javascript; charset=utf-8"),
                     "/style.css": ("style.css", "text/css; charset=utf-8"),
                     "/admin": ("admin.html", "text/html; charset=utf-8"),
@@ -1693,3 +1697,4 @@ def main():
 
 if __name__ == "__main__":
     raise SystemExit(main())
+

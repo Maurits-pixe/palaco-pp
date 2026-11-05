@@ -1,0 +1,29 @@
+PALACO P.P. — lokale bouwcandidate
+
+1. Pak het ZIP-bestand uit in een aparte, schrijfbare map.
+2. Windows: dubbelklik START-PP.cmd.
+   macOS/Linux: open een terminal in deze map en voer sh start-pp.sh uit.
+3. Open http://127.0.0.1:8765/ in je browser nadat de server is gestart.
+4. Laat het terminalvenster open. Stop met Ctrl+C.
+
+Python 3.11 of hoger is vereist. De starter installeert geen software en stopt
+geen andere processen. De gewone lokale app werkt zonder mailpackages.
+Microsoft-mail vraagt aparte configuratie; zie README.md.
+
+Gebruik voor bestaande accounts je bestaande projectmap en database.
+Dit pakket bevat geen accounts of database. Een nieuwe map zonder je database
+is een afzonderlijke lokale omgeving. Verwijder of overschrijf je bestaande
+data-map niet. Maak voor wijzigingen een back-up terwijl de server gestopt is.
+
+De server is alleen op dit apparaat bereikbaar. Dit is lokale identificatie,
+geen bellijn, SMS-dienst of gedeelde PALACO-login.
+
+STARTCONTROLE
+Voer python start_pp.py --diagnose uit in de projectmap. Of gebruik op Windows
+START-PP.cmd --diagnose en op macOS/Linux sh start-pp.sh --diagnose.
+PASS betekent dat de genoemde startvoorwaarde op dat moment beschikbaar lijkt.
+BLOCKED/FAIL betekent dat je de gemelde voorwaarde eerst moet herstellen.
+NEW_DATABASE betekent dat dit pad nog geen database bevat: bestaande accounts
+staan elders. De controle maakt geen map, account of database aan.
+De databasecontrole leest alleen de bestandssignatuur, geen accountgegevens;
+ze bewijst geen database-integriteit. Gebruik daarvoor de bestaande --check-optie.

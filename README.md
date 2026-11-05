@@ -534,3 +534,50 @@ heruitgifte, productiehosting of aanspraak op geverifieerde PALACO-canon.
 De visuele richting is een prototypevoorstel, niet een bevestigde huisstijl.
 Deze implementatie is gebaseerd op het aangeleverde ontwerp; de genoemde
 Notion-bronnen zijn hiervoor niet onafhankelijk gevalideerd.
+
+
+## Aparte P.P.-tegel (bouwcandidate 2026-11-04)
+
+De lokale app heeft een eigen webmanifest met naam P.P., twee PNG-pictogrammen
+en een zelfstandig venster. Gebruik de browserfunctie voor installeren of een
+snelkoppeling als je browser die aanbiedt; beschikbaarheid verschilt per browser.
+Start nog steeds eerst `python server.py` op hetzelfde apparaat en gebruik steeds
+dezelfde poort. Een andere browser of browserprofiel kan een andere sessie hebben;
+meld aan met je bestaande lokale account. Er is geen offline-server of serviceworker.
+
+De aparte ingang op PALACO ONE (`/pp/`) verwijst bewust naar de lokale app en de
+repository; ze verplaatst je database niet naar de cloud en maakt geen nummer aan.
+De manifest-/icoonroutes zijn publieke assets en maken geen consumer of sessie aan.
+Validatie: 60 servertests PASS, inclusief assets, afbeeldingsmaten en identiteitsgrens.
+Browserinstallatie NOT EXECUTED. De bestaande Windows-specifieke Microsoft-starter
+is niet uitvoerbaar op de gebruikte Linux-testomgeving.
+
+## Eenvoudig starten (bouwcandidate)
+
+Pak het pakket uit. Windows: dubbelklik `START-PP.cmd`; macOS/Linux: voer
+`sh start-pp.sh` uit vanuit de uitgepakte map. Python 3.11+ moet al geïnstalleerd
+zijn. Open daarna `http://127.0.0.1:8765/` en laat de terminal open. De starter
+installeert niets en stopt geen andere processen. Stop zelf met Ctrl+C.
+
+`python start_pp.py --port 8766 --db "pad/naar/palaco.sqlite3"` gebruikt expliciet
+een andere poort of database. Gebruik voor bestaande accounts de bestaande database,
+nooit een lege vervanging. Maak eerst een back-up terwijl de server gestopt is.
+
+Drie echte-procestests PASS op Linux: help vanuit een andere map zonder data-aanmaak,
+bezette poort met behoud van de bestaande listener, en starten met een eigen poort
+en database gevolgd door de database-integriteitscontrole. De Windows CMD-wrapper
+en native browserinstallatie zijn NOT EXECUTED op dit Linux-systeem.
+
+### Startvoorwaarden controleren
+
+`python start_pp.py --diagnose` controleert Python >=3.11, de gekozen lokale
+poort, toegangsindicaties voor de databasemap en eventueel de SQLite-signatuur
+van de bestaande database. `--port` en `--db` blijven beschikbaar. Exitcode 0
+betekent dat deze startvoorwaarden op dat moment lijken te kloppen; exitcode 1
+betekent FAIL/BLOCKED. Een ongeldige poort geeft een parserfout.
+
+De diagnose schrijft geen bestanden of database, toont geen accountinhoud en
+verandert geen processen. Een ontbrekende database wordt NEW_DATABASE genoemd.
+De uitkomst is een momentopname; permissies, bestanden en poort kunnen daarna
+veranderen. De headersignatuur bewijst geen geldige P.P.-database of integriteit.
+Gebruik de bestaande `--check` voor de uitgebreide databasecontrole.
