@@ -632,3 +632,22 @@ Elf back-up-/hersteltests PASS op Linux, waaronder volledige roundtrip met
 ongewijzigde SQL-inhoud, behoud van bestaand doel/bron, blokkeren van ongeldige
 P.P.-historie zonder reparatie en CLI zonder automatische serverstart. Native
 Windows-bestandsysteemgedrag is nog niet uitgevoerd.
+
+### Controlewaarde bij herstel
+
+Met `--expected-sha256` krijgt `restore_pp.py` de apart bewaarde SHA-256 van
+het back-upbestand. De volledige waarde moet 64 hexadecimale tekens bevatten.
+Er wordt een afgeschermde bytekopie gelezen en gehasht; exact die kopie gaat
+naar SQLite. De bron wordt na de hash niet opnieuw geopend voor herstel.
+Een wijziging van het oorspronkelijke bestand na het vastleggen beïnvloedt
+daarom de gekozen herstelinhoud niet. Bij mismatch, onvolledige waarde of
+actieve WAL/journal wordt geen herstelbestand gepubliceerd. Tijdelijke
+bestanden worden opgeruimd. Het normale herstel zonder checksum blijft
+beschikbaar en meldt source_checksum NOT_REQUESTED; gecontroleerd herstel
+meldt MATCH plus de werkelijk berekende source_sha256.
+
+Dit is bestandsidentiteit ten opzichte van een vooraf vertrouwd bewaarde waarde,
+geen handtekening, herkomstbewijs of PALACO-autorisatie. De bestaande SQLite-
+en P.P.-controles worden ook na een overeenkomende checksum uitgevoerd.
+Vijftien back-up-/hersteltests PASS op Linux, inclusief ongeldige checksums,
+WAL-weigering en het vastleggen van exact de gecontroleerde broninhoud.

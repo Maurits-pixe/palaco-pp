@@ -60,3 +60,15 @@ python start_pp.py --db "hersteld.sqlite3"
 Sessies en mailwachtrij zijn meegekopieerd. Start nooit twee servers/workers op
 verschillende kopieën van dezelfde registratie. De controle bewijst geen
 authenticiteit van de bron of werking op een ander besturingssysteem.
+
+HERSTELLEN MET EEN BEWAARDE CONTROLEWAARDE
+De back-upopdracht toont SHA-256. Bewaar die waarde apart en geef haar mee:
+python restore_pp.py "backup.sqlite3" "hersteld.sqlite3" --expected-sha256 "DE_64_HEXADECIMALE_TEKENS"
+
+Vervang de voorbeeldtekst door de volledige, eerder bewaarde waarde. De opdracht
+controleert precies de afgeschermde bestandskopie die daarna wordt hersteld.
+Bij een afwijkende of onvolledige waarde wordt geen herstelbestand gemaakt.
+Gebruik hiervoor een afgesloten back-upbestand zonder actieve WAL/journal.
+Zonder deze optie blijft herstel mogelijk; de uitvoer meldt dan NOT_REQUESTED.
+Een overeenkomende SHA-256 bewijst bestandsidentiteit met jouw bewaarde waarde,
+geen persoon, herkomst of autorisatie. Bewaar de waarde daarom op een betrouwbare plek.

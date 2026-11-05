@@ -5,9 +5,10 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 
 from backup_pp import create_backup
-from restore_pp import restore_copy
+from restore_pp import ChecksumError, restore_copy
 from server import Store
 
 
@@ -51,6 +52,51 @@ class RestoreTests(unittest.TestCase):
                 restore_copy(self.backup, destination)
         self.assertEqual(b"KEEP_THIS_FILE", self.restored.read_bytes())
         self.assertEqual(source_bytes, self.backup.read_bytes())
+
+    def test_expected_checksum_restores_the_captured_file(self):
+        create_backup(self.database, self.backup)
+        digest = hashlib.sha256(self.backup.read_bytes()).hexdigest()
+        real_backup = create_backup
+        def change_original_after_capture(source, destination, **options):
+            self.assertNotEqual(self.backup, Path(source))
+            self.assertEqual(digest, hashlib.sha256(Path(source).read_bytes()).hexdigest())
+            self.backup.write_bytes(b"CHANGED_AFTER_CAPTURE")
+            return real_backup(source, destination, **options)
+        with patch("restore_pp.create_backup", side_effect=change_original_after_capture):
+            report = restore_copy(self.backup, self.restored, expected_sha256=digest.upper())
+        self.assertEqual("MATCH", report["source_checksum"])
+        self.assertEqual(digest, report["source_sha256"])
+        self.assertTrue(self.restored.is_file())
+        self.assertFalse(list(self.root.glob(".pp-restore-*")))
+
+    def test_checksum_mismatch_and_invalid_values_publish_nothing(self):
+        create_backup(self.database, self.backup)
+        before = self.backup.read_bytes()
+        for digest in ("0" * 64, "abc", "g" * 64, " " * 64):
+            with self.subTest(digest=digest), self.assertRaises(ChecksumError):
+                restore_copy(self.backup, self.restored, expected_sha256=digest)
+            self.assertFalse(self.restored.exists())
+            self.assertFalse(list(self.root.glob(".pp-restore-*")))
+        self.assertEqual(before, self.backup.read_bytes())
+
+    def test_checksum_mode_rejects_sidecar_data(self):
+        create_backup(self.database, self.backup)
+        digest = hashlib.sha256(self.backup.read_bytes()).hexdigest()
+        wal = Path(str(self.backup) + "-wal")
+        wal.write_bytes(b"PENDING_WAL")
+        with self.assertRaises(ChecksumError):
+            restore_copy(self.backup, self.restored, expected_sha256=digest)
+        self.assertFalse(self.restored.exists())
+        self.assertEqual(b"PENDING_WAL", wal.read_bytes())
+
+    def test_cli_checksum_mismatch_has_clear_message_and_nonzero_exit(self):
+        create_backup(self.database, self.backup)
+        script = Path(__file__).with_name("restore_pp.py").resolve()
+        result = subprocess.run([sys.executable, str(script), str(self.backup), str(self.restored),
+                                 "--expected-sha256", "0" * 64], capture_output=True, text=True, timeout=10)
+        self.assertEqual(1, result.returncode)
+        self.assertIn("Controlewaarde komt niet overeen", result.stderr)
+        self.assertFalse(self.restored.exists())
 
     def test_invalid_pp_history_blocks_publication_without_repairing_source(self):
         consumer, _ = self.store.create_consumer()
