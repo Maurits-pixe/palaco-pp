@@ -27,3 +27,21 @@ NEW_DATABASE betekent dat dit pad nog geen database bevat: bestaande accounts
 staan elders. De controle maakt geen map, account of database aan.
 De databasecontrole leest alleen de bestandssignatuur, geen accountgegevens;
 ze bewijst geen database-integriteit. Gebruik daarvoor de bestaande --check-optie.
+
+LOKALE BACK-UP
+Stop bij voorkeur eerst de P.P.-server met Ctrl+C. Voer in de projectmap uit:
+python backup_pp.py "P.P.-backup-2026-11-05.sqlite3"
+
+Kies iedere keer een nieuwe bestandsnaam in een bestaande map. Een bestaand
+bestand wordt niet vervangen. Met --db kun je expliciet je bestaande database
+kiezen. De kopie bevat accounts, sessies, nummerkeuze, notities en mailwachtrij
+onversleuteld. Bewaar haar privé; deel haar niet via chat of GitHub.
+
+De opdracht meldt BACKUP_CREATED plus een SHA-256-controlewaarde nadat de kopie
+SQLite- en foreign-key-controles heeft doorstaan. Geen P.P.-canoncertificering.
+Een bestandsysteem zonder hardlinkondersteuning geeft een fout zonder een
+onvolledige back-up te publiceren. Bij een bezette bron wordt de poging begrensd.
+
+Automatisch herstel is niet inbegrepen. Bewaar de bestaande database en maak
+geen tweede draaiende server op een kopie: de mailwachtrij kan dan dubbel worden
+verwerkt. Een Microsoft-tokenbestand is niet in deze databaseback-up opgenomen.

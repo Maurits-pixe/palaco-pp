@@ -581,3 +581,30 @@ verandert geen processen. Een ontbrekende database wordt NEW_DATABASE genoemd.
 De uitkomst is een momentopname; permissies, bestanden en poort kunnen daarna
 veranderen. De headersignatuur bewijst geen geldige P.P.-database of integriteit.
 Gebruik de bestaande `--check` voor de uitgebreide databasecontrole.
+
+## Expliciete lokale databaseback-up
+
+Stop bij voorkeur eerst de server. Voer `python backup_pp.py "P.P.-backup-2026-11-05.sqlite3"`
+uit in de projectmap. Kies elke keer een nieuwe naam in een bestaande map; `--db`
+kiest expliciet de bron. De bron moet bestaan en herkenbare P.P.-tabellen bevatten.
+
+De SQLite-backup-API maakt een consistente kopie, ook met reeds gecommitteerde WAL-
+gegevens. De kopie wordt in een afgeschermde tijdelijke map opgebouwd, op SQLite-
+integriteit en foreign keys gecontroleerd en als voltooid bestand gepubliceerd.
+Een hardlink voorkomt dat een bestaand doelbestand of een concurrerende schrijver
+wordt overschreven. Zonder hardlinkondersteuning mislukt de opdracht expliciet.
+Bij mislukking worden tijdelijke bestanden opgeruimd. Een geblokkeerde kopieerpoging
+is begrensd tot circa vijftien seconden; de daaropvolgende integriteitscontrole
+kan bij grote databases meer tijd vragen.
+
+Succes meldt BACKUP_CREATED, bestandsgrootte en een berekende SHA-256. Dit is geen
+bewijs van P.P.-canon, beveiliging, offsite-opslag of volledige herstelbaarheid op
+andere systemen. De back-up bevat onversleutelde accounts, sessies, notities en
+mailwachtrij: bewaar haar privé. Microsoft-OAuth-tokenbestanden vallen erbuiten.
+Er is geen automatisch herstel. Start geen tweede server/worker op een kopie.
+
+Zes back-uptests PASS op Linux: gecommitteerde WAL-data met account, nummer en
+notitie; P.P.-integriteitscontrole op de kopie; weigeren van bestaande doelen en
+bron-als-doel; ontbrekende/corrupte/andere databases; concurrerende doelbestanden;
+expliciete fout bij ontbrekende hardlinks; CLI-output zonder privé-inhoud. Native
+Windows-bestandsysteemgedrag is nog niet uitgevoerd.
