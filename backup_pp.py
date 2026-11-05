@@ -13,7 +13,7 @@ import time
 ROOT = Path(__file__).resolve().parent
 
 
-def create_backup(source, destination):
+def create_backup(source, destination, *, validate_snapshot=None):
     source, destination = Path(source).resolve(), Path(destination).absolute()
     if not source.is_file():
         raise ValueError("Bron-database ontbreekt; er is geen nieuwe database gemaakt.")
@@ -41,6 +41,8 @@ def create_backup(source, destination):
                     raise ValueError("De SQLite-integriteitscontrole van de kopie is mislukt.")
                 if snapshot.execute("PRAGMA foreign_key_check").fetchone() is not None:
                     raise ValueError("De kopie bevat ongeldige databaserelaties.")
+        if validate_snapshot is not None:
+            validate_snapshot(candidate)
         with candidate.open("rb") as stream:
             digest = hashlib.file_digest(stream, "sha256").hexdigest()
             os.fsync(stream.fileno())

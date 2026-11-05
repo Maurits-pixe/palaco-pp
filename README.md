@@ -608,3 +608,27 @@ notitie; P.P.-integriteitscontrole op de kopie; weigeren van bestaande doelen en
 bron-als-doel; ontbrekende/corrupte/andere databases; concurrerende doelbestanden;
 expliciete fout bij ontbrekende hardlinks; CLI-output zonder privé-inhoud. Native
 Windows-bestandsysteemgedrag is nog niet uitgevoerd.
+
+## Handmatig herstel naar een nieuwe database
+
+Stop de oorspronkelijke server en voer
+`python restore_pp.py "P.P.-backup-2026-11-05.sqlite3" "hersteld.sqlite3"` uit.
+Het doelbestand mag niet bestaan. De opdracht gebruikt dezelfde tijdelijke
+SQLite-snapshot en no-overwrite-publicatie als de back-up, maar voert ook de
+bestaande P.P.-integriteitscontrole uit voordat de kopie beschikbaar wordt.
+De Store-constructor wordt bewust niet gebruikt: geen startupmigraties,
+sessieaanmaak of aangevulde historische events tijdens het herstellen. De bron
+blijft bewaard. Bij een ontbrekende/corrupte bron of ongeldige P.P.-historie wordt
+geen herstelbestand gepubliceerd.
+
+RESTORE_COPY_CREATED rapporteert bestandsgrootte, SHA-256 en de geslaagde
+controles; de server wordt niet gestart. Kies pas na het stoppen van de oude
+server bewust `python start_pp.py --db "hersteld.sqlite3"`. Gekopieerde sessies
+en mailwachtrij blijven aanwezig. Draai nooit twee workers op kopieën; dit kan
+bevestigingsmail opnieuw laten verwerken. Microsoft-tokencaches zijn niet in
+de databaseback-up opgenomen. Dit bewijst geen authenticiteit van de bron.
+
+Elf back-up-/hersteltests PASS op Linux, waaronder volledige roundtrip met
+ongewijzigde SQL-inhoud, behoud van bestaand doel/bron, blokkeren van ongeldige
+P.P.-historie zonder reparatie en CLI zonder automatische serverstart. Native
+Windows-bestandsysteemgedrag is nog niet uitgevoerd.

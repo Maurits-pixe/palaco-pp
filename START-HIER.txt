@@ -45,3 +45,18 @@ onvolledige back-up te publiceren. Bij een bezette bron wordt de poging begrensd
 Automatisch herstel is niet inbegrepen. Bewaar de bestaande database en maak
 geen tweede draaiende server op een kopie: de mailwachtrij kan dan dubbel worden
 verwerkt. Een Microsoft-tokenbestand is niet in deze databaseback-up opgenomen.
+
+HERSTELLEN NAAR EEN NIEUW BESTAND
+Stop de oorspronkelijke server. Voer in de projectmap uit:
+python restore_pp.py "P.P.-backup-2026-11-05.sqlite3" "hersteld.sqlite3"
+
+Het doelbestand mag niet bestaan. De kopie wordt pas beschikbaar na SQLite-,
+foreign-key- en P.P.-integriteitscontrole. De bron en bestaande bestanden worden
+niet vervangen. Tijdens herstel worden geen startupmigraties of sessies gemaakt.
+RESTORE_COPY_CREATED betekent dat de nieuwe kopie klaarstaat, niet dat een server
+is gestart. Start alleen zelf, nadat de oorspronkelijke server is gestopt:
+python start_pp.py --db "hersteld.sqlite3"
+
+Sessies en mailwachtrij zijn meegekopieerd. Start nooit twee servers/workers op
+verschillende kopieën van dezelfde registratie. De controle bewijst geen
+authenticiteit van de bron of werking op een ander besturingssysteem.
