@@ -1,0 +1,74 @@
+PALACO P.P. — lokale bouwcandidate
+
+1. Pak het ZIP-bestand uit in een aparte, schrijfbare map.
+2. Windows: dubbelklik START-PP.cmd.
+   macOS/Linux: open een terminal in deze map en voer sh start-pp.sh uit.
+3. Open http://127.0.0.1:8765/ in je browser nadat de server is gestart.
+4. Laat het terminalvenster open. Stop met Ctrl+C.
+
+Python 3.11 of hoger is vereist. De starter installeert geen software en stopt
+geen andere processen. De gewone lokale app werkt zonder mailpackages.
+Microsoft-mail vraagt aparte configuratie; zie README.md.
+
+Gebruik voor bestaande accounts je bestaande projectmap en database.
+Dit pakket bevat geen accounts of database. Een nieuwe map zonder je database
+is een afzonderlijke lokale omgeving. Verwijder of overschrijf je bestaande
+data-map niet. Maak voor wijzigingen een back-up terwijl de server gestopt is.
+
+De server is alleen op dit apparaat bereikbaar. Dit is lokale identificatie,
+geen bellijn, SMS-dienst of gedeelde PALACO-login.
+
+STARTCONTROLE
+Voer python start_pp.py --diagnose uit in de projectmap. Of gebruik op Windows
+START-PP.cmd --diagnose en op macOS/Linux sh start-pp.sh --diagnose.
+PASS betekent dat de genoemde startvoorwaarde op dat moment beschikbaar lijkt.
+BLOCKED/FAIL betekent dat je de gemelde voorwaarde eerst moet herstellen.
+NEW_DATABASE betekent dat dit pad nog geen database bevat: bestaande accounts
+staan elders. De controle maakt geen map, account of database aan.
+De databasecontrole leest alleen de bestandssignatuur, geen accountgegevens;
+ze bewijst geen database-integriteit. Gebruik daarvoor de bestaande --check-optie.
+
+LOKALE BACK-UP
+Stop bij voorkeur eerst de P.P.-server met Ctrl+C. Voer in de projectmap uit:
+python backup_pp.py "P.P.-backup-2026-11-05.sqlite3"
+
+Kies iedere keer een nieuwe bestandsnaam in een bestaande map. Een bestaand
+bestand wordt niet vervangen. Met --db kun je expliciet je bestaande database
+kiezen. De kopie bevat accounts, sessies, nummerkeuze, notities en mailwachtrij
+onversleuteld. Bewaar haar privé; deel haar niet via chat of GitHub.
+
+De opdracht meldt BACKUP_CREATED plus een SHA-256-controlewaarde nadat de kopie
+SQLite- en foreign-key-controles heeft doorstaan. Geen P.P.-canoncertificering.
+Een bestandsysteem zonder hardlinkondersteuning geeft een fout zonder een
+onvolledige back-up te publiceren. Bij een bezette bron wordt de poging begrensd.
+
+Automatisch herstel is niet inbegrepen. Bewaar de bestaande database en maak
+geen tweede draaiende server op een kopie: de mailwachtrij kan dan dubbel worden
+verwerkt. Een Microsoft-tokenbestand is niet in deze databaseback-up opgenomen.
+
+HERSTELLEN NAAR EEN NIEUW BESTAND
+Stop de oorspronkelijke server. Voer in de projectmap uit:
+python restore_pp.py "P.P.-backup-2026-11-05.sqlite3" "hersteld.sqlite3"
+
+Het doelbestand mag niet bestaan. De kopie wordt pas beschikbaar na SQLite-,
+foreign-key- en P.P.-integriteitscontrole. De bron en bestaande bestanden worden
+niet vervangen. Tijdens herstel worden geen startupmigraties of sessies gemaakt.
+RESTORE_COPY_CREATED betekent dat de nieuwe kopie klaarstaat, niet dat een server
+is gestart. Start alleen zelf, nadat de oorspronkelijke server is gestopt:
+python start_pp.py --db "hersteld.sqlite3"
+
+Sessies en mailwachtrij zijn meegekopieerd. Start nooit twee servers/workers op
+verschillende kopieën van dezelfde registratie. De controle bewijst geen
+authenticiteit van de bron of werking op een ander besturingssysteem.
+
+HERSTELLEN MET EEN BEWAARDE CONTROLEWAARDE
+De back-upopdracht toont SHA-256. Bewaar die waarde apart en geef haar mee:
+python restore_pp.py "backup.sqlite3" "hersteld.sqlite3" --expected-sha256 "DE_64_HEXADECIMALE_TEKENS"
+
+Vervang de voorbeeldtekst door de volledige, eerder bewaarde waarde. De opdracht
+controleert precies de afgeschermde bestandskopie die daarna wordt hersteld.
+Bij een afwijkende of onvolledige waarde wordt geen herstelbestand gemaakt.
+Gebruik hiervoor een afgesloten back-upbestand zonder actieve WAL/journal.
+Zonder deze optie blijft herstel mogelijk; de uitvoer meldt dan NOT_REQUESTED.
+Een overeenkomende SHA-256 bewijst bestandsidentiteit met jouw bewaarde waarde,
+geen persoon, herkomst of autorisatie. Bewaar de waarde daarom op een betrouwbare plek.

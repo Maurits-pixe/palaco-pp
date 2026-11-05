@@ -995,6 +995,34 @@ class APITests(unittest.TestCase):
         connection.close()
         return status, json.loads(body) if content_type == "application/json" else body
 
+    def test_tile_assets_are_public_and_do_not_create_identity(self):
+        status, page = self.request("GET", "/")
+        self.assertEqual(200, status)
+        self.assertIn(b'href="/manifest.webmanifest"', page)
+        status, body = self.request("GET", "/manifest.webmanifest")
+        self.assertEqual(200, status)
+        manifest = json.loads(body)
+        self.assertEqual("standalone", manifest["display"])
+        self.assertEqual("/", manifest["start_url"])
+        self.assertEqual("P.P.", manifest["short_name"])
+        for icon in manifest["icons"]:
+            connection = http.client.HTTPConnection("127.0.0.1", self.server.server_port)
+            connection.request("GET", icon["src"])
+            response = connection.getresponse()
+            image = response.read()
+            self.assertEqual(200, response.status)
+            self.assertEqual("image/png", response.getheader("Content-Type"))
+            self.assertIsNone(response.getheader("Set-Cookie"))
+            self.assertEqual(b'\x89PNG\r\n\x1a\n', image[:8])
+            expected = int(icon["sizes"].split("x")[0])
+            self.assertEqual(expected, int.from_bytes(image[16:20], "big"))
+            self.assertEqual(expected, int.from_bytes(image[20:24], "big"))
+            connection.close()
+        self.assertIsNone(self.cookie)
+        with self.store.connection() as db:
+            self.assertEqual(0, db.execute("SELECT count(*) FROM consumers").fetchone()[0])
+        self.assertEqual(401, self.request("GET", "/api/pp/me")[0])
+
     def test_selection_email_api_is_optional_authenticated_and_never_sends_twice(self):
         self.assertEqual(401, self.request("GET", "/api/pp/mail")[0])
         self.request("POST", "/api/session", {})
@@ -1400,3 +1428,4 @@ class APITests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+

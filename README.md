@@ -534,3 +534,120 @@ heruitgifte, productiehosting of aanspraak op geverifieerde PALACO-canon.
 De visuele richting is een prototypevoorstel, niet een bevestigde huisstijl.
 Deze implementatie is gebaseerd op het aangeleverde ontwerp; de genoemde
 Notion-bronnen zijn hiervoor niet onafhankelijk gevalideerd.
+
+
+## Aparte P.P.-tegel (bouwcandidate 2026-11-04)
+
+De lokale app heeft een eigen webmanifest met naam P.P., twee PNG-pictogrammen
+en een zelfstandig venster. Gebruik de browserfunctie voor installeren of een
+snelkoppeling als je browser die aanbiedt; beschikbaarheid verschilt per browser.
+Start nog steeds eerst `python server.py` op hetzelfde apparaat en gebruik steeds
+dezelfde poort. Een andere browser of browserprofiel kan een andere sessie hebben;
+meld aan met je bestaande lokale account. Er is geen offline-server of serviceworker.
+
+De aparte ingang op PALACO ONE (`/pp/`) verwijst bewust naar de lokale app en de
+repository; ze verplaatst je database niet naar de cloud en maakt geen nummer aan.
+De manifest-/icoonroutes zijn publieke assets en maken geen consumer of sessie aan.
+Validatie: 60 servertests PASS, inclusief assets, afbeeldingsmaten en identiteitsgrens.
+Browserinstallatie NOT EXECUTED. De bestaande Windows-specifieke Microsoft-starter
+is niet uitvoerbaar op de gebruikte Linux-testomgeving.
+
+## Eenvoudig starten (bouwcandidate)
+
+Pak het pakket uit. Windows: dubbelklik `START-PP.cmd`; macOS/Linux: voer
+`sh start-pp.sh` uit vanuit de uitgepakte map. Python 3.11+ moet al geïnstalleerd
+zijn. Open daarna `http://127.0.0.1:8765/` en laat de terminal open. De starter
+installeert niets en stopt geen andere processen. Stop zelf met Ctrl+C.
+
+`python start_pp.py --port 8766 --db "pad/naar/palaco.sqlite3"` gebruikt expliciet
+een andere poort of database. Gebruik voor bestaande accounts de bestaande database,
+nooit een lege vervanging. Maak eerst een back-up terwijl de server gestopt is.
+
+Drie echte-procestests PASS op Linux: help vanuit een andere map zonder data-aanmaak,
+bezette poort met behoud van de bestaande listener, en starten met een eigen poort
+en database gevolgd door de database-integriteitscontrole. De Windows CMD-wrapper
+en native browserinstallatie zijn NOT EXECUTED op dit Linux-systeem.
+
+### Startvoorwaarden controleren
+
+`python start_pp.py --diagnose` controleert Python >=3.11, de gekozen lokale
+poort, toegangsindicaties voor de databasemap en eventueel de SQLite-signatuur
+van de bestaande database. `--port` en `--db` blijven beschikbaar. Exitcode 0
+betekent dat deze startvoorwaarden op dat moment lijken te kloppen; exitcode 1
+betekent FAIL/BLOCKED. Een ongeldige poort geeft een parserfout.
+
+De diagnose schrijft geen bestanden of database, toont geen accountinhoud en
+verandert geen processen. Een ontbrekende database wordt NEW_DATABASE genoemd.
+De uitkomst is een momentopname; permissies, bestanden en poort kunnen daarna
+veranderen. De headersignatuur bewijst geen geldige P.P.-database of integriteit.
+Gebruik de bestaande `--check` voor de uitgebreide databasecontrole.
+
+## Expliciete lokale databaseback-up
+
+Stop bij voorkeur eerst de server. Voer `python backup_pp.py "P.P.-backup-2026-11-05.sqlite3"`
+uit in de projectmap. Kies elke keer een nieuwe naam in een bestaande map; `--db`
+kiest expliciet de bron. De bron moet bestaan en herkenbare P.P.-tabellen bevatten.
+
+De SQLite-backup-API maakt een consistente kopie, ook met reeds gecommitteerde WAL-
+gegevens. De kopie wordt in een afgeschermde tijdelijke map opgebouwd, op SQLite-
+integriteit en foreign keys gecontroleerd en als voltooid bestand gepubliceerd.
+Een hardlink voorkomt dat een bestaand doelbestand of een concurrerende schrijver
+wordt overschreven. Zonder hardlinkondersteuning mislukt de opdracht expliciet.
+Bij mislukking worden tijdelijke bestanden opgeruimd. Een geblokkeerde kopieerpoging
+is begrensd tot circa vijftien seconden; de daaropvolgende integriteitscontrole
+kan bij grote databases meer tijd vragen.
+
+Succes meldt BACKUP_CREATED, bestandsgrootte en een berekende SHA-256. Dit is geen
+bewijs van P.P.-canon, beveiliging, offsite-opslag of volledige herstelbaarheid op
+andere systemen. De back-up bevat onversleutelde accounts, sessies, notities en
+mailwachtrij: bewaar haar privé. Microsoft-OAuth-tokenbestanden vallen erbuiten.
+Er is geen automatisch herstel. Start geen tweede server/worker op een kopie.
+
+Zes back-uptests PASS op Linux: gecommitteerde WAL-data met account, nummer en
+notitie; P.P.-integriteitscontrole op de kopie; weigeren van bestaande doelen en
+bron-als-doel; ontbrekende/corrupte/andere databases; concurrerende doelbestanden;
+expliciete fout bij ontbrekende hardlinks; CLI-output zonder privé-inhoud. Native
+Windows-bestandsysteemgedrag is nog niet uitgevoerd.
+
+## Handmatig herstel naar een nieuwe database
+
+Stop de oorspronkelijke server en voer
+`python restore_pp.py "P.P.-backup-2026-11-05.sqlite3" "hersteld.sqlite3"` uit.
+Het doelbestand mag niet bestaan. De opdracht gebruikt dezelfde tijdelijke
+SQLite-snapshot en no-overwrite-publicatie als de back-up, maar voert ook de
+bestaande P.P.-integriteitscontrole uit voordat de kopie beschikbaar wordt.
+De Store-constructor wordt bewust niet gebruikt: geen startupmigraties,
+sessieaanmaak of aangevulde historische events tijdens het herstellen. De bron
+blijft bewaard. Bij een ontbrekende/corrupte bron of ongeldige P.P.-historie wordt
+geen herstelbestand gepubliceerd.
+
+RESTORE_COPY_CREATED rapporteert bestandsgrootte, SHA-256 en de geslaagde
+controles; de server wordt niet gestart. Kies pas na het stoppen van de oude
+server bewust `python start_pp.py --db "hersteld.sqlite3"`. Gekopieerde sessies
+en mailwachtrij blijven aanwezig. Draai nooit twee workers op kopieën; dit kan
+bevestigingsmail opnieuw laten verwerken. Microsoft-tokencaches zijn niet in
+de databaseback-up opgenomen. Dit bewijst geen authenticiteit van de bron.
+
+Elf back-up-/hersteltests PASS op Linux, waaronder volledige roundtrip met
+ongewijzigde SQL-inhoud, behoud van bestaand doel/bron, blokkeren van ongeldige
+P.P.-historie zonder reparatie en CLI zonder automatische serverstart. Native
+Windows-bestandsysteemgedrag is nog niet uitgevoerd.
+
+### Controlewaarde bij herstel
+
+Met `--expected-sha256` krijgt `restore_pp.py` de apart bewaarde SHA-256 van
+het back-upbestand. De volledige waarde moet 64 hexadecimale tekens bevatten.
+Er wordt een afgeschermde bytekopie gelezen en gehasht; exact die kopie gaat
+naar SQLite. De bron wordt na de hash niet opnieuw geopend voor herstel.
+Een wijziging van het oorspronkelijke bestand na het vastleggen beïnvloedt
+daarom de gekozen herstelinhoud niet. Bij mismatch, onvolledige waarde of
+actieve WAL/journal wordt geen herstelbestand gepubliceerd. Tijdelijke
+bestanden worden opgeruimd. Het normale herstel zonder checksum blijft
+beschikbaar en meldt source_checksum NOT_REQUESTED; gecontroleerd herstel
+meldt MATCH plus de werkelijk berekende source_sha256.
+
+Dit is bestandsidentiteit ten opzichte van een vooraf vertrouwd bewaarde waarde,
+geen handtekening, herkomstbewijs of PALACO-autorisatie. De bestaande SQLite-
+en P.P.-controles worden ook na een overeenkomende checksum uitgevoerd.
+Vijftien back-up-/hersteltests PASS op Linux, inclusief ongeldige checksums,
+WAL-weigering en het vastleggen van exact de gecontroleerde broninhoud.
