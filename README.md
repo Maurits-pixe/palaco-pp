@@ -182,6 +182,11 @@ eigenaarswerkbladbytes en bewijsindexbytes worden uitsluitend lokaal gelezen.
 Na een indicatieve browservergelijking kan een niet-ondertekend dossierresultaat
 worden gedownload. De Python-dossierbeoordelaar blijft het striktere contract,
 omdat de browser geen dubbele JSON-sleutels kan uitsluiten.
+Het nieuwe `review_044_owner_registry.py` bouwt optioneel een lokaal,
+append-only geordend JSON-registersnapshot met hashverwijzingen tussen
+dossierregels. De functie schrijft geen bestanden en voegt alleen een
+strikt gecontroleerd drie-bestandendossier toe. Hashketens zonder externe
+verankering bewijzen geen onveranderlijke geschiedenis of identiteit.
 
 Zelfstandig prototype met een Nederlandstalige, responsive interface. De lokale
 PP-engine gebruikt de Python-standaardbibliotheek; geen externe lettertypen of

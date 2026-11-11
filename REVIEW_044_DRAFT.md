@@ -202,6 +202,28 @@ een indicatieve vergelijking en een downloadbare beoordeling. Bij een nieuwe
 bestandskeuze vervalt de vorige indicatie. Duplicaten van JSON-sleutels
 vallen buiten de browsergarantie; de Python-beoordelaar blijft normatief.
 
+### Lokaal Review 044-bewijsregister (concept)
+
+`review_044_owner_registry.append_owner_dossier(existing_registry,
+technical_report, owner_worksheet, evidence_index)` geeft een **nieuw
+JSON-registersnapshot als bytes** terug. De functie schrijft niets weg,
+roept geen runner aan en verandert geen account. `existing_registry` is
+uitsluitend `None` voor een nieuw register of de originele bytes van het
+vorige snapshot. Elk toegevoegd dossier moet eerst de strikte drie-
+bestandencontrole doorstaan. Herhaalde identieke dossierverwijzingen worden
+geweigerd; iedere nieuwe rij heeft een oplopend volgnummer, drie hashes,
+een eigen entry-hash en de hash van de voorgaande rij.
+
+Het register verzint geen tijdstempels en bewaart geen bronbestanden.
+Een hashketen controleert interne consistentie maar biedt **zonder externe
+ondertekening of onveranderlijke opslag geen bescherming tegen het volledig
+herschrijven van de geschiedenis**. Ook een geldig snapshot bewijst niet
+dat eerdere bronbestanden destijds echt of onafhankelijk geverifieerd waren.
+Maximaal 256 verwijzingen en 256 KB per snapshot. Alle rijen blijven
+`NOT_VERIFIED / HOLD / DENY / NOT_AUTHORIZED`.
+
+Status: **DRAFT / NOT EXECUTED / HOLD / DENY**.
+
 | Fixture | Verwacht bij latere uitvoering | Risico dat wordt onderzocht |
 | --- | --- | --- |
 | `baseline_untrusted_hold` | `FOUR_FILE_HASH_MATCH_UNTRUSTED` | Correcte binding ≠ verificatie |
