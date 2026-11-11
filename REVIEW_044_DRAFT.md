@@ -86,6 +86,23 @@ een door de client opgegeven tijd, geen onafhankelijke tijdsattestatie.
 Deze adapter is **DRAFT / NOT EXECUTED**. Er is nog geen echte PALACO ONE
 runtimekoppeling en geen toestemming voor activatie.
 
+### Voorbereide negatieve regressies (nog niet uitgevoerd)
+
+`review_044_preview_fixtures.build_preview_fixtures()` maakt uitsluitend
+synthetische byte-invoer en benoemde verwachtingen in geheugen. De functie
+roept de adapter **niet** aan. Twee positieve vormscenario's mogen hooguit
+een `HOLD_DENY_PREVIEW` opleveren; ongeldige invoer moet steeds
+`PP_REVIEW_044_PREVIEW_INVALID` geven. Voorbereid zijn:
+
+- geldig rapport zonder waarneming; geldig zelfrapport met één claim;
+- ontbrekende `Z`, andere tijdzone, onmogelijke kalenderdatum,
+  ontbrekende milliseconden, waarneming na rapporttijd;
+- autorisatie- of verificatie-escalatie, vervalst `PASS`-vergelijkingslabel;
+- ontbrekende provenance, dubbele JSON-sleutel en te grote invoer.
+
+Verwachte foutcodes zijn **SPECIFICATION**, geen geobserveerde uitslagen.
+De uitvoering blijft voorbehouden aan de latere expliciete testsessie.
+
 | Fixture | Verwacht bij latere uitvoering | Risico dat wordt onderzocht |
 | --- | --- | --- |
 | `baseline_untrusted_hold` | `FOUR_FILE_HASH_MATCH_UNTRUSTED` | Correcte binding ≠ verificatie |

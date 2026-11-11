@@ -141,6 +141,9 @@ Een aparte pure adapter `review_044_identity_preview.py` bereidt een
 alleen-lezen PALACO ONE-overdrachtspreview voor. Hij weigert afwijkende
 zelfrapportstructuren en geeft nooit identity binding, sessietoegang of
 uitgifte vrij. De adapter is DRAFT en niet uitgevoerd of aangesloten.
+`review_044_preview_fixtures.py` levert daarbij synthetische positieve en
+negatieve bytevoorbeelden met verwachtingen, zonder de adapter aan te roepen.
+Ook deze regressies zijn nog niet uitgevoerd.
 
 Zelfstandig prototype met een Nederlandstalige, responsive interface. De lokale
 PP-engine gebruikt de Python-standaardbibliotheek; geen externe lettertypen of
