@@ -162,6 +162,10 @@ De browser voert geen tests of uploads uit. De ingebouwde structuurindicatie
 kan dubbele JSON-sleutels niet betrouwbaar afwijzen; de Python-parser hierboven
 blijft het striktere controlecontract. De markeringen zijn alleen tijdelijk
 in het browsergeheugen; bewaren vereist een expliciete lokale download.
+De pure module `review_044_owner_index.py` kan de originele bytes van een
+technisch rapport en een eigenaarwerkblad vervolgens fail-closed koppelen tot
+een niet-ondertekende bewijsindex met twee SHA-256-vingerafdrukken. Die
+index bewijst geen herkomst, identiteit of bevoegdheid en blijft HOLD / DENY.
 
 Zelfstandig prototype met een Nederlandstalige, responsive interface. De lokale
 PP-engine gebruikt de Python-standaardbibliotheek; geen externe lettertypen of

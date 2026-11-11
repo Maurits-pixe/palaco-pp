@@ -154,6 +154,24 @@ niet; de striktere Python-parser is daarom normatief. Geen serverupload,
 runner-uitvoering, automatische goedkeuring of duurzame browseropslag.
 Status van deze interface: **DRAFT / NIET GETEST / HOLD / DENY**.
 
+### Bewijsindex voor technisch rapport en eigenaarwerkblad
+
+`review_044_owner_index.make_owner_evidence_index(technical_report, worksheet)`
+maakt uitsluitend na strikte inhoudelijke controle een lokale bewijsindex.
+Beide argumenten zijn de **originele bytes** van respectievelijk het
+synthetische technische rapport en het eigenaarwerkblad. De parser weigert
+onder andere dubbele JSON-sleutels, onbekende velden, gewijzigde hashes,
+verkeerde scenario-volgorde, verzonnen eigenaarprovenance en aangepaste
+HOLD/DENY-velden. Hij reconstrueert het eigenaarwerkblad volgens het
+bestaande contract, inclusief het onderscheid tussen ontbrekende en
+expliciet onbeoordeelde markeringen.
+
+De index vermeldt beide SHA-256-hashes en hoogstens
+`TWO_FILE_HASH_MATCH_UNTRUSTED`: de binding is een consistentieclaim,
+**geen herkomstbewijs**. Geen lokaal testprogramma wordt aangeroepen, geen
+server benaderd, geen identiteit vastgesteld en geen autorisatie verleend.
+Status: **DRAFT / NOT EXECUTED / HOLD / DENY**.
+
 | Fixture | Verwacht bij latere uitvoering | Risico dat wordt onderzocht |
 | --- | --- | --- |
 | `baseline_untrusted_hold` | `FOUR_FILE_HASH_MATCH_UNTRUSTED` | Correcte binding ≠ verificatie |
