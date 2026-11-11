@@ -87,6 +87,22 @@
       <p id="consumer-reference" class="reference"></p>
     </section>
 
+    <section id="recovery-panel" class="workspace recovery-panel" aria-labelledby="recovery-title" hidden>
+      <div class="section-heading">
+        <div><p class="eyebrow">PP-RECOVERY-002 / OVERDRACHT</p><h2 id="recovery-title">Jouw registratiedossier.</h2></div>
+        <span class="recovery-hold">AUTORISATIE / HOLD</span>
+      </div>
+      <p class="memory-intro">Een leesbare samenvatting van wat deze lokale P.P.-engine zelf heeft vastgelegd. Dit dossier bewijst geen wettelijke identiteit en geeft geen toegang tot PALACO ONE of andere diensten.</p>
+      <dl class="recovery-facts">
+        <div><dt>Account</dt><dd id="recovery-account"></dd></div>
+        <div><dt>Lokale registratie</dt><dd id="recovery-status"></dd></div>
+        <div><dt>Identiteitsverificatie</dt><dd>NIET GEVERIFIEERD</dd></div>
+        <div><dt>Uitgifte en toegang</dt><dd>HOLD / DENY</dd></div>
+      </dl>
+      <p class="auth-note">Het JSON-dossier bevat je gebruikersnaam, consumer-ID, eventuele P.P.-nummer en tijdstippen. Bewaar het privé. Een download verandert de registratie niet en dient uitsluitend voor jouw latere beoordeling.</p>
+      <button id="recovery-export" type="button" class="secondary">Download hersteloverzicht (.json)</button>
+    </section>
+
     <details id="history-panel" class="history-panel" hidden>
       <summary><span>ENGINEHISTORIE</span><span id="history-count" class="count">0 gebeurtenissen</span></summary>
       <ol id="history-events" class="history-events"></ol>

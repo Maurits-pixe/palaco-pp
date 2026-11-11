@@ -274,6 +274,7 @@ function renderAuth() {
   $("auth-panel").hidden = false;
   $("selection-panel").hidden = true;
   $("result-panel").hidden = true;
+  $("recovery-panel").hidden = true;
   $("history-panel").hidden = true;
   $("memory-panel").hidden = true;
   $("account-label").hidden = true;
@@ -313,6 +314,7 @@ async function load() {
     $("account-label").hidden = false;
     $("logout").hidden = false;
     current = await api("/api/pp/me");
+    renderRecovery();
     await loadMailStatus();
     if (current.status === "ACTIVE" || current.status === "REVOKED") {
       renderResult(current);
@@ -470,6 +472,7 @@ $("confirm-form").addEventListener("submit", async (event) => {
     $("confirm-dialog").close();
     $("retry").hidden = true;
     renderResult(current);
+    renderRecovery();
     await loadMailStatus();
     $("confirmation-email").value = "";
     $("result-title").setAttribute("tabindex", "-1");
@@ -495,6 +498,52 @@ $("copy").addEventListener("click", async () => {
     console.error(error);
     notice("Kopieren is niet gelukt. Je kunt het nummer hierboven handmatig selecteren.", true);
   }
+});
+function renderRecovery() {
+  if (!sessionState?.authenticated || !current) return;
+  $("recovery-account").textContent = sessionState.username;
+  $("recovery-status").textContent = {
+    NEW: "NEW / nog geen nummeropties",
+    OFFERED: "OFFERED / nog geen nummer gekozen",
+    ACTIVE: "ACTIVE / lokaal gekozen, niet officieel geverifieerd",
+    REVOKED: "REVOKED / lokaal ingetrokken",
+  }[current.status] || "UNKNOWN / controle vereist";
+  $("recovery-panel").hidden = false;
+}
+
+$("recovery-export").addEventListener("click", () => {
+  if (busy || !sessionState?.authenticated || !current ||
+      !["NEW", "OFFERED", "ACTIVE", "REVOKED"].includes(current.status)) return;
+  const dossier = {
+    schema: "palaco.phone.recovery.v1",
+    reference: "PP-RECOVERY-002",
+    generatedAt: new Date().toISOString(),
+    source: "LOCAL_PP_PROTOTYPE",
+    evidenceClass: "LOCAL_RECORD_SELF_EXPORTED_NOT_INDEPENDENTLY_VERIFIED",
+    account: { username: sessionState.username, consumerId: current.consumerId },
+    registration: {
+      status: current.status,
+      ppNumberId: current.ppNumberId || null,
+      ppNumber: current.ppNumber || null,
+      selectedAt: current.selectedAt || null,
+      revokedAt: current.revokedAt || null,
+    },
+    identityVerification: "NOT_VERIFIED",
+    authorization: "HOLD",
+    accessDecision: "DENY",
+    issuance: "NOT_AUTHORIZED",
+    note: "Geen bewijs van persoon, telecomactivatie of PALACO ONE-toegang.",
+  };
+  const url = URL.createObjectURL(new Blob([JSON.stringify(dossier, null, 2) + "\n"],
+    { type: "application/json" }));
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = "palaco-phone-hersteloverzicht.json";
+  document.body.append(anchor);
+  anchor.click();
+  anchor.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  notice("Hersteloverzicht aangeboden als download. Autorisatie blijft HOLD.");
 });
 $("retry").addEventListener("click", load);
 async function loadMailStatus() {

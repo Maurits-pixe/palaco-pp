@@ -1,5 +1,17 @@
 # PALACO Phone / lokaal prototype v0.7
 
+## PP-RECOVERY-002 / hersteldossier (bouwfase)
+
+Na aanmelden toont de consumentenpagina een afzonderlijk, alleen-lezen
+registratiedossier. De gebruiker kan zelf een JSON-overzicht downloaden met
+accountreferentie, lokale registratiestatus en bestaande keuze/tijdstippen.
+Er worden geen wachtwoorden, cookies, e-mailadressen, geheugenbanknotities of
+sessietokens geëxporteerd. Het overzicht is geen onafhankelijke verificatie:
+`identityVerification=NOT_VERIFIED`, `authorization=HOLD`,
+`accessDecision=DENY` en `issuance=NOT_AUTHORIZED` zijn vaste grenzen.
+De download schrijft niets naar de database en verbindt niets met PALACO ONE.
+Deze wijziging is nog niet getest; acceptatie blijft voor de eigenaar.
+
 Zelfstandig prototype met een Nederlandstalige, responsive interface. De lokale
 PP-engine gebruikt de Python-standaardbibliotheek; geen externe lettertypen of
 analytics. Python 3.11+ vereist. Optionele e-mail gebruikt een externe SMTP-provider;
