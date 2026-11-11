@@ -179,6 +179,22 @@ Deze browservergelijking kan dubbele JSON-sleutels niet afwijzen en is dus
 browseruitkomst `TWO_FILE_HASH_MATCH_UNTRUSTED` is uitsluitend indicatief;
 het bestand wordt niet verzonden of automatisch geregistreerd.
 
+### Lokaal drie-bestandendossier
+
+De pure functie `review_044_owner_dossier.assess_owner_dossier(
+technical_report, owner_worksheet, evidence_index)` accepteert uitsluitend
+de **drie originele bytebestanden**. De technische rapportcontrole en de
+eigenaarsmarkeringen worden opnieuw vanuit de bronnen beoordeeld; vervolgens
+wordt de verwachte bewijsindex opnieuw berekend en strikt vergeleken met
+het ingevoerde derde bestand. Dubbele JSON-sleutels, onbekende velden,
+afwijkende hashes en autorisatie-escalatie worden geweigerd.
+
+Een consistente dossierketen levert alleen
+`THREE_FILE_HASH_MATCH_UNTRUSTED` op. Dit bewijst geen bron, uitvoerende
+persoon, echte runtime-uitvoering of identiteit. Het dossier heeft geen
+databaseverbinding, testuitvoering, bestandsschrijfacties of bevoegdheid.
+**Status: DRAFT / NOT EXECUTED / HOLD / DENY.**
+
 | Fixture | Verwacht bij latere uitvoering | Risico dat wordt onderzocht |
 | --- | --- | --- |
 | `baseline_untrusted_hold` | `FOUR_FILE_HASH_MATCH_UNTRUSTED` | Correcte binding ≠ verificatie |

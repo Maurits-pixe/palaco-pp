@@ -172,6 +172,11 @@ uitsluitend een indicatieve browservergelijking maken en kan de bewijsindex
 downloaden. De browser weigert structurele mismatches, maar kan dubbele
 JSON-sleutels niet strikt detecteren; de Python-module blijft normatief.
 Er zijn geen uploads of automatische autorisatieacties.
+`review_044_owner_dossier.py` voegt een strikte offline drie-bestandencontrole
+toe: het oorspronkelijke technische rapport, het eigenaarwerkblad en de
+bewijsindex moeten inhoudelijk en via hun vingerafdrukken overeenkomen.
+De uitkomst is uitsluitend `THREE_FILE_HASH_MATCH_UNTRUSTED` en blijft
+NOT_VERIFIED / HOLD / DENY; er worden geen tests of runtimeacties gestart.
 
 Zelfstandig prototype met een Nederlandstalige, responsive interface. De lokale
 PP-engine gebruikt de Python-standaardbibliotheek; geen externe lettertypen of
