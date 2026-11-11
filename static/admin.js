@@ -63,6 +63,8 @@ let review044IndexSelectionVersion = 0;
 let review044IndexAssessment = null;
 let review044DossierSelectionVersion = 0;
 let review044DossierAssessment = null;
+let review044RegistryVersion = 0;
+let review044RegistryDraft = null;
 
 function exactFields(value, fields) {
   return value !== null && typeof value === "object" && !Array.isArray(value)
@@ -158,6 +160,12 @@ function clearReview() {
     "admin-review044-dossier-index"]) $(id).value = "";
   $("admin-review044-dossier-result").textContent = "Nog geen dossierbeoordeling. HOLD / DENY.";
   $("admin-review044-dossier-export").disabled = true;
+  review044RegistryVersion += 1;
+  review044RegistryDraft = null;
+  $("admin-review044-registry-file").value = "";
+  $("admin-review044-registry-add").disabled = true;
+  $("admin-review044-registry-export").disabled = true;
+  $("admin-review044-registry-result").textContent = "Geen registerversie voorbereid. HOLD / DENY.";
   $("admin-review044-scenario").selectedIndex = 0;
   $("admin-review044-observed").value = "NOT_OBSERVED";
   $("admin-review044-result").textContent = "Nog geen eigen waarnemingen vastgelegd. HOLD / DENY.";
@@ -1000,6 +1008,7 @@ function resetReview044Dossier(message = "Bestandskeuze gewijzigd; eerdere beoor
   review044DossierAssessment = null;
   $("admin-review044-dossier-export").disabled = true;
   $("admin-review044-dossier-result").textContent = message;
+  resetReview044Registry();
 }
 
 for (const id of ["admin-review044-dossier-tech", "admin-review044-dossier-owner",
@@ -1057,6 +1066,7 @@ $("admin-review044-dossier-check").addEventListener("click", async () => {
       accessDecision: "DENY", issuance: "NOT_AUTHORIZED",
     };
     $("admin-review044-dossier-export").disabled = false;
+    $("admin-review044-registry-add").disabled = false;
     output.textContent = "Drie bestanden consistent volgens de browserindicatie. Strikte Python-controle nog nodig; HOLD / DENY.";
   } catch (_error) {
     if (version !== review044DossierSelectionVersion || !authenticated) return;
@@ -1076,5 +1086,119 @@ $("admin-review044-dossier-export").addEventListener("click", () => {
   anchor.remove();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
   $("admin-review044-dossier-result").textContent = "Dossierbeoordeling als download aangeboden. Opslag zelf bevestigen. HOLD / DENY.";
+});
+
+function resetReview044Registry() {
+  review044RegistryVersion += 1;
+  review044RegistryDraft = null;
+  $("admin-review044-registry-export").disabled = true;
+  $("admin-review044-registry-add").disabled = !review044DossierAssessment;
+  $("admin-review044-registry-result").textContent = "Registerkeuze of dossier gewijzigd. Nieuwe beoordeling nodig. HOLD / DENY.";
+}
+
+$("admin-review044-registry-file").addEventListener("change", () => resetReview044Registry());
+
+const review044RegistryRequired = Object.freeze({
+  schema: "palaco.pp.review-044-owner-registry.v0", reference: "PP-RECOVERY-002",
+  verification: "NOT_VERIFIED", authorization: "HOLD", accessDecision: "DENY",
+});
+const review044RegistryRowFields = ["sequence", "previousEntrySha256", "entrySha256",
+  "technicalReportSha256", "ownerWorksheetSha256", "evidenceIndexSha256",
+  "binding", "evidenceKind", "verification", "authorization", "accessDecision", "issuance"];
+const review044RegistryRowRequired = Object.freeze({
+  binding: "THREE_FILE_HASH_MATCH_UNTRUSTED",
+  evidenceKind: "IMPORTED_UNATTESTED_LOCAL_DOSSIER", verification: "NOT_VERIFIED",
+  authorization: "HOLD", accessDecision: "DENY", issuance: "NOT_AUTHORIZED",
+});
+const isSha256Hex = (value) => typeof value === "string" && /^[0-9a-f]{64}$/.test(value);
+const review044Canonical = (value) => JSON.stringify(Object.fromEntries(
+  Object.keys(value).sort().map((key) => [key, value[key]])));
+async function review044Hash(bytes) {
+  const digest = new Uint8Array(await crypto.subtle.digest("SHA-256", bytes));
+  return [...digest].map((byte) => byte.toString(16).padStart(2, "0")).join("");
+}
+
+$("admin-review044-registry-add").addEventListener("click", async () => {
+  if (!authenticated || busy || !review044DossierAssessment) return;
+  resetReview044Registry();
+  const version = review044RegistryVersion;
+  const dossierVersion = review044DossierSelectionVersion;
+  const indexFile = $("admin-review044-dossier-index").files?.[0];
+  const registryFile = $("admin-review044-registry-file").files?.[0];
+  const output = $("admin-review044-registry-result");
+  if (!indexFile || (registryFile && (!registryFile.size || registryFile.size > 256 * 1024))) {
+    output.textContent = "Registerbestand ongeldig of dossierselectie ontbreekt. HOLD / DENY.";
+    return;
+  }
+  try {
+    const [indexBytes, registryBytes] = await Promise.all([
+      indexFile.arrayBuffer(), registryFile ? registryFile.arrayBuffer() : Promise.resolve(null),
+    ]);
+    if (version !== review044RegistryVersion || dossierVersion !== review044DossierSelectionVersion || !authenticated) return;
+    const decode = new TextDecoder("utf-8", { fatal: true });
+    const snapshot = registryBytes ? JSON.parse(decode.decode(registryBytes)) : {
+      ...review044RegistryRequired, entries: [],
+    };
+    if (!exactFields(snapshot, [...Object.keys(review044RegistryRequired), "entries"])
+      || Object.entries(review044RegistryRequired).some(([key, value]) => snapshot[key] !== value)
+      || !Array.isArray(snapshot.entries) || snapshot.entries.length >= 256) {
+      throw new Error("REGISTRY_HEADER_INVALID");
+    }
+    let previous = null;
+    const identities = new Set();
+    for (let i = 0; i < snapshot.entries.length; i += 1) {
+      const row = snapshot.entries[i];
+      if (!exactFields(row, review044RegistryRowFields)
+        || !Number.isInteger(row.sequence) || row.sequence !== i + 1
+        || row.previousEntrySha256 !== previous
+        || Object.entries(review044RegistryRowRequired).some(([key, value]) => row[key] !== value)
+        || ["entrySha256", "technicalReportSha256", "ownerWorksheetSha256",
+          "evidenceIndexSha256"].some((field) => !isSha256Hex(row[field]))) {
+        throw new Error("REGISTRY_ROW_INVALID");
+      }
+      const unsigned = Object.fromEntries(Object.entries(row).filter(([key]) => key !== "entrySha256"));
+      const actual = await review044Hash(new TextEncoder().encode(review044Canonical(unsigned)));
+      if (row.entrySha256 !== actual) throw new Error("REGISTRY_CHAIN_INVALID");
+      const identity = [row.technicalReportSha256, row.ownerWorksheetSha256, row.evidenceIndexSha256].join(":");
+      if (identities.has(identity)) throw new Error("REGISTRY_DUPLICATE");
+      identities.add(identity);
+      previous = row.entrySha256;
+    }
+    const assessment = review044DossierAssessment;
+    const indexDigest = await review044Hash(indexBytes);
+    if (version !== review044RegistryVersion || dossierVersion !== review044DossierSelectionVersion || !authenticated) return;
+    const identity = [assessment.technicalReportSha256, assessment.ownerWorksheetSha256, indexDigest].join(":");
+    if (identities.has(identity)) throw new Error("REGISTRY_DUPLICATE");
+    const newRow = {
+      sequence: snapshot.entries.length + 1, previousEntrySha256: previous,
+      technicalReportSha256: assessment.technicalReportSha256,
+      ownerWorksheetSha256: assessment.ownerWorksheetSha256,
+      evidenceIndexSha256: indexDigest, ...review044RegistryRowRequired,
+    };
+    newRow.entrySha256 = await review044Hash(new TextEncoder().encode(review044Canonical(newRow)));
+    if (version !== review044RegistryVersion || dossierVersion !== review044DossierSelectionVersion || !authenticated) return;
+    snapshot.entries.push(newRow);
+    const serialized = JSON.stringify(snapshot, null, 2) + "\n";
+    if (new TextEncoder().encode(serialized).length > 256 * 1024) throw new Error("REGISTRY_TOO_LARGE");
+    review044RegistryDraft = serialized;
+    $("admin-review044-registry-export").disabled = false;
+    output.textContent = `${snapshot.entries.length} lokale dossierverwijzing(en) voorbereid. Ongetekend en onvertrouwd; download vereist. HOLD / DENY.`;
+  } catch (_error) {
+    if (version !== review044RegistryVersion || !authenticated) return;
+    output.textContent = "REGISTER GEWEIGERD: schema, volgorde, hashketen of dubbele dossierverwijzing ongeldig. HOLD / DENY.";
+  }
+});
+
+$("admin-review044-registry-export").addEventListener("click", () => {
+  if (!authenticated || busy || !review044RegistryDraft) return;
+  const url = URL.createObjectURL(new Blob([review044RegistryDraft], { type: "application/json" }));
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = "palaco-pp-review-044-owner-registry-hold.json";
+  document.body.append(anchor);
+  anchor.click();
+  anchor.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  $("admin-review044-registry-result").textContent = "Registerversie als download aangeboden. Bevestig zelf de opslag. HOLD / DENY.";
 });
 action(loadSession);

@@ -187,6 +187,14 @@ append-only geordend JSON-registersnapshot met hashverwijzingen tussen
 dossierregels. De functie schrijft geen bestanden en voegt alleen een
 strikt gecontroleerd drie-bestandendossier toe. Hashketens zonder externe
 verankering bewijzen geen onveranderlijke geschiedenis of identiteit.
+Het backofficepaneel **Review 044 / lokaal bewijsregister** biedt dezelfde
+voorbereidende handeling in de browser: na de indicatieve dossierbeoordeling
+kan de eigenaar optioneel een eerder JSON-register kiezen, de interne
+hashketen op consistentie laten controleren, één dossierverwijzing toevoegen
+en de nieuwe versie downloaden. De vorige download wordt nooit overschreven;
+een nieuwe bestandskeuze maakt de voorbereide export ongeldig. Browsercontrole
+is niet normatief, detecteert geen dubbele JSON-sleutels en verleent geen
+bevoegdheid. Gebruik de Python-module voor de strikte beoordeling.
 
 Zelfstandig prototype met een Nederlandstalige, responsive interface. De lokale
 PP-engine gebruikt de Python-standaardbibliotheek; geen externe lettertypen of

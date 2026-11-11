@@ -222,6 +222,16 @@ dat eerdere bronbestanden destijds echt of onafhankelijk geverifieerd waren.
 Maximaal 256 verwijzingen en 256 KB per snapshot. Alle rijen blijven
 `NOT_VERIFIED / HOLD / DENY / NOT_AUTHORIZED`.
 
+Het lokale backofficepaneel **Review 044 / lokaal bewijsregister** maakt
+hiervan een downloadbare, browsermatig voorbereide versie. Na een indicatieve
+beoordeling van drie dossierbestanden kan een bestaand register worden
+geselecteerd; leeg betekent een nieuw register. Het paneel controleert de
+volgorde, vaste HOLD/DENY-velden, interne hashketen en dubbele
+dossierverwijzingen alvorens één rij toe te voegen. Het schrijft niets op de
+server en vervangt het vorige bestand niet. De browser kan dubbele sleutels
+in JSON niet betrouwbaar afwijzen en verifieert geen externe historie:
+`review_044_owner_registry.py` blijft het normatieve validatiecontract.
+
 Status: **DRAFT / NOT EXECUTED / HOLD / DENY**.
 
 | Fixture | Verwacht bij latere uitvoering | Risico dat wordt onderzocht |

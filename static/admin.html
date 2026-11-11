@@ -162,6 +162,17 @@
           <button id="admin-review044-dossier-export" type="button" class="secondary" disabled>Download dossierbeoordeling (.json)</button>
           <p class="auth-note">Geen serverupload, runner of wijziging van accountgegevens. Zelfs bij consistente bestanden blijft de betekenis uitsluitend UNTRUSTED / NOT_VERIFIED / HOLD / DENY.</p>
         </div>
+        <div class="admin-bundle-panel" aria-labelledby="admin-review044-registry-title">
+          <h3 id="admin-review044-registry-title">Review 044 / lokaal bewijsregister</h3>
+          <p class="auth-note">Beoordeel eerst hierboven de drie dossierbestanden. Kies daarna eventueel het eerder opgeslagen registersnapshot. Laat dit veld leeg om een nieuw register te beginnen. De browser wijzigt geen bestaand bestand: iedere uitbreiding moet opnieuw worden gedownload.</p>
+          <div class="admin-review-grid">
+            <div><label for="admin-review044-registry-file">Bestaand register (.json, optioneel, maximaal 256 KB)</label><input id="admin-review044-registry-file" type="file" accept=".json,application/json"></div>
+          </div>
+          <button id="admin-review044-registry-add" type="button" class="secondary" disabled>Bereid nieuwe registerversie voor</button>
+          <p id="admin-review044-registry-result" class="admin-review-result" role="status" aria-live="polite">Geen registerversie voorbereid. HOLD / DENY.</p>
+          <button id="admin-review044-registry-export" type="button" class="secondary" disabled>Download nieuw registersnapshot (.json)</button>
+          <p class="auth-note">Controleer vóór gebruik altijd het originele dossier met de striktere Python-module. Deze browserregistratie is indicatief en bevat geen tijds- of identiteitsbewijs. Geen serveropslag of autorisatie.</p>
+        </div>
       </section>
     </div>
     <p class="auth-note">Lokale beheerdersdemo. Geen productiebeveiliging, MFA of wachtwoordherstel. Bescherm de onversleutelde database.</p>
