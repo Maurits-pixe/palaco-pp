@@ -144,6 +144,16 @@ uitsluitend `SELF_REPORTED`. Het werkblad verwerkt geen namen,
 P.P.-nummers, vrije tekst of inloggegevens. De uitvoer blijft altijd
 `NOT_VERIFIED`/`HOLD`/`DENY` en start geen test of PALACO ONE-sessie.
 
+De bestaande lokale backoffice biedt hiervoor een aanvullend
+**Review 044 / eigenaarwerkblad technische preview**-paneel. Het leest
+een door de eigenaar gekozen technisch JSON-bestand (maximaal 32 KB),
+toont alleen een voorlopige structuurindicatie, verzamelt de drie
+toegelaten markeringen per scenario en biedt het werkblad als lokale
+JSON-download aan. De browser-JSON-parser detecteert dubbele sleutels
+niet; de striktere Python-parser is daarom normatief. Geen serverupload,
+runner-uitvoering, automatische goedkeuring of duurzame browseropslag.
+Status van deze interface: **DRAFT / NIET GETEST / HOLD / DENY**.
+
 | Fixture | Verwacht bij latere uitvoering | Risico dat wordt onderzocht |
 | --- | --- | --- |
 | `baseline_untrusted_hold` | `FOUR_FILE_HASH_MATCH_UNTRUSTED` | Correcte binding ≠ verificatie |

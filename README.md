@@ -155,6 +155,13 @@ uitvoering, identiteit of autorisatie bevestigen.
 eigenaarwerkblad opstellen dat de ingevoerde technische rapportbytes met
 SHA-256 identificeert. Dit is geen authenticiteitsbewijs en geeft nooit
 autorisatie vrij.
+De lokale backoffice bevat nu tevens een Review 044-eigenaarwerkbladpaneel:
+selecteer een bestaand synthetisch technisch JSON-rapport, leg per 13 scenario's
+een eigenaarsmarkering vast en download een niet-ondertekend HOLD-werkblad.
+De browser voert geen tests of uploads uit. De ingebouwde structuurindicatie
+kan dubbele JSON-sleutels niet betrouwbaar afwijzen; de Python-parser hierboven
+blijft het striktere controlecontract. De markeringen zijn alleen tijdelijk
+in het browsergeheugen; bewaren vereist een expliciete lokale download.
 
 Zelfstandig prototype met een Nederlandstalige, responsive interface. De lokale
 PP-engine gebruikt de Python-standaardbibliotheek; geen externe lettertypen of

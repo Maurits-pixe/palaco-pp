@@ -120,6 +120,23 @@
           <button id="admin-review044-export" type="button" class="secondary" disabled>Download mijn Review 044-zelfrapport (.json)</button>
           <p class="auth-note">Geen persoonsnamen, P.P.-nummers of vrije notities opnemen. Een overeenkomst met de verwachting is slechts MATCH_CLAIMED, nooit een onafhankelijke PASS.</p>
         </div>
+        <div class="admin-bundle-panel" aria-labelledby="admin-review044-owner-title">
+          <h3 id="admin-review044-owner-title">Review 044 / eigenaarwerkblad technische preview</h3>
+          <p class="auth-note">Selecteer lokaal een reeds bestaand synthetisch technisch rapport. Dit paneel start geen runner, voert geen tests uit en verstuurt geen bestanden. De browser controleert alleen indicatief de structuur; de striktere Python-beoordelaar blijft leidend, onder meer voor dubbele JSON-sleutels.</p>
+          <div class="admin-review-grid">
+            <div><label for="admin-review044-tech-file">Technisch rapport (.json, maximaal 32 KB)</label><input id="admin-review044-tech-file" type="file" accept=".json,application/json"></div>
+            <div><label for="admin-review044-owner-scenario">Technisch scenario (13)</label><select id="admin-review044-owner-scenario"></select></div>
+            <div><label for="admin-review044-owner-mark">Mijn markering</label><select id="admin-review044-owner-mark">
+              <option value="NOT_REVIEWED">Nog niet beoordeeld</option>
+              <option value="OBSERVED_AS_REPORTED">Waargenomen zoals gerapporteerd</option>
+              <option value="DISCREPANCY_REPORTED">Afwijking door mij gerapporteerd</option>
+            </select></div>
+          </div>
+          <p id="admin-review044-tech-status" class="admin-review-result" role="status" aria-live="polite">Geen lokaal technisch rapport geladen. HOLD / DENY.</p>
+          <button id="admin-review044-owner-record" type="button" class="secondary" disabled>Leg eigenaarsmarkering vast</button>
+          <button id="admin-review044-owner-export" type="button" class="secondary" disabled>Download eigenaarwerkblad (.json)</button>
+          <p class="auth-note">Een SHA-256-vingerafdruk bindt het werkblad aan bestandsbytes, niet aan een betrouwbare herkomst. Geen onafhankelijke verificatie, identiteitsbinding, autorisatie of uitgifte: HOLD / DENY.</p>
+        </div>
       </section>
     </div>
     <p class="auth-note">Lokale beheerdersdemo. Geen productiebeveiliging, MFA of wachtwoordherstel. Bescherm de onversleutelde database.</p>

@@ -37,6 +37,83 @@ const review044Expectations = Object.freeze({
   observation_oversized: "PP_CHAIN_INVALID",
 });
 const review044Observations = new Map();
+const review044TechnicalExpectations = Object.freeze({
+  baseline_unobserved_hold: "HOLD_DENY_PREVIEW",
+  baseline_self_reported_hold: "HOLD_DENY_PREVIEW",
+  time_missing_z: "PP_REVIEW_044_PREVIEW_INVALID",
+  time_noncanonical_offset: "PP_REVIEW_044_PREVIEW_INVALID",
+  time_impossible_date: "PP_REVIEW_044_PREVIEW_INVALID",
+  time_missing_milliseconds: "PP_REVIEW_044_PREVIEW_INVALID",
+  authority_escalation: "PP_REVIEW_044_PREVIEW_INVALID",
+  verification_escalation: "PP_REVIEW_044_PREVIEW_INVALID",
+  observation_after_report: "PP_REVIEW_044_PREVIEW_INVALID",
+  forged_pass_label: "PP_REVIEW_044_PREVIEW_INVALID",
+  missing_provenance: "PP_REVIEW_044_PREVIEW_INVALID",
+  duplicate_json_key: "PP_REVIEW_044_PREVIEW_INVALID",
+  oversized_report: "PP_REVIEW_044_PREVIEW_INVALID",
+});
+const review044TechnicalResults = new Set([
+  "HOLD_DENY_PREVIEW", "PP_REVIEW_044_PREVIEW_INVALID",
+  "UNEXPECTED_AUTHORITY_STATE", "UNEXPECTED_ERROR",
+]);
+const review044OwnerMarks = new Map();
+let review044TechnicalAssessment = null;
+let review044TechnicalSelectionVersion = 0;
+
+function exactFields(value, fields) {
+  return value !== null && typeof value === "object" && !Array.isArray(value)
+    && Object.keys(value).length === fields.length
+    && fields.every((field) => Object.hasOwn(value, field));
+}
+
+// Browser-only structural indication; JSON.parse does not reject duplicate keys.
+// review_044_preview_assessment.py remains the stricter normative parser.
+function assessReview044TechnicalBrowserReport(report) {
+  const topFields = ["schema", "reference", "scope", "observations", "verification",
+    "reviewDecision", "authorization", "accessDecision", "issuance"];
+  const requirements = {
+    schema: "palaco.pp.review-044-preview-technical-report.v0",
+    reference: "PP-RECOVERY-002", scope: "SYNTHETIC_OFFLINE_ONLY",
+    verification: "NOT_INDEPENDENTLY_VERIFIED", reviewDecision: "PENDING_OWNER_REVIEW",
+    authorization: "HOLD", accessDecision: "DENY", issuance: "NOT_AUTHORIZED",
+  };
+  if (!exactFields(report, topFields)
+    || Object.entries(requirements).some(([key, value]) => report[key] !== value)) {
+    throw new Error("TECHNICAL_STRUCTURE_INVALID");
+  }
+  const scenarios = Object.entries(review044TechnicalExpectations);
+  if (!Array.isArray(report.observations) || report.observations.length !== scenarios.length) {
+    throw new Error("TECHNICAL_SCENARIOS_INVALID");
+  }
+  let mismatches = 0;
+  const rowFields = ["scenario_id", "expected_result", "observed_result", "comparison",
+    "evidence_kind", "authorization", "accessDecision"];
+  for (let i = 0; i < scenarios.length; i += 1) {
+    const [name, expected] = scenarios[i];
+    const row = report.observations[i];
+    if (!exactFields(row, rowFields) || row.scenario_id !== name
+      || row.expected_result !== expected || !review044TechnicalResults.has(row.observed_result)
+      || row.evidence_kind !== "SYNTHETIC_AUTOMATED_LOCAL_EXECUTION"
+      || row.authorization !== "HOLD" || row.accessDecision !== "DENY"
+      || row.comparison !== (row.observed_result === expected ? "MATCH" : "MISMATCH")) {
+      throw new Error("TECHNICAL_ROW_INVALID");
+    }
+    if (row.comparison === "MISMATCH") mismatches += 1;
+  }
+  return mismatches === 0 ? "ALL_MATCH_CLAIMED" : "MISMATCH_CLAIMED";
+}
+
+function downloadReview044OwnerJson(report) {
+  const url = URL.createObjectURL(new Blob([JSON.stringify(report, null, 2) + "\n"],
+    { type: "application/json" }));
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = "palaco-pp-review-044-owner-worksheet-hold.json";
+  document.body.append(anchor);
+  anchor.click();
+  anchor.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
 
 function clearReview() {
   reviewAssessment = null;
@@ -56,6 +133,15 @@ function clearReview() {
   $("admin-chain-result").textContent = "Geen ketencontrole uitgevoerd. HOLD / DENY.";
   $("admin-chain-export").disabled = true;
   review044Observations.clear();
+  review044TechnicalSelectionVersion += 1;
+  review044TechnicalAssessment = null;
+  review044OwnerMarks.clear();
+  $("admin-review044-tech-file").value = "";
+  $("admin-review044-owner-scenario").selectedIndex = 0;
+  $("admin-review044-owner-mark").value = "NOT_REVIEWED";
+  $("admin-review044-tech-status").textContent = "Geen lokaal technisch rapport geladen. HOLD / DENY.";
+  $("admin-review044-owner-record").disabled = true;
+  $("admin-review044-owner-export").disabled = true;
   $("admin-review044-scenario").selectedIndex = 0;
   $("admin-review044-observed").value = "NOT_OBSERVED";
   $("admin-review044-result").textContent = "Nog geen eigen waarnemingen vastgelegd. HOLD / DENY.";
@@ -700,5 +786,85 @@ $("admin-review044-export").addEventListener("click", () => {
   anchor.remove();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
   $("admin-review044-result").textContent = "Zelfrapport aangeboden als lokale download. Controleer of het bestand is opgeslagen; HOLD / DENY.";
+});
+
+for (const scenario of Object.keys(review044TechnicalExpectations)) {
+  const option = document.createElement("option");
+  option.value = scenario;
+  option.textContent = scenario.replaceAll("_", " ");
+  $("admin-review044-owner-scenario").append(option);
+}
+
+$("admin-review044-tech-file").addEventListener("change", async () => {
+  const version = ++review044TechnicalSelectionVersion;
+  const file = $("admin-review044-tech-file").files?.[0];
+  review044TechnicalAssessment = null;
+  review044OwnerMarks.clear();
+  $("admin-review044-owner-mark").value = "NOT_REVIEWED";
+  $("admin-review044-owner-record").disabled = true;
+  $("admin-review044-owner-export").disabled = true;
+  const output = $("admin-review044-tech-status");
+  output.textContent = "Bestand lokaal lezen; geen verificatie. HOLD / DENY.";
+  if (!authenticated || !file || file.size === 0 || file.size > 32 * 1024) {
+    output.textContent = "Geen geldig bestand gekozen (maximaal 32 KB). HOLD / DENY.";
+    return;
+  }
+  try {
+    const bytes = await file.arrayBuffer();
+    if (version !== review044TechnicalSelectionVersion || !authenticated) return;
+    const decoded = new TextDecoder("utf-8", { fatal: true }).decode(bytes);
+    const comparison = assessReview044TechnicalBrowserReport(JSON.parse(decoded));
+    const hashBytes = new Uint8Array(await crypto.subtle.digest("SHA-256", bytes));
+    if (version !== review044TechnicalSelectionVersion || !authenticated) return;
+    const digest = [...hashBytes].map((byte) => byte.toString(16).padStart(2, "0")).join("");
+    review044TechnicalAssessment = { digest, comparison };
+    $("admin-review044-owner-record").disabled = false;
+    $("admin-review044-owner-export").disabled = false;
+    output.textContent = `13 scenario's structureel herkenbaar. ${comparison}. Alleen browserindicatie; dubbele JSON-sleutels worden hier niet gecontroleerd. HOLD / DENY.`;
+  } catch (_error) {
+    if (version !== review044TechnicalSelectionVersion || !authenticated) return;
+    output.textContent = "Technisch bestand niet bruikbaar voor dit werkblad. Controleer later met de strengere Python-beoordelaar. HOLD / DENY.";
+  }
+});
+
+$("admin-review044-owner-scenario").addEventListener("change", () => {
+  const mark = review044OwnerMarks.get($("admin-review044-owner-scenario").value);
+  $("admin-review044-owner-mark").value = mark || "NOT_REVIEWED";
+});
+
+$("admin-review044-owner-record").addEventListener("click", () => {
+  if (!authenticated || busy || !review044TechnicalAssessment) return;
+  const scenario = $("admin-review044-owner-scenario").value;
+  const mark = $("admin-review044-owner-mark").value;
+  if (!Object.hasOwn(review044TechnicalExpectations, scenario)
+    || !["NOT_REVIEWED", "OBSERVED_AS_REPORTED", "DISCREPANCY_REPORTED"].includes(mark)) return;
+  review044OwnerMarks.set(scenario, mark);
+  const reviewed = [...review044OwnerMarks.values()].filter((value) => value !== "NOT_REVIEWED").length;
+  $("admin-review044-tech-status").textContent = `${reviewed} van 13 scenario's door eigenaar gemarkeerd; uitsluitend SELF_REPORTED. HOLD / DENY.`;
+});
+
+$("admin-review044-owner-export").addEventListener("click", () => {
+  if (!authenticated || busy || !review044TechnicalAssessment) return;
+  const rows = Object.keys(review044TechnicalExpectations).map((name) => ({
+    scenario_id: name,
+    owner_mark: review044OwnerMarks.get(name) || "NOT_REVIEWED",
+    evidence_kind: review044OwnerMarks.has(name) ? "SELF_REPORTED" : "NO_OBSERVATION",
+  }));
+  const report = {
+    schema: "palaco.pp.review-044-owner-worksheet.v0",
+    reference: "PP-RECOVERY-002",
+    technicalReportSha256: review044TechnicalAssessment.digest,
+    sourceTrust: "IMPORTED_UNATTESTED_TECHNICAL_REPORT",
+    technicalComparison: review044TechnicalAssessment.comparison,
+    executionProvenance: "NOT_INDEPENDENTLY_ESTABLISHED",
+    ownerMarks: rows,
+    ownerMarkedCount: rows.filter((row) => row.owner_mark !== "NOT_REVIEWED").length,
+    ownerDiscrepancyCount: rows.filter((row) => row.owner_mark === "DISCREPANCY_REPORTED").length,
+    independentVerification: "NOT_VERIFIED", reviewDecision: "HOLD",
+    identityBinding: "NOT_ESTABLISHED", authorization: "HOLD",
+    accessDecision: "DENY", issuance: "NOT_AUTHORIZED",
+  };
+  downloadReview044OwnerJson(report);
+  $("admin-review044-tech-status").textContent = "Werkblad als lokale download aangeboden. Controleer zelf of het is opgeslagen. HOLD / DENY.";
 });
 action(loadSession);
