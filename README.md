@@ -33,6 +33,16 @@ behandelen. Status `PENDING_HUMAN_REVIEW`, `NOT_VERIFIED`, `HOLD`, `DENY`,
 uitgifte. Een toekomstig PALACO ONE-importcontract dient eigen server-side
 authenticatie, bronbewijs en onafhankelijke beslisregels toe te voegen.
 
+### Ontvangende contractgrens (alleen-lezen, DRAFT)
+
+`review_handoff.py` biedt `parse_review_handoff(raw: bytes)` voor een toekomstige
+handmatige beoordelingsroute. De parser weigert onbekende velden, onjuiste
+statusovergangen, tijdstempels zonder tijdzone, ongeldige ID's en pakketten
+groter dan 16 KiB. Een structurele controle levert uitsluitend
+`STRUCTURE_ACCEPTED_UNTRUSTED` met onveranderlijk `HOLD`/`DENY` terug.
+De validator heeft geen database-, netwerk-, login-, import- of schrijfrechten.
+Er is geen API-route die inkomende gegevens toepast. Deze bouwfase is ongetest.
+
 Zelfstandig prototype met een Nederlandstalige, responsive interface. De lokale
 PP-engine gebruikt de Python-standaardbibliotheek; geen externe lettertypen of
 analytics. Python 3.11+ vereist. Optionele e-mail gebruikt een externe SMTP-provider;
