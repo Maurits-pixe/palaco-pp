@@ -240,6 +240,11 @@ alle drie bronhashes, de eigen entry-hash, de voorgangerhash en het nummer
 zijn volledig leesbaar. De laatst toegevoegde rij wordt aanvankelijk
 geselecteerd; een ander volgnummer is aanklikbaar. De onafhankelijke
 verificatiestatus blijft uitdrukkelijk `NOT_VERIFIED`.
+Het paneel biedt een downloadbaar `palaco.pp.review-044-registry-row-inspection.v0`
+JSON-inspectierapport voor precies de geselecteerde regel. Het bevat geen
+automatisch ingevuld tijdstip, handtekening, zelfstandig authenticiteitsbewijs
+of productieautoriteit. Bij register- of dossierwijziging wordt een eerdere
+selectie en de bijbehorende exportmogelijkheid onmiddellijk ingetrokken.
 
 Status: **DRAFT / NOT EXECUTED / HOLD / DENY**.
 

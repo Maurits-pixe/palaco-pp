@@ -203,6 +203,11 @@ Via het volgnummer van een rij kan de eigenaar nu ook een inspectiepaneel
 openen met alle drie de volledige bronhashes, de entry-hash en de hash van
 de voorganger. Het paneel onderscheidt interne consistentie expliciet van
 `NOT_VERIFIED` en behoudt `HOLD / DENY / NOT_AUTHORIZED`.
+Een geselecteerde rij kan als afzonderlijk JSON-inspectierapport worden
+gedownload. Het bevat alle volledige hashes, volgnummer, voorgangerbinding,
+de beperkte browserconsistentie-indicatie en expliciete beperkingen van
+herkomst-, tijds-, historie- en identiteitsbewijs. De download is geen
+attestatie en wijzigt het oorspronkelijke register niet.
 
 Zelfstandig prototype met een Nederlandstalige, responsive interface. De lokale
 PP-engine gebruikt de Python-standaardbibliotheek; geen externe lettertypen of

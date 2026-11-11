@@ -65,6 +65,7 @@ let review044DossierSelectionVersion = 0;
 let review044DossierAssessment = null;
 let review044RegistryVersion = 0;
 let review044RegistryDraft = null;
+let selectedReview044RegistryRow = null;
 
 function exactFields(value, fields) {
   return value !== null && typeof value === "object" && !Array.isArray(value)
@@ -162,6 +163,7 @@ function clearReview() {
   $("admin-review044-dossier-export").disabled = true;
   review044RegistryVersion += 1;
   review044RegistryDraft = null;
+  selectedReview044RegistryRow = null;
   $("admin-review044-registry-file").value = "";
   $("admin-review044-registry-add").disabled = true;
   $("admin-review044-registry-export").disabled = true;
@@ -169,6 +171,8 @@ function clearReview() {
   $("admin-review044-registry-rows").replaceChildren();
   $("admin-review044-registry-overview").hidden = true;
   $("admin-review044-registry-inspector").hidden = true;
+  $("admin-review044-inspect-export").disabled = true;
+  $("admin-review044-inspect-result").textContent = "Geen inspectierapport geselecteerd.";
   $("admin-review044-scenario").selectedIndex = 0;
   $("admin-review044-observed").value = "NOT_OBSERVED";
   $("admin-review044-result").textContent = "Nog geen eigen waarnemingen vastgelegd. HOLD / DENY.";
@@ -1094,15 +1098,20 @@ $("admin-review044-dossier-export").addEventListener("click", () => {
 function resetReview044Registry() {
   review044RegistryVersion += 1;
   review044RegistryDraft = null;
+  selectedReview044RegistryRow = null;
   $("admin-review044-registry-export").disabled = true;
   $("admin-review044-registry-add").disabled = !review044DossierAssessment;
   $("admin-review044-registry-result").textContent = "Registerkeuze of dossier gewijzigd. Nieuwe beoordeling nodig. HOLD / DENY.";
   $("admin-review044-registry-rows").replaceChildren();
   $("admin-review044-registry-overview").hidden = true;
   $("admin-review044-registry-inspector").hidden = true;
+  $("admin-review044-inspect-export").disabled = true;
+  $("admin-review044-inspect-result").textContent = "Geen inspectierapport geselecteerd.";
 }
 
 function inspectReview044RegistryRow(row) {
+  if (!review044RegistryDraft) return;
+  selectedReview044RegistryRow = { ...row };
   const fields = {
     sequence: String(row.sequence), technical: row.technicalReportSha256,
     owner: row.ownerWorksheetSha256, index: row.evidenceIndexSha256,
@@ -1112,7 +1121,44 @@ function inspectReview044RegistryRow(row) {
     $("admin-review044-inspect-" + key).textContent = value;
   }
   $("admin-review044-registry-inspector").hidden = false;
+  $("admin-review044-inspect-export").disabled = false;
+  $("admin-review044-inspect-result").textContent = "Inspectierapport lokaal beschikbaar; opslag nog niet bevestigd. HOLD / DENY.";
 }
+
+$("admin-review044-inspect-export").addEventListener("click", () => {
+  if (!authenticated || busy || !review044RegistryDraft || !selectedReview044RegistryRow) return;
+  const row = selectedReview044RegistryRow;
+  const report = {
+    schema: "palaco.pp.review-044-registry-row-inspection.v0",
+    reference: "PP-RECOVERY-002",
+    sourceRegistrySchema: "palaco.pp.review-044-owner-registry.v0",
+    sequence: row.sequence,
+    technicalReportSha256: row.technicalReportSha256,
+    ownerWorksheetSha256: row.ownerWorksheetSha256,
+    evidenceIndexSha256: row.evidenceIndexSha256,
+    entrySha256: row.entrySha256,
+    previousEntrySha256: row.previousEntrySha256,
+    internalConsistency: "BROWSER_INDICATED_CHAIN_CONSISTENT",
+    evidenceKind: "IMPORTED_UNATTESTED_LOCAL_DOSSIER",
+    independentVerification: "NOT_VERIFIED",
+    historicalImmutability: "NOT_ESTABLISHED",
+    identityBinding: "NOT_ESTABLISHED",
+    executionProvenance: "NOT_INDEPENDENTLY_ESTABLISHED",
+    authorization: "HOLD",
+    accessDecision: "DENY",
+    issuance: "NOT_AUTHORIZED",
+    limitations: "No external attestation, source authenticity, historical integrity, clock or identity proof; Python validation required.",
+  };
+  const url = URL.createObjectURL(new Blob([JSON.stringify(report, null, 2) + "\n"], { type: "application/json" }));
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = `palaco-pp-review-044-inspection-${row.sequence}-hold.json`;
+  document.body.append(anchor);
+  anchor.click();
+  anchor.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  $("admin-review044-inspect-result").textContent = "Inspectierapport als download aangeboden; opslag zelf bevestigen. HOLD / DENY.";
+});
 
 function showReview044RegistryRows(rows) {
   const body = $("admin-review044-registry-rows");
