@@ -177,6 +177,20 @@
               <thead><tr><th>Volgnummer</th><th>Dossierhash</th><th>Ketenverwijzing</th><th>Herkomstcontrole</th><th>Besluit</th></tr></thead>
               <tbody id="admin-review044-registry-rows"></tbody>
             </table></div>
+            <section id="admin-review044-registry-inspector" class="admin-registry-inspector" aria-labelledby="admin-review044-registry-inspector-title" hidden>
+              <h4 id="admin-review044-registry-inspector-title">Geselecteerde dossierregel</h4>
+              <dl>
+                <dt>Volgnummer</dt><dd id="admin-review044-inspect-sequence"></dd>
+                <dt>Technisch rapport — SHA-256</dt><dd id="admin-review044-inspect-technical"></dd>
+                <dt>Eigenaarwerkblad — SHA-256</dt><dd id="admin-review044-inspect-owner"></dd>
+                <dt>Bewijsindex — SHA-256</dt><dd id="admin-review044-inspect-index"></dd>
+                <dt>Eigen registerregel — SHA-256</dt><dd id="admin-review044-inspect-entry"></dd>
+                <dt>Voorganger — SHA-256</dt><dd id="admin-review044-inspect-previous"></dd>
+                <dt>Technische beoordeling</dt><dd>INTERN CONSISTENT BINNEN DIT SNAPSHOT (browserindicatie)</dd>
+                <dt>Onafhankelijke verificatie</dt><dd>NOT_VERIFIED — geen herkomst-, tijds- of identiteitsbewijs</dd>
+                <dt>Autorisatie / toegang / uitgifte</dt><dd>HOLD / DENY / NOT_AUTHORIZED</dd>
+              </dl>
+            </section>
           </div>
           <button id="admin-review044-registry-export" type="button" class="secondary" disabled>Download nieuw registersnapshot (.json)</button>
           <p class="auth-note">Controleer vóór gebruik altijd het originele dossier met de striktere Python-module. Deze browserregistratie is indicatief en bevat geen tijds- of identiteitsbewijs. Geen serveropslag of autorisatie.</p>

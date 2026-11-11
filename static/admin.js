@@ -168,6 +168,7 @@ function clearReview() {
   $("admin-review044-registry-result").textContent = "Geen registerversie voorbereid. HOLD / DENY.";
   $("admin-review044-registry-rows").replaceChildren();
   $("admin-review044-registry-overview").hidden = true;
+  $("admin-review044-registry-inspector").hidden = true;
   $("admin-review044-scenario").selectedIndex = 0;
   $("admin-review044-observed").value = "NOT_OBSERVED";
   $("admin-review044-result").textContent = "Nog geen eigen waarnemingen vastgelegd. HOLD / DENY.";
@@ -1098,6 +1099,19 @@ function resetReview044Registry() {
   $("admin-review044-registry-result").textContent = "Registerkeuze of dossier gewijzigd. Nieuwe beoordeling nodig. HOLD / DENY.";
   $("admin-review044-registry-rows").replaceChildren();
   $("admin-review044-registry-overview").hidden = true;
+  $("admin-review044-registry-inspector").hidden = true;
+}
+
+function inspectReview044RegistryRow(row) {
+  const fields = {
+    sequence: String(row.sequence), technical: row.technicalReportSha256,
+    owner: row.ownerWorksheetSha256, index: row.evidenceIndexSha256,
+    entry: row.entrySha256, previous: row.previousEntrySha256 ?? "BEGIN (geen voorganger)",
+  };
+  for (const [key, value] of Object.entries(fields)) {
+    $("admin-review044-inspect-" + key).textContent = value;
+  }
+  $("admin-review044-registry-inspector").hidden = false;
 }
 
 function showReview044RegistryRows(rows) {
@@ -1112,14 +1126,25 @@ function showReview044RegistryRows(rows) {
       "INTERN CONSISTENT · NIET GEVERIFIEERD",
       "HOLD / DENY",
     ];
-    for (const value of cells) {
+    for (const [index, value] of cells.entries()) {
       const td = document.createElement("td");
-      td.textContent = value;
+      if (index === 0) {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "admin-registry-select";
+        button.textContent = value;
+        button.setAttribute("aria-label", `Inspecteer dossierregel ${row.sequence}`);
+        button.addEventListener("click", () => inspectReview044RegistryRow(row));
+        td.append(button);
+      } else {
+        td.textContent = value;
+      }
       tr.append(td);
     }
     body.append(tr);
   }
   $("admin-review044-registry-overview").hidden = false;
+  inspectReview044RegistryRow(rows[rows.length - 1]);
 }
 
 $("admin-review044-registry-file").addEventListener("change", () => resetReview044Registry());

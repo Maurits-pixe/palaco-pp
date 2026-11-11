@@ -199,6 +199,10 @@ Na een consistente voorbereiding toont de backoffice een scrollbaar overzicht
 met dossiernummer, verkorte entry- en voorgangerhash, indicatieve
 consistentiemarkering en ongewijzigde HOLD/DENY-beslissing. Bij een wijziging
 van het dossier of register verdwijnt dit overzicht meteen.
+Via het volgnummer van een rij kan de eigenaar nu ook een inspectiepaneel
+openen met alle drie de volledige bronhashes, de entry-hash en de hash van
+de voorganger. Het paneel onderscheidt interne consistentie expliciet van
+`NOT_VERIFIED` en behoudt `HOLD / DENY / NOT_AUTHORIZED`.
 
 Zelfstandig prototype met een Nederlandstalige, responsive interface. De lokale
 PP-engine gebruikt de Python-standaardbibliotheek; geen externe lettertypen of

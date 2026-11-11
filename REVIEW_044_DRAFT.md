@@ -235,6 +235,11 @@ Het voorbereide snapshot wordt in een scrollbare tabel samengevat met
 volgnummer, verkorte entry-hash, voorgangerhash en de vaste HOLD/DENY-status.
 Bij bestandswissel wordt het oude overzicht gewist. De term
 `INTERN CONSISTENT` is geen externe authenticiteitsverklaring.
+Een geselecteerde rij krijgt daarnaast een uitsluitend lokaal inspectiepaneel:
+alle drie bronhashes, de eigen entry-hash, de voorgangerhash en het nummer
+zijn volledig leesbaar. De laatst toegevoegde rij wordt aanvankelijk
+geselecteerd; een ander volgnummer is aanklikbaar. De onafhankelijke
+verificatiestatus blijft uitdrukkelijk `NOT_VERIFIED`.
 
 Status: **DRAFT / NOT EXECUTED / HOLD / DENY**.
 
