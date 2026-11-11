@@ -149,6 +149,19 @@
           <button id="admin-review044-index-export" type="button" class="secondary" disabled>Download bewijsindex (.json)</button>
           <p class="auth-note">De browser kan dubbele JSON-sleutels niet betrouwbaar afwijzen. Ook een overeenkomende index is géén herkomst-, identiteits- of bevoegdheidsbewijs. Geen upload, testuitvoering of uitgifte.</p>
         </div>
+        <div class="admin-bundle-panel" aria-labelledby="admin-review044-dossier-title">
+          <h3 id="admin-review044-dossier-title">Review 044 / lokaal drie-bestandendossier</h3>
+          <p class="auth-note">Kies afzonderlijk de drie originele JSON-bestanden. Dit scherm vergelijkt alleen structuur, inhoud en hashes. De striktere Python-beoordeling <code>review_044_owner_dossier.py</code> blijft leidend, onder meer voor dubbele JSON-sleutels.</p>
+          <div class="admin-review-grid">
+            <div><label for="admin-review044-dossier-tech">1. Technisch rapport (maximaal 32 KB)</label><input id="admin-review044-dossier-tech" type="file" accept=".json,application/json"></div>
+            <div><label for="admin-review044-dossier-owner">2. Eigenaarwerkblad (maximaal 32 KB)</label><input id="admin-review044-dossier-owner" type="file" accept=".json,application/json"></div>
+            <div><label for="admin-review044-dossier-index">3. Bewijsindex (maximaal 16 KB)</label><input id="admin-review044-dossier-index" type="file" accept=".json,application/json"></div>
+          </div>
+          <button id="admin-review044-dossier-check" type="button" class="secondary">Beoordeel drie bestanden lokaal</button>
+          <p id="admin-review044-dossier-result" class="admin-review-result" role="status" aria-live="polite">Nog geen dossierbeoordeling. HOLD / DENY.</p>
+          <button id="admin-review044-dossier-export" type="button" class="secondary" disabled>Download dossierbeoordeling (.json)</button>
+          <p class="auth-note">Geen serverupload, runner of wijziging van accountgegevens. Zelfs bij consistente bestanden blijft de betekenis uitsluitend UNTRUSTED / NOT_VERIFIED / HOLD / DENY.</p>
+        </div>
       </section>
     </div>
     <p class="auth-note">Lokale beheerdersdemo. Geen productiebeveiliging, MFA of wachtwoordherstel. Bescherm de onversleutelde database.</p>

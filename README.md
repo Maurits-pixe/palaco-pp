@@ -177,6 +177,11 @@ toe: het oorspronkelijke technische rapport, het eigenaarwerkblad en de
 bewijsindex moeten inhoudelijk en via hun vingerafdrukken overeenkomen.
 De uitkomst is uitsluitend `THREE_FILE_HASH_MATCH_UNTRUSTED` en blijft
 NOT_VERIFIED / HOLD / DENY; er worden geen tests of runtimeacties gestart.
+De backoffice bevat ook een apart drie-bestandenpaneel: technische rapportbytes,
+eigenaarswerkbladbytes en bewijsindexbytes worden uitsluitend lokaal gelezen.
+Na een indicatieve browservergelijking kan een niet-ondertekend dossierresultaat
+worden gedownload. De Python-dossierbeoordelaar blijft het striktere contract,
+omdat de browser geen dubbele JSON-sleutels kan uitsluiten.
 
 Zelfstandig prototype met een Nederlandstalige, responsive interface. De lokale
 PP-engine gebruikt de Python-standaardbibliotheek; geen externe lettertypen of

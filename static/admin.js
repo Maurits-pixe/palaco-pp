@@ -61,6 +61,8 @@ let review044TechnicalAssessment = null;
 let review044TechnicalSelectionVersion = 0;
 let review044IndexSelectionVersion = 0;
 let review044IndexAssessment = null;
+let review044DossierSelectionVersion = 0;
+let review044DossierAssessment = null;
 
 function exactFields(value, fields) {
   return value !== null && typeof value === "object" && !Array.isArray(value)
@@ -150,6 +152,12 @@ function clearReview() {
   $("admin-review044-index-owner").value = "";
   $("admin-review044-index-result").textContent = "Geen bestandsbinding beoordeeld. HOLD / DENY.";
   $("admin-review044-index-export").disabled = true;
+  review044DossierSelectionVersion += 1;
+  review044DossierAssessment = null;
+  for (const id of ["admin-review044-dossier-tech", "admin-review044-dossier-owner",
+    "admin-review044-dossier-index"]) $(id).value = "";
+  $("admin-review044-dossier-result").textContent = "Nog geen dossierbeoordeling. HOLD / DENY.";
+  $("admin-review044-dossier-export").disabled = true;
   $("admin-review044-scenario").selectedIndex = 0;
   $("admin-review044-observed").value = "NOT_OBSERVED";
   $("admin-review044-result").textContent = "Nog geen eigen waarnemingen vastgelegd. HOLD / DENY.";
@@ -985,5 +993,88 @@ $("admin-review044-index-export").addEventListener("click", () => {
   anchor.remove();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
   $("admin-review044-index-result").textContent = "Bewijsindex als lokale download aangeboden. Bewaren zelf controleren. HOLD / DENY.";
+});
+
+function resetReview044Dossier(message = "Bestandskeuze gewijzigd; eerdere beoordeling vervallen. HOLD / DENY.") {
+  review044DossierSelectionVersion += 1;
+  review044DossierAssessment = null;
+  $("admin-review044-dossier-export").disabled = true;
+  $("admin-review044-dossier-result").textContent = message;
+}
+
+for (const id of ["admin-review044-dossier-tech", "admin-review044-dossier-owner",
+  "admin-review044-dossier-index"]) {
+  $(id).addEventListener("change", () => resetReview044Dossier());
+}
+
+$("admin-review044-dossier-check").addEventListener("click", async () => {
+  if (!authenticated || busy) return;
+  resetReview044Dossier("Drie bestanden worden uitsluitend lokaal gelezen. HOLD / DENY.");
+  const version = review044DossierSelectionVersion;
+  const files = ["admin-review044-dossier-tech", "admin-review044-dossier-owner",
+    "admin-review044-dossier-index"].map((id) => $(id).files?.[0]);
+  const output = $("admin-review044-dossier-result");
+  if (files.some((file, i) => !file || !file.size || file.size > (i === 2 ? 16 : 32) * 1024)) {
+    output.textContent = "Selecteer drie JSON-bestanden binnen de aangegeven groottelimieten. HOLD / DENY.";
+    return;
+  }
+  try {
+    const buffers = await Promise.all(files.map((file) => file.arrayBuffer()));
+    if (version !== review044DossierSelectionVersion || !authenticated) return;
+    const decoder = new TextDecoder("utf-8", { fatal: true });
+    const [technical, owner, suppliedIndex] = buffers.map((bytes) => JSON.parse(decoder.decode(bytes)));
+    const comparison = assessReview044TechnicalBrowserReport(technical);
+    const hashes = await Promise.all(buffers.slice(0, 2).map(async (bytes) => {
+      const digest = new Uint8Array(await crypto.subtle.digest("SHA-256", bytes));
+      return [...digest].map((byte) => byte.toString(16).padStart(2, "0")).join("");
+    }));
+    if (version !== review044DossierSelectionVersion || !authenticated) return;
+    const counts = readReview044OwnerBrowserWorksheet(owner, hashes[0], comparison);
+    const expectedIndex = {
+      schema: "palaco.pp.review-044-owner-evidence-index.v0", reference: "PP-RECOVERY-002",
+      technicalReportSha256: hashes[0], ownerWorksheetSha256: hashes[1],
+      binding: "TWO_FILE_HASH_MATCH_UNTRUSTED", technicalComparison: comparison,
+      ownerMarkedCount: counts.marked, ownerDiscrepancyCount: counts.discrepancies,
+      sourceTrust: "IMPORTED_UNATTESTED_TECHNICAL_REPORT",
+      independentVerification: "NOT_VERIFIED", reviewDecision: "HOLD",
+      identityBinding: "NOT_ESTABLISHED", authorization: "HOLD",
+      accessDecision: "DENY", issuance: "NOT_AUTHORIZED",
+    };
+    if (!exactFields(suppliedIndex, Object.keys(expectedIndex))
+      || Object.keys(expectedIndex).some((key) => suppliedIndex[key] !== expectedIndex[key])) {
+      throw new Error("DOSSIER_INDEX_INVALID");
+    }
+    review044DossierAssessment = {
+      schema: "palaco.pp.review-044-owner-dossier-assessment.v0",
+      reference: "PP-RECOVERY-002", binding: "THREE_FILE_HASH_MATCH_UNTRUSTED",
+      technicalReportSha256: hashes[0], ownerWorksheetSha256: hashes[1],
+      technicalComparison: comparison, ownerMarkedCount: counts.marked,
+      ownerDiscrepancyCount: counts.discrepancies,
+      sourceTrust: "IMPORTED_UNATTESTED_TECHNICAL_REPORT",
+      executionProvenance: "NOT_INDEPENDENTLY_ESTABLISHED",
+      independentVerification: "NOT_VERIFIED", reviewDecision: "HOLD",
+      identityBinding: "NOT_ESTABLISHED", authorization: "HOLD",
+      accessDecision: "DENY", issuance: "NOT_AUTHORIZED",
+    };
+    $("admin-review044-dossier-export").disabled = false;
+    output.textContent = "Drie bestanden consistent volgens de browserindicatie. Strikte Python-controle nog nodig; HOLD / DENY.";
+  } catch (_error) {
+    if (version !== review044DossierSelectionVersion || !authenticated) return;
+    output.textContent = "DOSSIER GEWEIGERD: ongeldige structuur, inhoud of bestandsbinding. HOLD / DENY.";
+  }
+});
+
+$("admin-review044-dossier-export").addEventListener("click", () => {
+  if (!authenticated || busy || !review044DossierAssessment) return;
+  const url = URL.createObjectURL(new Blob([JSON.stringify(review044DossierAssessment, null, 2) + "\n"],
+    { type: "application/json" }));
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = "palaco-pp-review-044-owner-dossier-hold.json";
+  document.body.append(anchor);
+  anchor.click();
+  anchor.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  $("admin-review044-dossier-result").textContent = "Dossierbeoordeling als download aangeboden. Opslag zelf bevestigen. HOLD / DENY.";
 });
 action(loadSession);

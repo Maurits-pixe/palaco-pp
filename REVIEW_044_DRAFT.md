@@ -195,6 +195,13 @@ persoon, echte runtime-uitvoering of identiteit. Het dossier heeft geen
 databaseverbinding, testuitvoering, bestandsschrijfacties of bevoegdheid.
 **Status: DRAFT / NOT EXECUTED / HOLD / DENY.**
 
+Voor latere eigenaarbediening is daarnaast het backofficepaneel
+**Review 044 / lokaal drie-bestandendossier** toegevoegd. De drie bestanden
+worden niet verzonden of opgeslagen door PALACO; de browser biedt uitsluitend
+een indicatieve vergelijking en een downloadbare beoordeling. Bij een nieuwe
+bestandskeuze vervalt de vorige indicatie. Duplicaten van JSON-sleutels
+vallen buiten de browsergarantie; de Python-beoordelaar blijft normatief.
+
 | Fixture | Verwacht bij latere uitvoering | Risico dat wordt onderzocht |
 | --- | --- | --- |
 | `baseline_untrusted_hold` | `FOUR_FILE_HASH_MATCH_UNTRUSTED` | Correcte binding ≠ verificatie |
