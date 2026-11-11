@@ -137,6 +137,18 @@
           <button id="admin-review044-owner-export" type="button" class="secondary" disabled>Download eigenaarwerkblad (.json)</button>
           <p class="auth-note">Een SHA-256-vingerafdruk bindt het werkblad aan bestandsbytes, niet aan een betrouwbare herkomst. Geen onafhankelijke verificatie, identiteitsbinding, autorisatie of uitgifte: HOLD / DENY.</p>
         </div>
+        <div class="admin-bundle-panel" aria-labelledby="admin-review044-index-title">
+          <h3 id="admin-review044-index-title">Review 044 / twee-bestandenbewijsindex</h3>
+          <p class="auth-note">Kies het oorspronkelijke synthetische rapport en je eerder opgeslagen eigenaarwerkblad. Een lokale browserindicatie controleert hun inhoudelijke en SHA-256-binding. De Python-module <code>review_044_owner_index.py</code> blijft de striktere beoordelaar.</p>
+          <div class="admin-review-grid">
+            <div><label for="admin-review044-index-tech">1. Technisch rapport (.json, maximaal 32 KB)</label><input id="admin-review044-index-tech" type="file" accept=".json,application/json"></div>
+            <div><label for="admin-review044-index-owner">2. Eigenaarwerkblad (.json, maximaal 32 KB)</label><input id="admin-review044-index-owner" type="file" accept=".json,application/json"></div>
+          </div>
+          <button id="admin-review044-index-check" type="button" class="secondary">Beoordeel bestandsbinding lokaal</button>
+          <p id="admin-review044-index-result" class="admin-review-result" role="status" aria-live="polite">Geen bestandsbinding beoordeeld. HOLD / DENY.</p>
+          <button id="admin-review044-index-export" type="button" class="secondary" disabled>Download bewijsindex (.json)</button>
+          <p class="auth-note">De browser kan dubbele JSON-sleutels niet betrouwbaar afwijzen. Ook een overeenkomende index is géén herkomst-, identiteits- of bevoegdheidsbewijs. Geen upload, testuitvoering of uitgifte.</p>
+        </div>
       </section>
     </div>
     <p class="auth-note">Lokale beheerdersdemo. Geen productiebeveiliging, MFA of wachtwoordherstel. Bescherm de onversleutelde database.</p>

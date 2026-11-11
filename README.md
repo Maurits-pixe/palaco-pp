@@ -166,6 +166,12 @@ De pure module `review_044_owner_index.py` kan de originele bytes van een
 technisch rapport en een eigenaarwerkblad vervolgens fail-closed koppelen tot
 een niet-ondertekende bewijsindex met twee SHA-256-vingerafdrukken. Die
 index bewijst geen herkomst, identiteit of bevoegdheid en blijft HOLD / DENY.
+Ook deze twee-bestandenbinding heeft nu een afzonderlijk paneel in de lokale
+backoffice. De gebruiker kiest beide oorspronkelijke JSON-bestanden, laat
+uitsluitend een indicatieve browservergelijking maken en kan de bewijsindex
+downloaden. De browser weigert structurele mismatches, maar kan dubbele
+JSON-sleutels niet strikt detecteren; de Python-module blijft normatief.
+Er zijn geen uploads of automatische autorisatieacties.
 
 Zelfstandig prototype met een Nederlandstalige, responsive interface. De lokale
 PP-engine gebruikt de Python-standaardbibliotheek; geen externe lettertypen of

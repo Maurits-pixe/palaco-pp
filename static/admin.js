@@ -59,6 +59,8 @@ const review044TechnicalResults = new Set([
 const review044OwnerMarks = new Map();
 let review044TechnicalAssessment = null;
 let review044TechnicalSelectionVersion = 0;
+let review044IndexSelectionVersion = 0;
+let review044IndexAssessment = null;
 
 function exactFields(value, fields) {
   return value !== null && typeof value === "object" && !Array.isArray(value)
@@ -142,6 +144,12 @@ function clearReview() {
   $("admin-review044-tech-status").textContent = "Geen lokaal technisch rapport geladen. HOLD / DENY.";
   $("admin-review044-owner-record").disabled = true;
   $("admin-review044-owner-export").disabled = true;
+  review044IndexSelectionVersion += 1;
+  review044IndexAssessment = null;
+  $("admin-review044-index-tech").value = "";
+  $("admin-review044-index-owner").value = "";
+  $("admin-review044-index-result").textContent = "Geen bestandsbinding beoordeeld. HOLD / DENY.";
+  $("admin-review044-index-export").disabled = true;
   $("admin-review044-scenario").selectedIndex = 0;
   $("admin-review044-observed").value = "NOT_OBSERVED";
   $("admin-review044-result").textContent = "Nog geen eigen waarnemingen vastgelegd. HOLD / DENY.";
@@ -866,5 +874,116 @@ $("admin-review044-owner-export").addEventListener("click", () => {
   };
   downloadReview044OwnerJson(report);
   $("admin-review044-tech-status").textContent = "Werkblad als lokale download aangeboden. Controleer zelf of het is opgeslagen. HOLD / DENY.";
+});
+
+function readReview044OwnerBrowserWorksheet(owner, technicalDigest, comparison) {
+  const fields = ["schema", "reference", "technicalReportSha256", "sourceTrust",
+    "technicalComparison", "executionProvenance", "ownerMarks", "ownerMarkedCount",
+    "ownerDiscrepancyCount", "independentVerification", "reviewDecision",
+    "identityBinding", "authorization", "accessDecision", "issuance"];
+  const required = {
+    schema: "palaco.pp.review-044-owner-worksheet.v0",
+    reference: "PP-RECOVERY-002", technicalReportSha256: technicalDigest,
+    sourceTrust: "IMPORTED_UNATTESTED_TECHNICAL_REPORT",
+    technicalComparison: comparison, executionProvenance: "NOT_INDEPENDENTLY_ESTABLISHED",
+    independentVerification: "NOT_VERIFIED", reviewDecision: "HOLD",
+    identityBinding: "NOT_ESTABLISHED", authorization: "HOLD",
+    accessDecision: "DENY", issuance: "NOT_AUTHORIZED",
+  };
+  if (!exactFields(owner, fields)
+    || Object.entries(required).some(([key, value]) => owner[key] !== value)
+    || !Array.isArray(owner.ownerMarks) || owner.ownerMarks.length !== 13) {
+    throw new Error("OWNER_STRUCTURE_INVALID");
+  }
+  let marked = 0;
+  let discrepancies = 0;
+  const names = Object.keys(review044TechnicalExpectations);
+  for (let i = 0; i < names.length; i += 1) {
+    const row = owner.ownerMarks[i];
+    if (!exactFields(row, ["scenario_id", "owner_mark", "evidence_kind"])
+      || row.scenario_id !== names[i]
+      || !["NOT_REVIEWED", "OBSERVED_AS_REPORTED", "DISCREPANCY_REPORTED"].includes(row.owner_mark)
+      || !["SELF_REPORTED", "NO_OBSERVATION"].includes(row.evidence_kind)
+      || (row.evidence_kind === "NO_OBSERVATION" && row.owner_mark !== "NOT_REVIEWED")) {
+      throw new Error("OWNER_MARK_INVALID");
+    }
+    marked += row.owner_mark !== "NOT_REVIEWED" ? 1 : 0;
+    discrepancies += row.owner_mark === "DISCREPANCY_REPORTED" ? 1 : 0;
+  }
+  if (!Number.isInteger(owner.ownerMarkedCount) || owner.ownerMarkedCount !== marked
+    || !Number.isInteger(owner.ownerDiscrepancyCount)
+    || owner.ownerDiscrepancyCount !== discrepancies) {
+    throw new Error("OWNER_COUNTS_INVALID");
+  }
+  return { marked, discrepancies };
+}
+
+function resetReview044Index(message = "Bestandskeuze gewijzigd; controle opnieuw nodig. HOLD / DENY.") {
+  review044IndexSelectionVersion += 1;
+  review044IndexAssessment = null;
+  $("admin-review044-index-export").disabled = true;
+  $("admin-review044-index-result").textContent = message;
+}
+
+for (const id of ["admin-review044-index-tech", "admin-review044-index-owner"]) {
+  $(id).addEventListener("change", () => resetReview044Index());
+}
+
+$("admin-review044-index-check").addEventListener("click", async () => {
+  if (!authenticated || busy) return;
+  resetReview044Index("Twee lokale bestanden worden beoordeeld. Geen herkomstverificatie. HOLD / DENY.");
+  const version = review044IndexSelectionVersion;
+  const techFile = $("admin-review044-index-tech").files?.[0];
+  const ownerFile = $("admin-review044-index-owner").files?.[0];
+  const output = $("admin-review044-index-result");
+  if (!techFile || !ownerFile || !techFile.size || !ownerFile.size
+    || techFile.size > 32 * 1024 || ownerFile.size > 32 * 1024) {
+    output.textContent = "Kies beide JSON-bestanden (elk maximaal 32 KB). HOLD / DENY.";
+    return;
+  }
+  try {
+    const [technicalBytes, ownerBytes] = await Promise.all([techFile.arrayBuffer(), ownerFile.arrayBuffer()]);
+    if (version !== review044IndexSelectionVersion || !authenticated) return;
+    const decoder = new TextDecoder("utf-8", { fatal: true });
+    const comparison = assessReview044TechnicalBrowserReport(JSON.parse(decoder.decode(technicalBytes)));
+    const digest = async (bytes) => {
+      const hash = new Uint8Array(await crypto.subtle.digest("SHA-256", bytes));
+      return [...hash].map((byte) => byte.toString(16).padStart(2, "0")).join("");
+    };
+    const [technicalDigest, ownerDigest] = await Promise.all([digest(technicalBytes), digest(ownerBytes)]);
+    if (version !== review044IndexSelectionVersion || !authenticated) return;
+    const counts = readReview044OwnerBrowserWorksheet(
+      JSON.parse(decoder.decode(ownerBytes)), technicalDigest, comparison);
+    review044IndexAssessment = {
+      schema: "palaco.pp.review-044-owner-evidence-index.v0",
+      reference: "PP-RECOVERY-002", technicalReportSha256: technicalDigest,
+      ownerWorksheetSha256: ownerDigest, binding: "TWO_FILE_HASH_MATCH_UNTRUSTED",
+      technicalComparison: comparison, ownerMarkedCount: counts.marked,
+      ownerDiscrepancyCount: counts.discrepancies,
+      sourceTrust: "IMPORTED_UNATTESTED_TECHNICAL_REPORT",
+      independentVerification: "NOT_VERIFIED", reviewDecision: "HOLD",
+      identityBinding: "NOT_ESTABLISHED", authorization: "HOLD",
+      accessDecision: "DENY", issuance: "NOT_AUTHORIZED",
+    };
+    $("admin-review044-index-export").disabled = false;
+    output.textContent = "Twee bestanden consistent volgens browserindicatie. Dubbele JSON-sleutels niet uitgesloten; Python-controle blijft noodzakelijk. HOLD / DENY.";
+  } catch (_error) {
+    if (version !== review044IndexSelectionVersion || !authenticated) return;
+    output.textContent = "BESTANDSBINDING GEWEIGERD: inhoud, structuur, hashes of HOLD-contract wijken af. HOLD / DENY.";
+  }
+});
+
+$("admin-review044-index-export").addEventListener("click", () => {
+  if (!authenticated || busy || !review044IndexAssessment) return;
+  const url = URL.createObjectURL(new Blob([JSON.stringify(review044IndexAssessment, null, 2) + "\n"],
+    { type: "application/json" }));
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = "palaco-pp-review-044-owner-evidence-index-hold.json";
+  document.body.append(anchor);
+  anchor.click();
+  anchor.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  $("admin-review044-index-result").textContent = "Bewijsindex als lokale download aangeboden. Bewaren zelf controleren. HOLD / DENY.";
 });
 action(loadSession);

@@ -172,6 +172,13 @@ De index vermeldt beide SHA-256-hashes en hoogstens
 server benaderd, geen identiteit vastgesteld en geen autorisatie verleend.
 Status: **DRAFT / NOT EXECUTED / HOLD / DENY**.
 
+De backoffice bevat nu eveneens een afzonderlijk paneel om die twee
+bestanden lokaal te kiezen en een bewijsindex als JSON te downloaden.
+Deze browservergelijking kan dubbele JSON-sleutels niet afwijzen en is dus
+**geen vervanging** van `make_owner_evidence_index` in Python. Een
+browseruitkomst `TWO_FILE_HASH_MATCH_UNTRUSTED` is uitsluitend indicatief;
+het bestand wordt niet verzonden of automatisch geregistreerd.
+
 | Fixture | Verwacht bij latere uitvoering | Risico dat wordt onderzocht |
 | --- | --- | --- |
 | `baseline_untrusted_hold` | `FOUR_FILE_HASH_MATCH_UNTRUSTED` | Correcte binding ≠ verificatie |
