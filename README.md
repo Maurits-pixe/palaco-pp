@@ -80,6 +80,16 @@ Dit is een gebruikersinterface-waarneming, geen vervanging van de strengere
 Python-bundelcontrole of bewijs van authenticiteit. De bestanden worden
 niet geïmporteerd, geüpload of persistent opgeslagen.
 
+`review_index.py` sluit de derde lokale schakel af met
+`link_hold_index(handoff, report, index)`. De functie controleert eerst de
+strikte handoff/rapport-binding en vervolgens het vaste indexschema, dubbele
+JSON-sleutels, tijdstempel, HOLD/DENY-velden en de SHA-256-hashes van **beide**
+oorspronkelijke bytebestanden. Bij afwijkingen volgt `PP_INDEX_INVALID`;
+bij overeenstemming uitsluitend `THREE_FILE_HASH_MATCH_UNTRUSTED`. Ook deze
+controle is geen digitale handtekening, identiteitscontrole, inlogrecht of
+uitgifteautoriteit. De nieuwe code is DRAFT; tests en runtimeverificatie
+zijn uitgesteld op verzoek van de eigenaar.
+
 Zelfstandig prototype met een Nederlandstalige, responsive interface. De lokale
 PP-engine gebruikt de Python-standaardbibliotheek; geen externe lettertypen of
 analytics. Python 3.11+ vereist. Optionele e-mail gebruikt een externe SMTP-provider;
