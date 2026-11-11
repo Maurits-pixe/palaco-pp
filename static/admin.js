@@ -20,6 +20,15 @@ let statusFilter = "";
 let auditSearch = "";
 let auditEvent = "";
 let auditStatus = "";
+let reviewAssessment = null;
+
+function clearReview() {
+  reviewAssessment = null;
+  $("admin-review-file").value = "";
+  $("admin-review-note").value = "";
+  $("admin-review-result").textContent = "Nog geen bestand beoordeeld.";
+  $("admin-review-download").disabled = true;
+}
 
 function notice(message, error = false) {
   $("admin-notice").textContent = message;
@@ -27,6 +36,7 @@ function notice(message, error = false) {
 }
 
 function showLogin() {
+  clearReview();
   authenticated = false;
   $("admin-dashboard").hidden = true;
   $("admin-dashboard").querySelectorAll("tbody").forEach((body) => body.replaceChildren());
@@ -314,5 +324,95 @@ $("admin-revoke").addEventListener("submit", (event) => {
     await refresh();
     notice("Nummer definitief ingetrokken; beheerhandeling geaudit.");
   });
+});
+
+$("admin-review-file").addEventListener("change", async () => {
+  reviewAssessment = null;
+  $("admin-review-download").disabled = true;
+  const file = $("admin-review-file").files?.[0];
+  const output = $("admin-review-result");
+  output.textContent = "Geen bestand geselecteerd.";
+  if (!file || !authenticated || busy) return;
+  if (file.size === 0 || file.size > 16384) {
+    output.textContent = "BESTAND GEWEIGERD / Alleen JSON van 1 t/m 16384 bytes.";
+    $("admin-review-file").value = "";
+    return;
+  }
+  const sessionName = $("admin-name").textContent;
+  try {
+    const raw = await file.arrayBuffer();
+    if (!authenticated || $("admin-name").textContent !== sessionName) {
+      output.textContent = "SESSIE GEWIJZIGD / Meld opnieuw aan.";
+      return;
+    }
+    const bytes = new Uint8Array(raw);
+    const digest = await crypto.subtle.digest("SHA-256", raw);
+    if (!authenticated || $("admin-name").textContent !== sessionName) {
+      output.textContent = "SESSIE GEWIJZIGD / Meld opnieuw aan.";
+      return;
+    }
+    const sha256 = Array.from(new Uint8Array(digest), (value) => value.toString(16).padStart(2, "0")).join("");
+    const data = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(bytes));
+    const isObject = (value) => value !== null && typeof value === "object" && !Array.isArray(value);
+    const fields = {
+      schema: "palaco.pp.one.review-handoff.v0", reference: "PP-RECOVERY-002",
+      source: "LOCAL_PP_PROTOTYPE_USER_EXPORTED", destination: "PALACO_ONE_MANUAL_REVIEW_ONLY",
+      provenance: "UNSIGNED_USER_CONTROLLED_FILE", identityVerification: "NOT_VERIFIED",
+      reviewDecision: "PENDING_HUMAN_REVIEW", authorization: "HOLD",
+      accessDecision: "DENY", issuance: "NOT_AUTHORIZED",
+    };
+    const expectedKeys = [...Object.keys(fields), "createdAt", "subjectReference", "registration", "constraints"];
+    const registrationKeys = ["ppNumberId", "ppNumberLast4", "status", "selectedAt", "revokedAt"];
+    const constraints = ["NO_AUTOMATIC_ACCOUNT_LINK", "NO_AUTHENTICATION", "NO_AUTO_ISSUANCE"];
+    const exactKeys = (item, keys) => isObject(item) && Object.keys(item).length === keys.length &&
+      keys.every((key) => Object.hasOwn(item, key));
+    const structureValid = exactKeys(data, expectedKeys) &&
+      Object.entries(fields).every(([key, value]) => data[key] === value) &&
+      typeof data.createdAt === "string" && !Number.isNaN(Date.parse(data.createdAt)) &&
+      exactKeys(data.subjectReference, ["consumerId"]) &&
+      typeof data.subjectReference.consumerId === "string" &&
+      exactKeys(data.registration, registrationKeys) &&
+      typeof data.registration.ppNumberId === "string" &&
+      typeof data.registration.ppNumberLast4 === "string" &&
+      /^[0-9]{4}$/.test(data.registration.ppNumberLast4) &&
+      ["ACTIVE", "REVOKED"].includes(data.registration.status) &&
+      typeof data.registration.selectedAt === "string" &&
+      Array.isArray(data.constraints) && data.constraints.length === 3 &&
+      constraints.every((item) => data.constraints.includes(item));
+    reviewAssessment = {
+      schema: "palaco.pp.manual-review.v0", evidenceReference: "PP-RECOVERY-002",
+      capturedAt: new Date().toISOString(), fileSha256: sha256,
+      structuralStatus: structureValid ? "CLIENT_STRUCTURE_RECOGNIZED_UNTRUSTED" : "STRUCTURE_REJECTED",
+      sourceEvidence: "UNSIGNED_USER_SUPPLIED_FILE", verification: "NOT_VERIFIED",
+      reviewDecision: "HOLD", authorization: "HOLD", accessDecision: "DENY", issuance: "NOT_AUTHORIZED",
+    };
+    output.textContent = structureValid
+      ? "STRUCTUUR HERKEND / Inhoud blijft ONVERTROUWD. Geen verificatie van persoon, accountkoppeling of rechten. HOLD / DENY."
+      : "STRUCTUUR AFGEWEZEN / Niet conform het conceptcontract. HOLD / DENY.";
+    $("admin-review-download").disabled = false;
+  } catch (error) {
+    output.textContent = "ONGELDIG / Bestand of bestandsvingerafdruk kon niet worden verwerkt. Geen rapport aangemaakt.";
+  } finally {
+    $("admin-review-file").value = "";
+  }
+});
+
+$("admin-review-download").addEventListener("click", () => {
+  if (!authenticated || busy || !reviewAssessment) return;
+  const report = {
+    ...reviewAssessment,
+    note: $("admin-review-note").value.trim().slice(0, 240),
+    noteClass: "LOCAL_ADMIN_NOTE_NOT_INDEPENDENTLY_VERIFIED",
+  };
+  const url = URL.createObjectURL(new Blob([JSON.stringify(report, null, 2) + "\n"],
+    { type: "application/json" }));
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = "palaco-pp-review-hold.json";
+  document.body.append(anchor);
+  anchor.click();
+  anchor.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  $("admin-review-result").textContent = "HOLD-rapport aangeboden als download. Geen opslag op de server of automatische goedkeuring.";
 });
 action(loadSession);

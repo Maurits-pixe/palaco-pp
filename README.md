@@ -50,6 +50,17 @@ de striktere Python-parser blijft een afzonderlijke contractgrens. Geen van
 beide inspecties bewijst authenticiteit of verleent rechten. Tests zijn aan de
 eigenaar voorbehouden.
 
+### Backoffice / lokaal HOLD-beoordelingsrapport (DRAFT)
+
+Het bestaande `/admin`-scherm bevat nu een alleen-lezen werkruimte voor een
+door de beheerder gekozen handoff-JSON (max. 16 KiB). De browser beoordeelt
+uitsluitend de contractstructuur en berekent lokaal een SHA-256-vingerafdruk.
+Er is geen upload, persistente opslag, accountkoppeling of databasewijziging.
+De beheerder kan een JSON-rapport downloaden met bestandsvingerafdruk,
+structuuruitkomst, optionele niet-persoonsgebonden notitie en onvoorwaardelijk
+`NOT_VERIFIED` / `HOLD` / `DENY` / `NOT_AUTHORIZED`. Een hash bewijst geen
+herkomst en dit rapport is geen onafhankelijke menselijke verificatie.
+
 Zelfstandig prototype met een Nederlandstalige, responsive interface. De lokale
 PP-engine gebruikt de Python-standaardbibliotheek; geen externe lettertypen of
 analytics. Python 3.11+ vereist. Optionele e-mail gebruikt een externe SMTP-provider;

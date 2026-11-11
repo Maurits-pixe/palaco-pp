@@ -69,6 +69,17 @@
         <div class="admin-table-wrap"><table><thead><tr><th>Nr. / tijd</th><th>Gebeurtenis / status</th><th>Account / consumer-ID</th><th>Beheerder</th><th>Intrekkingsreden</th></tr></thead><tbody id="admin-audit"></tbody></table></div>
         <div class="admin-pagination"><button id="audit-prev" class="secondary">Vorige</button><span id="audit-page"></span><button id="audit-next" class="secondary">Volgende</button></div>
       </section>
+      <section class="workspace" aria-labelledby="admin-review-title">
+        <div class="section-heading"><div><p class="eyebrow">PP-RECOVERY-002 / MENSELIJKE BEOORDELING</p><h2 id="admin-review-title">Overdrachtsdossier</h2></div><span class="admin-review-badge">HOLD / GEEN UITGIFTE</span></div>
+        <p class="auth-note">Inspecteer een lokaal P.P. → PALACO ONE v0-bestand. Alleen de bestandsstructuur wordt bekeken; geen import, serverupload of wijziging van account-/nummergegevens. De beoordeling is geen verificatie van identiteit.</p>
+        <div class="admin-review-grid">
+          <div><label for="admin-review-file">Overdrachtsbestand (.json, maximaal 16 KB)</label><input id="admin-review-file" type="file" accept=".json,application/json"></div>
+          <div><label for="admin-review-note">Beoordelingsnotitie (optioneel, maximaal 240 tekens; geen persoonsgegevens)</label><textarea id="admin-review-note" rows="3" maxlength="240" placeholder="Bijvoorbeeld: menselijke broncontrole nog noodzakelijk"></textarea></div>
+        </div>
+        <p id="admin-review-result" class="admin-review-result" role="status" aria-live="polite">Nog geen bestand beoordeeld.</p>
+        <button id="admin-review-download" type="button" class="secondary" disabled>Download HOLD-beoordelingsrapport (.json)</button>
+        <p class="auth-note">Het rapport bevat alleen een bestandsvingerafdruk, structuuruitkomst, notitie en HOLD/DENY. Geen P.P.-nummer, wachtwoord of consumer-ID. SHA-256 is geen digitale handtekening en bewijst de herkomst niet.</p>
+      </section>
     </div>
     <p class="auth-note">Lokale beheerdersdemo. Geen productiebeveiliging, MFA of wachtwoordherstel. Bescherm de onversleutelde database.</p>
   </main>
