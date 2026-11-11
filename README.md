@@ -97,6 +97,14 @@ Na iedere nieuwe bestandskeuze vervalt de eerdere waarneming; de controle is
 uitsluitend indicatief en geeft geen bevoegdheid. De browserparser kan (anders
 dan de Python-validator) dubbele JSON-sleutels niet zelfstandig uitsluiten.
 Daarom vervangt dit paneel de onafhankelijke, strengere validatie niet.
+Na een positieve lokale indicatie kan het paneel nu een afzonderlijk
+`palaco.pp.chain-observation.v0`-rapport downloaden. Dat bevat alleen de
+SHA-256-hashes van de drie exacte bestanden, een waarnemingstijd, een expliciet
+`UNSIGNED_LOCAL_BROWSER_OBSERVATION`-herkomstlabel en uitsluitend HOLD/DENY.
+Er worden geen identifiers, P.P.-nummers of authenticatiegegevens geëxporteerd.
+Bij een nieuwe bestandskeuze vervalt het rapport in het geheugen en wordt de
+downloadknop opnieuw geblokkeerd. De uitvoer is niet ondertekend en vormt
+geen bewijs van een uitgevoerde menselijke identiteitscontrole.
 
 Zelfstandig prototype met een Nederlandstalige, responsive interface. De lokale
 PP-engine gebruikt de Python-standaardbibliotheek; geen externe lettertypen of

@@ -24,12 +24,14 @@ let reviewAssessment = null;
 let bundleAssessment = null;
 let bundleSelectionVersion = 0;
 let chainSelectionVersion = 0;
+let chainAssessment = null;
 
 function clearReview() {
   reviewAssessment = null;
   bundleAssessment = null;
   bundleSelectionVersion += 1;
   chainSelectionVersion += 1;
+  chainAssessment = null;
   $("admin-review-file").value = "";
   $("admin-review-note").value = "";
   $("admin-review-result").textContent = "Nog geen bestand beoordeeld.";
@@ -40,6 +42,7 @@ function clearReview() {
   $("admin-bundle-export").disabled = true;
   for (const id of ["admin-chain-handoff", "admin-chain-report", "admin-chain-index"]) $(id).value = "";
   $("admin-chain-result").textContent = "Geen ketencontrole uitgevoerd. HOLD / DENY.";
+  $("admin-chain-export").disabled = true;
 }
 
 function notice(message, error = false) {
@@ -521,12 +524,16 @@ $("admin-bundle-export").addEventListener("click", () => {
 for (const id of ["admin-chain-handoff", "admin-chain-report", "admin-chain-index"]) {
   $(id).addEventListener("change", () => {
     chainSelectionVersion += 1;
+    chainAssessment = null;
+    $("admin-chain-export").disabled = true;
     $("admin-chain-result").textContent = "Bestandskeuze gewijzigd; controle nog niet uitgevoerd. HOLD / DENY.";
   });
 }
 
 $("admin-chain-check").addEventListener("click", async () => {
   if (!authenticated || busy) return;
+  chainAssessment = null;
+  $("admin-chain-export").disabled = true;
   const output = $("admin-chain-result");
   const files = ["admin-chain-handoff", "admin-chain-report", "admin-chain-index"]
     .map((id) => $(id).files?.[0]);
@@ -539,7 +546,7 @@ $("admin-chain-check").addEventListener("click", async () => {
   output.textContent = "Lokale bestandsvingerafdrukken worden vergeleken. HOLD / DENY.";
   try {
     const bytes = await Promise.all(files.map((file) => file.arrayBuffer()));
-    const digests = await Promise.all(bytes.slice(0, 2)
+    const digests = await Promise.all(bytes
       .map((data) => crypto.subtle.digest("SHA-256", data)));
     if (!authenticated || busy || chainSelectionVersion !== selectedVersion ||
         $("admin-name").textContent !== adminName) {
@@ -553,6 +560,7 @@ $("admin-chain-check").addEventListener("click", async () => {
       (byte) => byte.toString(16).padStart(2, "0")).join("");
     const handoffSha256 = hex(digests[0]);
     const reportSha256 = hex(digests[1]);
+    const indexSha256 = hex(digests[2]);
     const expectedIndex = {
       schema: "palaco.pp.evidence-index.v0", reference: "PP-RECOVERY-002",
       linkage: "HASH_MATCH_UNTRUSTED_CLIENT_OBSERVATION",
@@ -580,11 +588,37 @@ $("admin-chain-check").addEventListener("click", async () => {
       /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z$/.test(index.createdAt) &&
       Number.isFinite(Date.parse(index.createdAt)) &&
       index.handoffSha256 === handoffSha256 && index.reportSha256 === reportSha256;
-    output.textContent = valid
-      ? "DRIE HASHVERWIJZINGEN CONSISTENT / Alleen lokale, onvertrouwde bestandsbinding. Geen identiteitsbewijs. HOLD / DENY."
-      : "KETEN AFGEWEZEN / Schema, referenties, hashes of HOLD-contractvelden wijken af. HOLD / DENY.";
+    if (valid) {
+      chainAssessment = {
+        schema: "palaco.pp.chain-observation.v0",
+        reference: "PP-RECOVERY-002",
+        capturedAt: new Date().toISOString(),
+        outcome: "CLIENT_THREE_FILE_HASH_MATCH_UNTRUSTED",
+        handoffSha256, reportSha256, indexSha256,
+        verification: "NOT_VERIFIED", reviewDecision: "HOLD",
+        authorization: "HOLD", accessDecision: "DENY",
+        issuance: "NOT_AUTHORIZED", provenance: "UNSIGNED_LOCAL_BROWSER_OBSERVATION",
+      };
+      $("admin-chain-export").disabled = false;
+      output.textContent = "DRIE HASHVERWIJZINGEN CONSISTENT / Alleen lokale, onvertrouwde bestandsbinding. Geen identiteitsbewijs. HOLD / DENY.";
+    } else {
+      output.textContent = "KETEN AFGEWEZEN / Schema, referenties, hashes of HOLD-contractvelden wijken af. HOLD / DENY.";
+    }
   } catch (_error) {
     output.textContent = "ONGELDIG / Ketenbestanden konden niet veilig worden verwerkt. HOLD / DENY.";
   }
+});
+$("admin-chain-export").addEventListener("click", () => {
+  if (!authenticated || busy || !chainAssessment) return;
+  const url = URL.createObjectURL(new Blob([JSON.stringify(chainAssessment, null, 2) + "\n"],
+    { type: "application/json" }));
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = "palaco-pp-chain-observation-hold.json";
+  document.body.append(anchor);
+  anchor.click();
+  anchor.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  $("admin-chain-result").textContent = "Lokaal ketenrapport aangeboden als download; geen onafhankelijke verificatie. HOLD / DENY.";
 });
 action(loadSession);
