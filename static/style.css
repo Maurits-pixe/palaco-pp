@@ -110,6 +110,10 @@ footer > span:first-child { letter-spacing: 1px; font-weight: 600; }
 .recovery-inspector input { display: block; max-width: 100%; font-size: 12px; }
 .recovery-inspection { margin: 15px 0 0; border: 1px solid #d9c49f; border-radius: 8px; padding: 13px; background: #fff8eb; color: #70522f; font-size: 12px; line-height: 1.7; overflow-wrap: anywhere; }
 .recovery-inspection-good { border-color: #b9d4b4; background: #eff7eb; color: #31583a; }
+.handoff-panel { display: grid; gap: 6px; margin-top: 22px; padding: 20px; border-radius: 12px; border: 1px solid #d2dccb; background: #eef3e9; }
+.handoff-panel h3 { margin: 0 0 8px; }
+.handoff-panel .secondary { justify-self: start; }
+.handoff-panel .auth-note { margin: 4px 0 10px; }
 .history-panel { margin: 18px 0 0; border: 1px solid var(--line); border-radius: 12px; background: #fffefa; }
 .history-panel > summary { display: flex; align-items: center; justify-content: space-between; gap: 16px; cursor: pointer; padding: 17px 20px; color: var(--green); font-size: 10px; letter-spacing: 1.5px; font-weight: 700; list-style-position: inside; }
 .history-panel > summary::marker { color: #71865e; }

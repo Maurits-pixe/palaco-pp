@@ -277,6 +277,7 @@ function renderAuth() {
   $("recovery-panel").hidden = true;
   $("recovery-file").value = "";
   $("recovery-inspection").textContent = "Nog geen bestand beoordeeld.";
+  $("handoff-status").textContent = "Alleen beschikbaar voor een lokaal gekozen of ingetrokken P.P.-nummer.";
   $("history-panel").hidden = true;
   $("memory-panel").hidden = true;
   $("account-label").hidden = true;
@@ -510,8 +511,51 @@ function renderRecovery() {
     ACTIVE: "ACTIVE / lokaal gekozen, niet officieel geverifieerd",
     REVOKED: "REVOKED / lokaal ingetrokken",
   }[current.status] || "UNKNOWN / controle vereist";
+  $("handoff-export").disabled = !["ACTIVE", "REVOKED"].includes(current.status);
   $("recovery-panel").hidden = false;
 }
+
+function downloadPrivateJSON(filename, data) {
+  const url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2) + "\n"],
+    { type: "application/json" }));
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = filename;
+  document.body.append(anchor);
+  anchor.click();
+  anchor.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+$("handoff-export").addEventListener("click", () => {
+  if (busy || !sessionState?.authenticated || !current ||
+      !["ACTIVE", "REVOKED"].includes(current.status) ||
+      typeof current.ppNumber !== "string" || !/^[1-9][0-9]{9}$/.test(current.ppNumber) ||
+      typeof current.ppNumberId !== "string" || !current.ppNumberId) return;
+  downloadPrivateJSON("palaco-phone-one-review-handoff.json", {
+    schema: "palaco.pp.one.review-handoff.v0",
+    reference: "PP-RECOVERY-002",
+    createdAt: new Date().toISOString(),
+    source: "LOCAL_PP_PROTOTYPE_USER_EXPORTED",
+    destination: "PALACO_ONE_MANUAL_REVIEW_ONLY",
+    subjectReference: { consumerId: current.consumerId },
+    registration: {
+      ppNumberId: current.ppNumberId,
+      ppNumberLast4: current.ppNumber.slice(-4),
+      status: current.status,
+      selectedAt: current.selectedAt || null,
+      revokedAt: current.revokedAt || null,
+    },
+    provenance: "UNSIGNED_USER_CONTROLLED_FILE",
+    identityVerification: "NOT_VERIFIED",
+    reviewDecision: "PENDING_HUMAN_REVIEW",
+    authorization: "HOLD",
+    accessDecision: "DENY",
+    issuance: "NOT_AUTHORIZED",
+    constraints: ["NO_AUTOMATIC_ACCOUNT_LINK", "NO_AUTHENTICATION", "NO_AUTO_ISSUANCE"],
+  });
+  $("handoff-status").textContent = "Beoordelingspakket aangeboden als download. Er is niets naar PALACO ONE verzonden; HOLD blijft actief.";
+});
 
 $("recovery-export").addEventListener("click", () => {
   if (busy || !sessionState?.authenticated || !current ||
@@ -536,15 +580,7 @@ $("recovery-export").addEventListener("click", () => {
     issuance: "NOT_AUTHORIZED",
     note: "Geen bewijs van persoon, telecomactivatie of PALACO ONE-toegang.",
   };
-  const url = URL.createObjectURL(new Blob([JSON.stringify(dossier, null, 2) + "\n"],
-    { type: "application/json" }));
-  const anchor = document.createElement("a");
-  anchor.href = url;
-  anchor.download = "palaco-phone-hersteloverzicht.json";
-  document.body.append(anchor);
-  anchor.click();
-  anchor.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  downloadPrivateJSON("palaco-phone-hersteloverzicht.json", dossier);
   notice("Hersteloverzicht aangeboden als download. Autorisatie blijft HOLD.");
 });
 $("recovery-file").addEventListener("change", async () => {

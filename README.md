@@ -20,6 +20,19 @@ in de browser en schrijft of uploadt geen data. Zelfs een volledige match
 betekent **geen** handtekeningcontrole, onafhankelijke identiteitsverificatie,
 herstel, autorisatie of PALACO ONE-aanmelding. HOLD/DENY blijven behouden.
 
+## PALACO ONE / handmatige overdracht v0 (DRAFT)
+
+Bij een bestaande `ACTIVE` of `REVOKED` registratie kan de gebruiker een
+afzonderlijk `palaco.pp.one.review-handoff.v0`-pakket downloaden. Het bevat
+de lokale consumer-/optie-ID, de laatste vier P.P.-cijfers en tijdstippen;
+het bevat uitdrukkelijk geen volledig nummer, gebruikersnaam, wachtwoord,
+sessie, geheugenbank of e-mailadres. Het bestand wordt niet verstuurd.
+De ontvanger moet het als **ongetekende, door gebruiker beheerste input**
+behandelen. Status `PENDING_HUMAN_REVIEW`, `NOT_VERIFIED`, `HOLD`, `DENY`,
+`NOT_AUTHORIZED` verbiedt automatische accountkoppeling, authenticatie en
+uitgifte. Een toekomstig PALACO ONE-importcontract dient eigen server-side
+authenticatie, bronbewijs en onafhankelijke beslisregels toe te voegen.
+
 Zelfstandig prototype met een Nederlandstalige, responsive interface. De lokale
 PP-engine gebruikt de Python-standaardbibliotheek; geen externe lettertypen of
 analytics. Python 3.11+ vereist. Optionele e-mail gebruikt een externe SMTP-provider;

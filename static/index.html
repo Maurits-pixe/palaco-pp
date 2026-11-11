@@ -101,6 +101,12 @@
       </dl>
       <p class="auth-note">Het JSON-dossier bevat je gebruikersnaam, consumer-ID, eventuele P.P.-nummer en tijdstippen. Bewaar het privé. Een download verandert de registratie niet en dient uitsluitend voor jouw latere beoordeling.</p>
       <button id="recovery-export" type="button" class="secondary">Download hersteloverzicht (.json)</button>
+      <div class="handoff-panel">
+        <div><h3>PALACO ONE / voorbereid overdrachtscontract</h3>
+          <p class="auth-note">Maak een beperkt beoordelingspakket met alleen referentie-ID's, de laatste vier cijfers van je P.P.-nummer en tijdstippen. Geen wachtwoord, volledig nummer, notities of aanmeldtoken. De ontvanger mag hieruit nooit zelfstandig identiteit of toegangsrechten afleiden.</p></div>
+        <button id="handoff-export" type="button" class="secondary">Download overdracht voor beoordeling</button>
+        <p id="handoff-status" class="auth-note" role="status" aria-live="polite">Alleen beschikbaar voor een lokaal gekozen of ingetrokken P.P.-nummer.</p>
+      </div>
       <div class="recovery-inspector">
         <h3>Herstelbestand lokaal beoordelen</h3>
         <p class="auth-note">Selecteer een eerder gedownload P.P.-dossier. De browser vergelijkt de referenties met je huidige aangemelde account; het bestand wordt niet geüpload, geïmporteerd of opgeslagen.</p>
