@@ -68,6 +68,20 @@ als de pure Python-functie; ontbrekende scenario's blijven `NOT_OBSERVED`,
 de opgegeven resultaten zijn `SELF_REPORTED`, en de uitkomst blijft
 `NOT_VERIFIED` / `HOLD` / `DENY`. Er is geen serverupload of externe opslag.
 
+## PALACO ONE overdrachtsvoorbereiding (alleen-lezen)
+
+`review_044_identity_preview.preview_identity_handoff(raw_report)` accepteert
+uitsluitend een begrensd JSON-zelfrapport met de negen vaste scenario's,
+verwachtingen, bewijslabels en HOLD/DENY-velden. Dubbele JSON-sleutels,
+onbekende velden, afwijkende vergelijkingslabels en autorisatieverhoging
+worden geweigerd met `PP_REVIEW_044_PREVIEW_INVALID`. De functie produceert
+alleen een geminimaliseerde preview: geen persoonsgegevens, geen P.P.-nummer,
+geen login, geen accountbinding en geen bewijs van identiteit. Een lokale
+zelfrapportage kan deze grens niet zelfstandig opheffen.
+
+Deze adapter is **DRAFT / NOT EXECUTED**. Er is nog geen echte PALACO ONE
+runtimekoppeling en geen toestemming voor activatie.
+
 | Fixture | Verwacht bij latere uitvoering | Risico dat wordt onderzocht |
 | --- | --- | --- |
 | `baseline_untrusted_hold` | `FOUR_FILE_HASH_MATCH_UNTRUSTED` | Correcte binding ≠ verificatie |

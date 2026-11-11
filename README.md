@@ -137,6 +137,10 @@ Het formulier voert geen tests uit, uploadt niets en bewaart invoer alleen
 in het geheugen van de open pagina (niet na afmelden of herladen).
 Een gelijke uitkomst is `MATCH_CLAIMED`, nooit `PASS` of toestemming;
 alle autorisatievelden blijven HOLD/DENY.
+Een aparte pure adapter `review_044_identity_preview.py` bereidt een
+alleen-lezen PALACO ONE-overdrachtspreview voor. Hij weigert afwijkende
+zelfrapportstructuren en geeft nooit identity binding, sessietoegang of
+uitgifte vrij. De adapter is DRAFT en niet uitgevoerd of aangesloten.
 
 Zelfstandig prototype met een Nederlandstalige, responsive interface. De lokale
 PP-engine gebruikt de Python-standaardbibliotheek; geen externe lettertypen of
