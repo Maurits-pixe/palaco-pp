@@ -103,6 +103,22 @@ een `HOLD_DENY_PREVIEW` opleveren; ongeldige invoer moet steeds
 Verwachte foutcodes zijn **SPECIFICATION**, geen geobserveerde uitslagen.
 De uitvoering blijft voorbehouden aan de latere expliciete testsessie.
 
+### Afzonderlijke opt-in previewrunner
+
+`review_044_preview_runner.py` is voorbereid voor deze **13** synthetische
+scenario's. Zonder expliciet `--run` voert hij geen controles uit. Later kan
+de eigenaar vanuit de projectmap kiezen voor:
+
+```sh
+python review_044_preview_runner.py --run --json
+```
+
+De uitvoer gaat uitsluitend naar de terminal, niet naar een bestand of
+netwerk. Ook een technisch overeenkomend resultaat blijft
+`SYNTHETIC_AUTOMATED_LOCAL_EXECUTION` met `HOLD`/`DENY`, zonder
+PALACO ONE-sessie, accountbinding of uitgifte. **Tot uitvoering door de
+eigenaar: NOT EXECUTED; geen PASS-claims.**
+
 | Fixture | Verwacht bij latere uitvoering | Risico dat wordt onderzocht |
 | --- | --- | --- |
 | `baseline_untrusted_hold` | `FOUR_FILE_HASH_MATCH_UNTRUSTED` | Correcte binding ≠ verificatie |

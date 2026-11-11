@@ -144,6 +144,9 @@ uitgifte vrij. De adapter is DRAFT en niet uitgevoerd of aangesloten.
 `review_044_preview_fixtures.py` levert daarbij synthetische positieve en
 negatieve bytevoorbeelden met verwachtingen, zonder de adapter aan te roepen.
 Ook deze regressies zijn nog niet uitgevoerd.
+De afzonderlijke `review_044_preview_runner.py` voert ze alleen uit na
+expliciet `--run` (optioneel `--json`); hij schrijft geen bestanden en
+maakt geen verbinding met een PALACO ONE-runtime.
 
 Zelfstandig prototype met een Nederlandstalige, responsive interface. De lokale
 PP-engine gebruikt de Python-standaardbibliotheek; geen externe lettertypen of
