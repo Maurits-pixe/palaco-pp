@@ -119,6 +119,18 @@ netwerk. Ook een technisch overeenkomend resultaat blijft
 PALACO ONE-sessie, accountbinding of uitgifte. **Tot uitvoering door de
 eigenaar: NOT EXECUTED; geen PASS-claims.**
 
+### Beoordelingsvoorbereiding voor een later rapport
+
+`review_044_preview_assessment.assess_preview_report(raw)` accepteert
+uitsluitend het vaste technische rapportcontract met 13 scenario's in
+de voorgeschreven volgorde. De parser weigert dubbele sleutels,
+onbekende velden, ongeldige codes, inconsistenties tussen geclaimde
+resultaten en vergelijkingslabels en pogingen tot autorisatie-escalatie.
+Hij geeft alleen een minimale **claimed**-samenvatting terug; het importeren
+van een JSON-rapport bewijst niet dat een lokale runner werkelijk is uitgevoerd.
+De eigenaarreview blijft `PENDING` en identiteit/uitgifte blijven geblokkeerd.
+Deze functie is eveneens **DRAFT / NOT EXECUTED**.
+
 | Fixture | Verwacht bij latere uitvoering | Risico dat wordt onderzocht |
 | --- | --- | --- |
 | `baseline_untrusted_hold` | `FOUR_FILE_HASH_MATCH_UNTRUSTED` | Correcte binding ≠ verificatie |

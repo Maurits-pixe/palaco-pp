@@ -147,6 +147,10 @@ Ook deze regressies zijn nog niet uitgevoerd.
 De afzonderlijke `review_044_preview_runner.py` voert ze alleen uit na
 expliciet `--run` (optioneel `--json`); hij schrijft geen bestanden en
 maakt geen verbinding met een PALACO ONE-runtime.
+Voor de latere handmatige rapportbeoordeling is tevens de pure parser
+`review_044_preview_assessment.py` voorbereid. Die vat uitsluitend
+geclaimde technische resultaten samen en kan geen onafhankelijke
+uitvoering, identiteit of autorisatie bevestigen.
 
 Zelfstandig prototype met een Nederlandstalige, responsive interface. De lokale
 PP-engine gebruikt de Python-standaardbibliotheek; geen externe lettertypen of
