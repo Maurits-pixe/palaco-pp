@@ -126,6 +126,10 @@ De bijbehorende `review_044_runner.py` is een afzonderlijk, opt-in lokaal
 uitvoerscript: zonder expliciete `--run` start geen review. Met `--run --json`
 kan de eigenaar later technische waarnemingen naar de terminal laten schrijven.
 Het script verandert geen autorisatie en schrijft geen bestanden.
+Voor aparte eigenaarwaarnemingen is bovendien de pure functie
+`review_044_observations.make_self_report()` voorbereid. Zij markeert elke
+ingevoerde waarneming uitsluitend als `SELF_REPORTED` en laat ontbrekende
+scenario's `NOT_OBSERVED`; ook deze uitvoer blijft `NOT_VERIFIED` en HOLD/DENY.
 
 Zelfstandig prototype met een Nederlandstalige, responsive interface. De lokale
 PP-engine gebruikt de Python-standaardbibliotheek; geen externe lettertypen of

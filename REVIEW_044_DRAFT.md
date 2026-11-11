@@ -42,6 +42,20 @@ uitkomst is uitsluitend `SYNTHETIC_AUTOMATED_LOCAL_EXECUTION`, **niet**
 `SELF_REPORTED` en geen onafhankelijke identiteitstoets. De gebruiker kan
 de eigen schermwaarneming later apart als `SELF_REPORTED` registreren.
 
+## Eigen waarnemingen als afzonderlijk contract
+
+`review_044_observations.make_self_report(observations, recorded_at)` maakt
+uitsluitend op expliciete invoer van de eigenaar een in-memory
+`palaco.pp.review-044-self-report.v0`-object. Een invoerregel bevat exact
+`scenario_id`, `observed_result` en `observed_at`; het rapport bevat geen
+vrij tekstveld, nummers of consumer-ID's. Niet ingevulde scenario's blijven
+`NOT_OBSERVED` met `NO_OBSERVATION`. Een zelfgerapporteerde overeenkomst heet
+`MATCH_CLAIMED` en nooit `PASS` of `VERIFIED`.
+
+De functie vergelijkt alleen de ingevoerde waarden met de vooraf vastgelegde
+verwachting. Zij voert geen fixture, validator of test uit, schrijft geen
+bestanden, en kent geen autorisatie-uitkomst anders dan `HOLD`/`DENY`.
+
 | Fixture | Verwacht bij latere uitvoering | Risico dat wordt onderzocht |
 | --- | --- | --- |
 | `baseline_untrusted_hold` | `FOUR_FILE_HASH_MATCH_UNTRUSTED` | Correcte binding ≠ verificatie |
