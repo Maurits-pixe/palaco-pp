@@ -246,6 +246,17 @@ automatisch ingevuld tijdstip, handtekening, zelfstandig authenticiteitsbewijs
 of productieautoriteit. Bij register- of dossierwijziging wordt een eerdere
 selectie en de bijbehorende exportmogelijkheid onmiddellijk ingetrokken.
 
+De pure offline functie
+`review_044_owner_inspection.validate_owner_inspection(registry_bytes,
+inspection_bytes)` koppelt een gedownload inspectierapport strikt aan het
+oorspronkelijke registersnapshot. De bestaande registervalidator beoordeelt
+eerst de volledige keten, waarna exact schema, veldset, vaste bewijsgrenzen,
+volgnummer en alle bron-/entry-/voorgangerhashes moeten overeenkomen.
+Dubbele JSON-sleutels en ambiguë of gemanipuleerde claims worden geweigerd
+met `PP_REVIEW_044_OWNER_INSPECTION_INVALID`. De geretourneerde beoordeling
+blijft `REGISTER_ROW_HASH_BINDING_CONSISTENT_UNTRUSTED / NOT_VERIFIED /
+HOLD / DENY / NOT_AUTHORIZED`. **Status: DRAFT / NOT EXECUTED.**
+
 Status: **DRAFT / NOT EXECUTED / HOLD / DENY**.
 
 | Fixture | Verwacht bij latere uitvoering | Risico dat wordt onderzocht |

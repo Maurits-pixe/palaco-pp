@@ -208,6 +208,12 @@ gedownload. Het bevat alle volledige hashes, volgnummer, voorgangerbinding,
 de beperkte browserconsistentie-indicatie en expliciete beperkingen van
 herkomst-, tijds-, historie- en identiteitsbewijs. De download is geen
 attestatie en wijzigt het oorspronkelijke register niet.
+`review_044_owner_inspection.py` valideert het gedownloade inspectierapport
+strikt tegen de oorspronkelijke registerbytes. Dubbele JSON-sleutels,
+afwijkende velden, gewijzigd volgnummer, mismatches in de vijf hashbindingsvelden
+en ongeldige registerketens worden geweigerd. Een geldige uitkomst betekent
+uitsluitend `REGISTER_ROW_HASH_BINDING_CONSISTENT_UNTRUSTED`, nooit identiteit,
+onveranderlijke geschiedenis of uitvoeringsbevoegdheid.
 
 Zelfstandig prototype met een Nederlandstalige, responsive interface. De lokale
 PP-engine gebruikt de Python-standaardbibliotheek; geen externe lettertypen of
