@@ -20,6 +20,28 @@ De pure fixturefunctie `review_fixtures.build_review_fixtures()` levert
 in-memory byte-tuples zonder bestanden te schrijven of validators aan te roepen.
 UUID's en P.P.-suffixen zijn expliciet synthetisch.
 
+## Bewust starten tijdens de testsessie
+
+De voorbereide, offline runner `review_044_runner.py` start **niet** bij
+importeren en voert pas controles uit met een expliciete `--run`-optie.
+Vanaf de projectmap kan de eigenaar later kiezen:
+
+```sh
+python review_044_runner.py --run
+```
+
+Voor een kopieerbaar technisch rapport naar de terminal:
+
+```sh
+python review_044_runner.py --run --json
+```
+
+Zonder `--run` worden geen scenario's gestart. De runner schrijft geen
+bestanden en legt geen externe verbindingen. Een technisch overeenkomende
+uitkomst is uitsluitend `SYNTHETIC_AUTOMATED_LOCAL_EXECUTION`, **niet**
+`SELF_REPORTED` en geen onafhankelijke identiteitstoets. De gebruiker kan
+de eigen schermwaarneming later apart als `SELF_REPORTED` registreren.
+
 | Fixture | Verwacht bij latere uitvoering | Risico dat wordt onderzocht |
 | --- | --- | --- |
 | `baseline_untrusted_hold` | `FOUR_FILE_HASH_MATCH_UNTRUSTED` | Correcte binding ≠ verificatie |

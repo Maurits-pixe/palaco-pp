@@ -122,6 +122,10 @@ Voor een latere, door de eigenaar uitgevoerde controle is
 synthetische, deterministische vier-bestandenscenario's inclusief
 verwachte negatieve weigeringen. De fixtures schrijven niets naar schijf
 en voeren geen validators uit. Er worden geen PASS-resultaten geclaimd.
+De bijbehorende `review_044_runner.py` is een afzonderlijk, opt-in lokaal
+uitvoerscript: zonder expliciete `--run` start geen review. Met `--run --json`
+kan de eigenaar later technische waarnemingen naar de terminal laten schrijven.
+Het script verandert geen autorisatie en schrijft geen bestanden.
 
 Zelfstandig prototype met een Nederlandstalige, responsive interface. De lokale
 PP-engine gebruikt de Python-standaardbibliotheek; geen externe lettertypen of
