@@ -12,6 +12,14 @@ sessietokens geëxporteerd. Het overzicht is geen onafhankelijke verificatie:
 De download schrijft niets naar de database en verbindt niets met PALACO ONE.
 Deze wijziging is nog niet getest; acceptatie blijft voor de eigenaar.
 
+Een lokale JSON-inspectie kan een eerder geëxporteerd bestand (max. 64 KiB)
+vergelijken met de actieve accountreferenties en de actuele P.P.-registratie.
+Ongeldige contracten, andere accounts en afwijkende/historische registraties
+krijgen afzonderlijke meldingen. De inspector gebruikt uitsluitend de File API
+in de browser en schrijft of uploadt geen data. Zelfs een volledige match
+betekent **geen** handtekeningcontrole, onafhankelijke identiteitsverificatie,
+herstel, autorisatie of PALACO ONE-aanmelding. HOLD/DENY blijven behouden.
+
 Zelfstandig prototype met een Nederlandstalige, responsive interface. De lokale
 PP-engine gebruikt de Python-standaardbibliotheek; geen externe lettertypen of
 analytics. Python 3.11+ vereist. Optionele e-mail gebruikt een externe SMTP-provider;

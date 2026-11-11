@@ -275,6 +275,8 @@ function renderAuth() {
   $("selection-panel").hidden = true;
   $("result-panel").hidden = true;
   $("recovery-panel").hidden = true;
+  $("recovery-file").value = "";
+  $("recovery-inspection").textContent = "Nog geen bestand beoordeeld.";
   $("history-panel").hidden = true;
   $("memory-panel").hidden = true;
   $("account-label").hidden = true;
@@ -544,6 +546,70 @@ $("recovery-export").addEventListener("click", () => {
   anchor.remove();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
   notice("Hersteloverzicht aangeboden als download. Autorisatie blijft HOLD.");
+});
+$("recovery-file").addEventListener("change", async () => {
+  const result = $("recovery-inspection");
+  const file = $("recovery-file").files?.[0];
+  result.classList.remove("recovery-inspection-good");
+  result.textContent = "Geen bestand geselecteerd.";
+  if (!file || busy || !sessionState?.authenticated || !current) return;
+  if (file.size === 0 || file.size > 65536) {
+    result.textContent = "BESTAND GEWEIGERD / Alleen JSON van 1 t/m 65536 bytes.";
+    return;
+  }
+  const inspectedUsername = sessionState.username;
+  const inspectedConsumer = current.consumerId;
+  try {
+    const dossier = JSON.parse(await file.text());
+    if (!sessionState?.authenticated || sessionState.username !== inspectedUsername ||
+        current?.consumerId !== inspectedConsumer) {
+      result.textContent = "SESSIE GEWIJZIGD / Meld je opnieuw aan en beoordeel het bestand opnieuw.";
+      return;
+    }
+    const isObject = (value) => value !== null && typeof value === "object" &&
+      !Array.isArray(value);
+    const valid = isObject(dossier) && isObject(dossier.account) &&
+      isObject(dossier.registration) &&
+      dossier.schema === "palaco.phone.recovery.v1" &&
+      dossier.reference === "PP-RECOVERY-002" &&
+      dossier.source === "LOCAL_PP_PROTOTYPE" &&
+      dossier.evidenceClass === "LOCAL_RECORD_SELF_EXPORTED_NOT_INDEPENDENTLY_VERIFIED" &&
+      dossier.identityVerification === "NOT_VERIFIED" &&
+      dossier.authorization === "HOLD" &&
+      dossier.accessDecision === "DENY" &&
+      dossier.issuance === "NOT_AUTHORIZED" &&
+      typeof dossier.generatedAt === "string" &&
+      !Number.isNaN(Date.parse(dossier.generatedAt)) &&
+      ["NEW", "OFFERED", "ACTIVE", "REVOKED"].includes(dossier.registration.status) &&
+      (dossier.registration.ppNumber === null ||
+        (typeof dossier.registration.ppNumber === "string" &&
+         /^[1-9][0-9]{9}$/.test(dossier.registration.ppNumber)));
+    if (!valid) {
+      result.textContent = "ONGELDIG / Dit bestand voldoet niet aan het P.P.-hersteldossiercontract.";
+      return;
+    }
+    const accountMatches = dossier.account.username === sessionState.username &&
+      dossier.account.consumerId === current.consumerId;
+    if (!accountMatches) {
+      result.textContent = "AFWIJKING / De accountreferenties komen niet overeen met de huidige sessie. Geen herstel of import uitgevoerd.";
+      return;
+    }
+    const registrationMatches = dossier.registration.status === current.status &&
+      (dossier.registration.ppNumber || null) === (current.ppNumber || null) &&
+      (dossier.registration.ppNumberId || null) === (current.ppNumberId || null) &&
+      (dossier.registration.selectedAt || null) === (current.selectedAt || null) &&
+      (dossier.registration.revokedAt || null) === (current.revokedAt || null);
+    if (!registrationMatches) {
+      result.textContent = "HISTORISCH OF AFWIJKEND / Account komt overeen, maar de actuele registratie verschilt. Geen wijzigingen uitgevoerd; autorisatie HOLD.";
+      return;
+    }
+    result.classList.add("recovery-inspection-good");
+    result.textContent = "LOKALE REFERENTIES KOMEN OVEREEN / Dit is uitsluitend een vergelijking met de huidige prototypegegevens. Geen onafhankelijke verificatie, authenticatie of autorisatie. HOLD / DENY.";
+  } catch (error) {
+    result.textContent = "ONGELDIG / Het JSON-bestand kon niet worden gelezen.";
+  } finally {
+    $("recovery-file").value = "";
+  }
 });
 $("retry").addEventListener("click", load);
 async function loadMailStatus() {

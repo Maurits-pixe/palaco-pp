@@ -101,6 +101,13 @@
       </dl>
       <p class="auth-note">Het JSON-dossier bevat je gebruikersnaam, consumer-ID, eventuele P.P.-nummer en tijdstippen. Bewaar het privé. Een download verandert de registratie niet en dient uitsluitend voor jouw latere beoordeling.</p>
       <button id="recovery-export" type="button" class="secondary">Download hersteloverzicht (.json)</button>
+      <div class="recovery-inspector">
+        <h3>Herstelbestand lokaal beoordelen</h3>
+        <p class="auth-note">Selecteer een eerder gedownload P.P.-dossier. De browser vergelijkt de referenties met je huidige aangemelde account; het bestand wordt niet geüpload, geïmporteerd of opgeslagen.</p>
+        <label for="recovery-file">Kies een JSON-bestand (maximaal 64 KB)</label>
+        <input id="recovery-file" type="file" accept=".json,application/json">
+        <p id="recovery-inspection" class="recovery-inspection" role="status" aria-live="polite">Nog geen bestand beoordeeld.</p>
+      </div>
     </section>
 
     <details id="history-panel" class="history-panel" hidden>
