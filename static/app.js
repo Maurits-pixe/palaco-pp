@@ -278,6 +278,8 @@ function renderAuth() {
   $("recovery-file").value = "";
   $("recovery-inspection").textContent = "Nog geen bestand beoordeeld.";
   $("handoff-status").textContent = "Alleen beschikbaar voor een lokaal gekozen of ingetrokken P.P.-nummer.";
+  $("handoff-file").value = "";
+  $("handoff-inspection").textContent = "Nog geen overdrachtsbestand geselecteerd.";
   $("history-panel").hidden = true;
   $("memory-panel").hidden = true;
   $("account-label").hidden = true;
@@ -555,6 +557,77 @@ $("handoff-export").addEventListener("click", () => {
     constraints: ["NO_AUTOMATIC_ACCOUNT_LINK", "NO_AUTHENTICATION", "NO_AUTO_ISSUANCE"],
   });
   $("handoff-status").textContent = "Beoordelingspakket aangeboden als download. Er is niets naar PALACO ONE verzonden; HOLD blijft actief.";
+});
+
+$("handoff-file").addEventListener("change", async () => {
+  const result = $("handoff-inspection");
+  const file = $("handoff-file").files?.[0];
+  result.classList.remove("recovery-inspection-good");
+  result.textContent = "Geen bestand geselecteerd.";
+  if (!file || busy || !sessionState?.authenticated || !current) return;
+  if (file.size === 0 || file.size > 16384) {
+    result.textContent = "GEWEIGERD / Het bestand moet tussen 1 en 16384 bytes bevatten.";
+    return;
+  }
+  const consumer = current.consumerId;
+  try {
+    const input = JSON.parse(await file.text());
+    if (!sessionState?.authenticated || current?.consumerId !== consumer) {
+      result.textContent = "SESSIE GEWIJZIGD / Beoordeel opnieuw na aanmelden.";
+      return;
+    }
+    const object = (value) => value && typeof value === "object" && !Array.isArray(value);
+    const sameKeys = (value, keys) => object(value) &&
+      Object.keys(value).length === keys.length && keys.every((key) => Object.hasOwn(value, key));
+    const required = {
+      schema: "palaco.pp.one.review-handoff.v0",
+      reference: "PP-RECOVERY-002",
+      source: "LOCAL_PP_PROTOTYPE_USER_EXPORTED",
+      destination: "PALACO_ONE_MANUAL_REVIEW_ONLY",
+      provenance: "UNSIGNED_USER_CONTROLLED_FILE",
+      identityVerification: "NOT_VERIFIED",
+      reviewDecision: "PENDING_HUMAN_REVIEW",
+      authorization: "HOLD",
+      accessDecision: "DENY",
+      issuance: "NOT_AUTHORIZED",
+    };
+    const keys = [...Object.keys(required), "createdAt", "subjectReference", "registration", "constraints"];
+    const registrationKeys = ["ppNumberId", "ppNumberLast4", "status", "selectedAt", "revokedAt"];
+    const constraints = ["NO_AUTOMATIC_ACCOUNT_LINK", "NO_AUTHENTICATION", "NO_AUTO_ISSUANCE"];
+    const valid = sameKeys(input, keys) &&
+      Object.entries(required).every(([key, value]) => input[key] === value) &&
+      typeof input.createdAt === "string" && !Number.isNaN(Date.parse(input.createdAt)) &&
+      sameKeys(input.subjectReference, ["consumerId"]) &&
+      sameKeys(input.registration, registrationKeys) &&
+      typeof input.registration.ppNumberId === "string" &&
+      /^[0-9]{4}$/.test(input.registration.ppNumberLast4) &&
+      ["ACTIVE", "REVOKED"].includes(input.registration.status) &&
+      typeof input.registration.selectedAt === "string" &&
+      typeof input.subjectReference.consumerId === "string" &&
+      Array.isArray(input.constraints) && input.constraints.length === 3 &&
+      constraints.every((item) => input.constraints.includes(item));
+    if (!valid) {
+      result.textContent = "ONGELDIG / Dit is geen herkenbaar P.P. → PALACO ONE v0-beoordelingspakket.";
+      return;
+    }
+    const matches = ["ACTIVE", "REVOKED"].includes(current.status) &&
+      input.subjectReference.consumerId === current.consumerId &&
+      input.registration.ppNumberId === current.ppNumberId &&
+      input.registration.ppNumberLast4 === current.ppNumber?.slice(-4) &&
+      input.registration.status === current.status &&
+      input.registration.selectedAt === current.selectedAt &&
+      (input.registration.revokedAt || null) === (current.revokedAt || null);
+    if (!matches) {
+      result.textContent = "AFWIJKING / Bestand is structureel herkenbaar, maar komt niet overeen met de actuele registratie. Geen import; HOLD / DENY.";
+      return;
+    }
+    result.classList.add("recovery-inspection-good");
+    result.textContent = "LOKALE VERGELIJKING GESLAAGD / Referenties komen overeen. Het bestand is ongetekend en blijft ONVERTROUWD; geen identiteitsbewijs of toestemming. HOLD / DENY.";
+  } catch (error) {
+    result.textContent = "ONGELDIG / JSON kon niet worden verwerkt.";
+  } finally {
+    $("handoff-file").value = "";
+  }
 });
 
 $("recovery-export").addEventListener("click", () => {

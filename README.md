@@ -43,6 +43,13 @@ groter dan 16 KiB. Een structurele controle levert uitsluitend
 De validator heeft geen database-, netwerk-, login-, import- of schrijfrechten.
 Er is geen API-route die inkomende gegevens toepast. Deze bouwfase is ongetest.
 
+De consumentenpagina heeft daarnaast een lokale handoff-inspectie voor de
+eigenaar. Deze vergelijkt een gekozen bestand met de actuele registratie, zonder
+netwerk of opslag. Een overeenkomst is alleen een gebruikersinterface-waarneming;
+de striktere Python-parser blijft een afzonderlijke contractgrens. Geen van
+beide inspecties bewijst authenticiteit of verleent rechten. Tests zijn aan de
+eigenaar voorbehouden.
+
 Zelfstandig prototype met een Nederlandstalige, responsive interface. De lokale
 PP-engine gebruikt de Python-standaardbibliotheek; geen externe lettertypen of
 analytics. Python 3.11+ vereist. Optionele e-mail gebruikt een externe SMTP-provider;

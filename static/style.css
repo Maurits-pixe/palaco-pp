@@ -114,6 +114,9 @@ footer > span:first-child { letter-spacing: 1px; font-weight: 600; }
 .handoff-panel h3 { margin: 0 0 8px; }
 .handoff-panel .secondary { justify-self: start; }
 .handoff-panel .auth-note { margin: 4px 0 10px; }
+.handoff-inspector { border-top: 1px solid #d2dccb; margin-top: 10px; padding-top: 16px; }
+.handoff-inspector label { display: block; margin-bottom: 8px; font-size: 11px; font-weight: 650; }
+.handoff-inspector input { display: block; max-width: 100%; font-size: 12px; }
 .history-panel { margin: 18px 0 0; border: 1px solid var(--line); border-radius: 12px; background: #fffefa; }
 .history-panel > summary { display: flex; align-items: center; justify-content: space-between; gap: 16px; cursor: pointer; padding: 17px 20px; color: var(--green); font-size: 10px; letter-spacing: 1.5px; font-weight: 700; list-style-position: inside; }
 .history-panel > summary::marker { color: #71865e; }
