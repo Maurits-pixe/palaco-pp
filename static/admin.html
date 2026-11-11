@@ -79,6 +79,17 @@
         <p id="admin-review-result" class="admin-review-result" role="status" aria-live="polite">Nog geen bestand beoordeeld.</p>
         <button id="admin-review-download" type="button" class="secondary" disabled>Download HOLD-beoordelingsrapport (.json)</button>
         <p class="auth-note">Het rapport bevat alleen een bestandsvingerafdruk, structuuruitkomst, notitie en HOLD/DENY. Geen P.P.-nummer, wachtwoord of consumer-ID. SHA-256 is geen digitale handtekening en bewijst de herkomst niet.</p>
+        <div class="admin-bundle-panel" aria-labelledby="admin-bundle-title">
+          <h3 id="admin-bundle-title">Bewijsindex / twee bestanden koppelen</h3>
+          <p class="auth-note">Kies het oorspronkelijke overdrachtsbestand én het eerder gedownloade HOLD-rapport. De browser koppelt ze via de exacte bestandsvingerafdruk. Er wordt niets naar de server verzonden.</p>
+          <div class="admin-review-grid">
+            <div><label for="admin-bundle-handoff">P.P.-overdracht (.json)</label><input id="admin-bundle-handoff" type="file" accept=".json,application/json"></div>
+            <div><label for="admin-bundle-report">HOLD-beoordelingsrapport (.json)</label><input id="admin-bundle-report" type="file" accept=".json,application/json"></div>
+          </div>
+          <button id="admin-bundle-check" type="button" class="secondary">Controleer bewijsbinding</button>
+          <p id="admin-bundle-result" class="admin-review-result" role="status" aria-live="polite">Nog geen bewijsbinding beoordeeld.</p>
+          <button id="admin-bundle-export" type="button" class="secondary" disabled>Download bewijsindex (.json)</button>
+        </div>
       </section>
     </div>
     <p class="auth-note">Lokale beheerdersdemo. Geen productiebeveiliging, MFA of wachtwoordherstel. Bescherm de onversleutelde database.</p>

@@ -21,13 +21,21 @@ let auditSearch = "";
 let auditEvent = "";
 let auditStatus = "";
 let reviewAssessment = null;
+let bundleAssessment = null;
+let bundleSelectionVersion = 0;
 
 function clearReview() {
   reviewAssessment = null;
+  bundleAssessment = null;
+  bundleSelectionVersion += 1;
   $("admin-review-file").value = "";
   $("admin-review-note").value = "";
   $("admin-review-result").textContent = "Nog geen bestand beoordeeld.";
   $("admin-review-download").disabled = true;
+  $("admin-bundle-handoff").value = "";
+  $("admin-bundle-report").value = "";
+  $("admin-bundle-result").textContent = "Nog geen bewijsbinding beoordeeld.";
+  $("admin-bundle-export").disabled = true;
 }
 
 function notice(message, error = false) {
@@ -414,5 +422,95 @@ $("admin-review-download").addEventListener("click", () => {
   anchor.remove();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
   $("admin-review-result").textContent = "HOLD-rapport aangeboden als download. Geen opslag op de server of automatische goedkeuring.";
+});
+
+for (const id of ["admin-bundle-handoff", "admin-bundle-report"]) {
+  $(id).addEventListener("change", () => {
+    bundleAssessment = null;
+    bundleSelectionVersion += 1;
+    $("admin-bundle-export").disabled = true;
+    $("admin-bundle-result").textContent = "Bestanden geselecteerd; controle nog niet uitgevoerd.";
+  });
+}
+
+$("admin-bundle-check").addEventListener("click", async () => {
+  if (!authenticated || busy) return;
+  bundleAssessment = null;
+  $("admin-bundle-export").disabled = true;
+  const output = $("admin-bundle-result");
+  const handoff = $("admin-bundle-handoff").files?.[0];
+  const report = $("admin-bundle-report").files?.[0];
+  if (!handoff || !report || handoff.size < 1 || report.size < 1 ||
+      handoff.size > 16384 || report.size > 16384) {
+    output.textContent = "GEWEIGERD / Kies twee niet-lege JSON-bestanden van elk maximaal 16 KB.";
+    return;
+  }
+  const adminName = $("admin-name").textContent;
+  const selectedVersion = bundleSelectionVersion;
+  try {
+    const [handoffBytes, reportBytes] = await Promise.all([handoff.arrayBuffer(), report.arrayBuffer()]);
+    const [handoffDigest, reportDigest] = await Promise.all([
+      crypto.subtle.digest("SHA-256", handoffBytes), crypto.subtle.digest("SHA-256", reportBytes),
+    ]);
+    if (!authenticated || $("admin-name").textContent !== adminName ||
+        bundleSelectionVersion !== selectedVersion) {
+      output.textContent = "SESSIE OF BESTANDSKEUZE GEWIJZIGD / Controleer opnieuw.";
+      return;
+    }
+    const hex = (digest) => Array.from(new Uint8Array(digest),
+      (byte) => byte.toString(16).padStart(2, "0")).join("");
+    const handoffSha256 = hex(handoffDigest);
+    const reportSha256 = hex(reportDigest);
+    const decoder = new TextDecoder("utf-8", { fatal: true });
+    const transfer = JSON.parse(decoder.decode(handoffBytes));
+    const review = JSON.parse(decoder.decode(reportBytes));
+    const valid = transfer && typeof transfer === "object" && !Array.isArray(transfer) &&
+      transfer.schema === "palaco.pp.one.review-handoff.v0" &&
+      transfer.reference === "PP-RECOVERY-002" &&
+      transfer.authorization === "HOLD" && transfer.accessDecision === "DENY" &&
+      transfer.identityVerification === "NOT_VERIFIED" &&
+      transfer.issuance === "NOT_AUTHORIZED" &&
+      transfer.provenance === "UNSIGNED_USER_CONTROLLED_FILE" &&
+      review && typeof review === "object" && !Array.isArray(review) &&
+      review.schema === "palaco.pp.manual-review.v0" &&
+      review.evidenceReference === "PP-RECOVERY-002" &&
+      review.structuralStatus === "CLIENT_STRUCTURE_RECOGNIZED_UNTRUSTED" &&
+      review.fileSha256 === handoffSha256 &&
+      review.verification === "NOT_VERIFIED" && review.reviewDecision === "HOLD" &&
+      review.authorization === "HOLD" && review.accessDecision === "DENY" &&
+      review.issuance === "NOT_AUTHORIZED";
+    if (!valid) {
+      output.textContent = "BINDING AFGEWEZEN / De vingerafdruk of HOLD-contractvelden komen niet overeen. Geen index aangemaakt.";
+      return;
+    }
+    bundleAssessment = {
+      schema: "palaco.pp.evidence-index.v0",
+      reference: "PP-RECOVERY-002",
+      createdAt: new Date().toISOString(),
+      linkage: "HASH_MATCH_UNTRUSTED_CLIENT_OBSERVATION",
+      handoffSha256, reportSha256,
+      verification: "NOT_VERIFIED", reviewDecision: "HOLD",
+      authorization: "HOLD", accessDecision: "DENY", issuance: "NOT_AUTHORIZED",
+      note: "Geen digitale handtekening, onafhankelijke bronverificatie of accountkoppeling.",
+    };
+    $("admin-bundle-export").disabled = false;
+    output.textContent = "LOKALE HASHBINDING KOMT OVEREEN / Beide bestanden zijn gekoppeld, maar blijven onvertrouwd. HOLD / DENY.";
+  } catch (error) {
+    output.textContent = "ONGELDIG / Bestanden konden niet veilig worden gelezen. Geen index aangemaakt.";
+  }
+});
+
+$("admin-bundle-export").addEventListener("click", () => {
+  if (!authenticated || busy || !bundleAssessment) return;
+  const url = URL.createObjectURL(new Blob([JSON.stringify(bundleAssessment, null, 2) + "\n"],
+    { type: "application/json" }));
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = "palaco-pp-evidence-index-hold.json";
+  document.body.append(anchor);
+  anchor.click();
+  anchor.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  $("admin-bundle-result").textContent = "Bewijsindex aangeboden als lokale download. Autorisatie blijft HOLD / DENY.";
 });
 action(loadSession);

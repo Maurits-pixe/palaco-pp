@@ -73,6 +73,13 @@ in de uitkomst opgenomen. Een geslaagde binding heet
 Er bestaat nog geen automatische invoerroute in PALACO ONE. Geen tests of
 uitrol uitgevoerd in deze bouwfase.
 
+Het backoffice-scherm kan daarnaast twee lokale bestanden (handoff + HOLD-rapport)
+in de browser vergelijken en een beperkte `palaco.pp.evidence-index.v0`
+downloaden met uitsluitend de twee bestandsvingerafdrukken en HOLD/DENY.
+Dit is een gebruikersinterface-waarneming, geen vervanging van de strengere
+Python-bundelcontrole of bewijs van authenticiteit. De bestanden worden
+niet geïmporteerd, geüpload of persistent opgeslagen.
+
 Zelfstandig prototype met een Nederlandstalige, responsive interface. De lokale
 PP-engine gebruikt de Python-standaardbibliotheek; geen externe lettertypen of
 analytics. Python 3.11+ vereist. Optionele e-mail gebruikt een externe SMTP-provider;
