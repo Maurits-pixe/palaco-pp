@@ -56,6 +56,18 @@ De functie vergelijkt alleen de ingevoerde waarden met de vooraf vastgelegde
 verwachting. Zij voert geen fixture, validator of test uit, schrijft geen
 bestanden, en kent geen autorisatie-uitkomst anders dan `HOLD`/`DENY`.
 
+## Voorbereid formulier in de lokale beheerpagina
+
+Onder **Review 044 / mijn eigen waarneming** kunnen later per scenario
+uitkomsten worden vastgelegd via een expliciete knop. De selectie heeft
+geen test- of validatorfunctie. Het JSON-bestand wordt uitsluitend na een
+aparte downloadactie lokaal aangeboden. Het formulier bewaart de invoer
+alleen in paginageheugen: herladen of afmelden wist de observaties.
+De export gebruikt hetzelfde `palaco.pp.review-044-self-report.v0`-contract
+als de pure Python-functie; ontbrekende scenario's blijven `NOT_OBSERVED`,
+de opgegeven resultaten zijn `SELF_REPORTED`, en de uitkomst blijft
+`NOT_VERIFIED` / `HOLD` / `DENY`. Er is geen serverupload of externe opslag.
+
 | Fixture | Verwacht bij latere uitvoering | Risico dat wordt onderzocht |
 | --- | --- | --- |
 | `baseline_untrusted_hold` | `FOUR_FILE_HASH_MATCH_UNTRUSTED` | Correcte binding ≠ verificatie |

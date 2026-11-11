@@ -130,6 +130,13 @@ Voor aparte eigenaarwaarnemingen is bovendien de pure functie
 `review_044_observations.make_self_report()` voorbereid. Zij markeert elke
 ingevoerde waarneming uitsluitend als `SELF_REPORTED` en laat ontbrekende
 scenario's `NOT_OBSERVED`; ook deze uitvoer blijft `NOT_VERIFIED` en HOLD/DENY.
+De bestaande lokale beheerpagina heeft nu ook het formulier **Review 044 /
+mijn eigen waarneming**: selecteer een van de negen scenario's, registreer
+expliciet de eigen waarneming en download desgewenst een JSON-zelfrapport.
+Het formulier voert geen tests uit, uploadt niets en bewaart invoer alleen
+in het geheugen van de open pagina (niet na afmelden of herladen).
+Een gelijke uitkomst is `MATCH_CLAIMED`, nooit `PASS` of toestemming;
+alle autorisatievelden blijven HOLD/DENY.
 
 Zelfstandig prototype met een Nederlandstalige, responsive interface. De lokale
 PP-engine gebruikt de Python-standaardbibliotheek; geen externe lettertypen of

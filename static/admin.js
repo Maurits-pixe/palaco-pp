@@ -25,6 +25,18 @@ let bundleAssessment = null;
 let bundleSelectionVersion = 0;
 let chainSelectionVersion = 0;
 let chainAssessment = null;
+const review044Expectations = Object.freeze({
+  baseline_untrusted_hold: "FOUR_FILE_HASH_MATCH_UNTRUSTED",
+  handoff_changed_without_rebinding: "PP_CHAIN_INVALID",
+  report_authority_escalation: "PP_CHAIN_INVALID",
+  index_wrong_report_digest: "PP_CHAIN_INVALID",
+  observation_wrong_index_digest: "PP_CHAIN_INVALID",
+  observation_authority_escalation: "PP_CHAIN_INVALID",
+  observation_duplicate_key: "PP_CHAIN_INVALID",
+  observation_truncated_json: "PP_CHAIN_INVALID",
+  observation_oversized: "PP_CHAIN_INVALID",
+});
+const review044Observations = new Map();
 
 function clearReview() {
   reviewAssessment = null;
@@ -43,6 +55,11 @@ function clearReview() {
   for (const id of ["admin-chain-handoff", "admin-chain-report", "admin-chain-index"]) $(id).value = "";
   $("admin-chain-result").textContent = "Geen ketencontrole uitgevoerd. HOLD / DENY.";
   $("admin-chain-export").disabled = true;
+  review044Observations.clear();
+  $("admin-review044-scenario").selectedIndex = 0;
+  $("admin-review044-observed").value = "NOT_OBSERVED";
+  $("admin-review044-result").textContent = "Nog geen eigen waarnemingen vastgelegd. HOLD / DENY.";
+  $("admin-review044-export").disabled = true;
 }
 
 function notice(message, error = false) {
@@ -620,5 +637,68 @@ $("admin-chain-export").addEventListener("click", () => {
   anchor.remove();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
   $("admin-chain-result").textContent = "Lokaal ketenrapport aangeboden als download; geen onafhankelijke verificatie. HOLD / DENY.";
+});
+
+for (const scenario of Object.keys(review044Expectations)) {
+  const option = document.createElement("option");
+  option.value = scenario;
+  option.textContent = scenario.replaceAll("_", " ");
+  $("admin-review044-scenario").append(option);
+}
+
+$("admin-review044-scenario").addEventListener("change", () => {
+  const row = review044Observations.get($("admin-review044-scenario").value);
+  $("admin-review044-observed").value = row?.observed_result || "NOT_OBSERVED";
+});
+
+$("admin-review044-record").addEventListener("click", () => {
+  if (!authenticated || busy) return;
+  const scenario = $("admin-review044-scenario").value;
+  const result = $("admin-review044-observed").value;
+  if (!Object.hasOwn(review044Expectations, scenario) || ![
+    "NOT_OBSERVED", "FOUR_FILE_HASH_MATCH_UNTRUSTED", "PP_CHAIN_INVALID", "UNEXPECTED_ERROR",
+  ].includes(result)) return;
+  // The timestamp is attached to the explicit owner action, never fabricated for missing rows.
+  review044Observations.set(scenario, {
+    observed_result: result,
+    observed_at: new Date().toISOString(),
+  });
+  $("admin-review044-export").disabled = false;
+  $("admin-review044-result").textContent = `${review044Observations.size} van 9 scenario's zelf gerapporteerd. Geen onafhankelijke verificatie. HOLD / DENY.`;
+});
+
+$("admin-review044-export").addEventListener("click", () => {
+  if (!authenticated || busy || review044Observations.size === 0) return;
+  const report = {
+    schema: "palaco.pp.review-044-self-report.v0",
+    reference: "PP-RECOVERY-002",
+    recordedAt: new Date().toISOString(),
+    provenance: "UNSIGNED_OWNER_SELF_REPORT_NOT_INDEPENDENTLY_VERIFIED",
+    scenarios: Object.entries(review044Expectations).map(([scenario, expected]) => {
+      const observation = review044Observations.get(scenario);
+      const result = observation?.observed_result || "NOT_OBSERVED";
+      return {
+        scenario_id: scenario,
+        expected_result: expected,
+        observed_result: result,
+        observed_at: observation?.observed_at || null,
+        evidence_kind: observation ? "SELF_REPORTED" : "NO_OBSERVATION",
+        comparison: !observation || result === "NOT_OBSERVED"
+          ? "NOT_ASSESSED" : result === expected ? "MATCH_CLAIMED" : "MISMATCH_CLAIMED",
+      };
+    }),
+    verification: "NOT_VERIFIED", reviewDecision: "HOLD",
+    authorization: "HOLD", accessDecision: "DENY", issuance: "NOT_AUTHORIZED",
+  };
+  const url = URL.createObjectURL(new Blob([JSON.stringify(report, null, 2) + "\n"],
+    { type: "application/json" }));
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = "palaco-pp-review-044-self-reported-hold.json";
+  document.body.append(anchor);
+  anchor.click();
+  anchor.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  $("admin-review044-result").textContent = "Zelfrapport aangeboden als lokale download. Controleer of het bestand is opgeslagen; HOLD / DENY.";
 });
 action(loadSession);

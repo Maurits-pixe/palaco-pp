@@ -103,6 +103,23 @@
           <button id="admin-chain-export" type="button" class="secondary" disabled>Download lokaal ketenrapport (.json)</button>
           <p class="auth-note">Deze browsercontrole is een lokale indicatie. De afzonderlijke Python-validator <code>review_index.py</code> blijft het strengere controlecontract. Geen upload, automatische beslissing of accountwijziging.</p>
         </div>
+        <div class="admin-bundle-panel" aria-labelledby="admin-review044-title">
+          <h3 id="admin-review044-title">Review 044 / mijn eigen waarneming</h3>
+          <p class="auth-note">Leg later per synthetisch scenario je eigen waarneming vast. Dit formulier voert geen controles uit. Alle registratie is tijdelijk in deze browsersessie en blijft SELF_REPORTED, NOT_VERIFIED en HOLD / DENY.</p>
+          <div class="admin-review-grid">
+            <div><label for="admin-review044-scenario">Controlescenario</label><select id="admin-review044-scenario"></select></div>
+            <div><label for="admin-review044-observed">Mijn waargenomen resultaat</label><select id="admin-review044-observed">
+              <option value="NOT_OBSERVED">Niet waargenomen</option>
+              <option value="FOUR_FILE_HASH_MATCH_UNTRUSTED">Vier bestanden consistent, onvertrouwd</option>
+              <option value="PP_CHAIN_INVALID">Keten geweigerd</option>
+              <option value="UNEXPECTED_ERROR">Onverwachte fout</option>
+            </select></div>
+          </div>
+          <button id="admin-review044-record" type="button" class="secondary">Registreer mijn waarneming</button>
+          <p id="admin-review044-result" class="admin-review-result" role="status" aria-live="polite">Nog geen eigen waarnemingen vastgelegd. HOLD / DENY.</p>
+          <button id="admin-review044-export" type="button" class="secondary" disabled>Download mijn Review 044-zelfrapport (.json)</button>
+          <p class="auth-note">Geen persoonsnamen, P.P.-nummers of vrije notities opnemen. Een overeenkomst met de verwachting is slechts MATCH_CLAIMED, nooit een onafhankelijke PASS.</p>
+        </div>
       </section>
     </div>
     <p class="auth-note">Lokale beheerdersdemo. Geen productiebeveiliging, MFA of wachtwoordherstel. Bescherm de onversleutelde database.</p>
