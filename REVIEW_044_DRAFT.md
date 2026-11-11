@@ -131,6 +131,19 @@ van een JSON-rapport bewijst niet dat een lokale runner werkelijk is uitgevoerd.
 De eigenaarreview blijft `PENDING` en identiteit/uitgifte blijven geblokkeerd.
 Deze functie is eveneens **DRAFT / NOT EXECUTED**.
 
+### Werkblad voor de latere eigenaarreview
+
+`review_044_owner_review.make_owner_review_draft(technical_report, owner_marks)`
+maakt een niet-ondertekend werkblad bij de oorspronkelijke rapportbytes.
+De SHA-256-waarde bindt het werkblad aan die bytes maar bewijst **niet**
+wie ze heeft gemaakt of of de runner daadwerkelijk heeft gedraaid.
+Per scenario accepteert het werkblad alleen `NOT_REVIEWED`,
+`OBSERVED_AS_REPORTED` of `DISCREPANCY_REPORTED`. Niet ingevulde scenario's
+blijven `NOT_REVIEWED` en `NO_OBSERVATION`; expliciete eigenaarinvoer is
+uitsluitend `SELF_REPORTED`. Het werkblad verwerkt geen namen,
+P.P.-nummers, vrije tekst of inloggegevens. De uitvoer blijft altijd
+`NOT_VERIFIED`/`HOLD`/`DENY` en start geen test of PALACO ONE-sessie.
+
 | Fixture | Verwacht bij latere uitvoering | Risico dat wordt onderzocht |
 | --- | --- | --- |
 | `baseline_untrusted_hold` | `FOUR_FILE_HASH_MATCH_UNTRUSTED` | Correcte binding ≠ verificatie |

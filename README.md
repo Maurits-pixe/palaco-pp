@@ -151,6 +151,10 @@ Voor de latere handmatige rapportbeoordeling is tevens de pure parser
 `review_044_preview_assessment.py` voorbereid. Die vat uitsluitend
 geclaimde technische resultaten samen en kan geen onafhankelijke
 uitvoering, identiteit of autorisatie bevestigen.
+`review_044_owner_review.py` kan later een lokaal, niet-ondertekend
+eigenaarwerkblad opstellen dat de ingevoerde technische rapportbytes met
+SHA-256 identificeert. Dit is geen authenticiteitsbewijs en geeft nooit
+autorisatie vrij.
 
 Zelfstandig prototype met een Nederlandstalige, responsive interface. De lokale
 PP-engine gebruikt de Python-standaardbibliotheek; geen externe lettertypen of
