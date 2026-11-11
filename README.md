@@ -61,6 +61,18 @@ structuuruitkomst, optionele niet-persoonsgebonden notitie en onvoorwaardelijk
 `NOT_VERIFIED` / `HOLD` / `DENY` / `NOT_AUTHORIZED`. Een hash bewijst geen
 herkomst en dit rapport is geen onafhankelijke menselijke verificatie.
 
+### Offline bewijsbinding (DRAFT)
+
+`review_bundle.py` voegt `link_hold_evidence(handoff, report)` toe. Deze
+puur lokale, alleen-lezen functie accepteert een strikt P.P.-handoffcontract
+en een lokaal HOLD-beoordelingsrapport uitsluitend als de SHA-256-hash van de
+exacte handoff-bytes overeenkomt met de rapportreferentie. Beide JSON-parsers
+weigeren nu ook dubbele sleutels. Er worden geen namen, nummers of consumer-ID's
+in de uitkomst opgenomen. Een geslaagde binding heet
+`HASH_MATCH_UNTRUSTED`, met uitsluitend `NOT_VERIFIED`, `HOLD` en `DENY`.
+Er bestaat nog geen automatische invoerroute in PALACO ONE. Geen tests of
+uitrol uitgevoerd in deze bouwfase.
+
 Zelfstandig prototype met een Nederlandstalige, responsive interface. De lokale
 PP-engine gebruikt de Python-standaardbibliotheek; geen externe lettertypen of
 analytics. Python 3.11+ vereist. Optionele e-mail gebruikt een externe SMTP-provider;

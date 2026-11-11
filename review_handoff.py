@@ -40,6 +40,15 @@ def _object(value, keys):
     return value
 
 
+def _unique_pairs(pairs):
+    result = {}
+    for key, value in pairs:
+        if key in result:
+            _reject()
+        result[key] = value
+    return result
+
+
 def _timestamp(value):
     if not isinstance(value, str) or len(value) > 40:
         _reject()
@@ -70,8 +79,9 @@ def parse_review_handoff(raw: bytes) -> ReviewAssessment:
         _reject()
     try:
         document = json.loads(raw.decode("utf-8"),
-                              parse_constant=lambda _: _reject())
-    except (ValueError, UnicodeDecodeError):
+                              parse_constant=lambda _: _reject(),
+                              object_pairs_hook=_unique_pairs)
+    except (ValueError, UnicodeDecodeError, RecursionError):
         _reject()
     _object(document, {
         "schema", "reference", "createdAt", "source", "destination",
