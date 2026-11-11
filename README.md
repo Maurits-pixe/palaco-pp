@@ -117,6 +117,12 @@ de HOLD/DENY-velden en drie SHA-256-vingerafdrukken. Bij enige afwijking:
 Dit is geen bewijs van authenticiteit of bevoegdheid. Er is geen automatische
 koppeling naar PALACO ONE of uitgifte. Tests blijven NOT EXECUTED op verzoek.
 
+Voor een latere, door de eigenaar uitgevoerde controle is
+`REVIEW_044_DRAFT.md` voorbereid, samen met `review_fixtures.py`: negen
+synthetische, deterministische vier-bestandenscenario's inclusief
+verwachte negatieve weigeringen. De fixtures schrijven niets naar schijf
+en voeren geen validators uit. Er worden geen PASS-resultaten geclaimd.
+
 Zelfstandig prototype met een Nederlandstalige, responsive interface. De lokale
 PP-engine gebruikt de Python-standaardbibliotheek; geen externe lettertypen of
 analytics. Python 3.11+ vereist. Optionele e-mail gebruikt een externe SMTP-provider;
