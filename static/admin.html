@@ -90,6 +90,18 @@
           <p id="admin-bundle-result" class="admin-review-result" role="status" aria-live="polite">Nog geen bewijsbinding beoordeeld.</p>
           <button id="admin-bundle-export" type="button" class="secondary" disabled>Download bewijsindex (.json)</button>
         </div>
+        <div class="admin-bundle-panel" aria-labelledby="admin-chain-title">
+          <h3 id="admin-chain-title">Offline reviewpaneel / drie bewijsbestanden</h3>
+          <p class="auth-note">Selecteer de originele overdracht, het HOLD-rapport en de bewijsindex. De drie bestanden worden uitsluitend in deze browser gelezen. Een overeenkomende hash bewijst geen herkomst, identiteit of bevoegdheid.</p>
+          <div class="admin-review-grid">
+            <div><label for="admin-chain-handoff">1. P.P.-overdracht (.json)</label><input id="admin-chain-handoff" type="file" accept=".json,application/json"></div>
+            <div><label for="admin-chain-report">2. HOLD-beoordelingsrapport (.json)</label><input id="admin-chain-report" type="file" accept=".json,application/json"></div>
+            <div><label for="admin-chain-index">3. Bewijsindex (.json)</label><input id="admin-chain-index" type="file" accept=".json,application/json"></div>
+          </div>
+          <button id="admin-chain-check" type="button" class="secondary">Controleer drie-bestandenketen</button>
+          <p id="admin-chain-result" class="admin-review-result" role="status" aria-live="polite">Geen ketencontrole uitgevoerd. HOLD / DENY.</p>
+          <p class="auth-note">Deze browsercontrole is een lokale indicatie. De afzonderlijke Python-validator <code>review_index.py</code> blijft het strengere controlecontract. Geen upload, automatische beslissing of accountwijziging.</p>
+        </div>
       </section>
     </div>
     <p class="auth-note">Lokale beheerdersdemo. Geen productiebeveiliging, MFA of wachtwoordherstel. Bescherm de onversleutelde database.</p>

@@ -90,6 +90,14 @@ controle is geen digitale handtekening, identiteitscontrole, inlogrecht of
 uitgifteautoriteit. De nieuwe code is DRAFT; tests en runtimeverificatie
 zijn uitgesteld op verzoek van de eigenaar.
 
+De backoffice heeft nu ook een afzonderlijk **drie-bestanden-reviewpaneel**.
+Daarin kan de eigenaar de handoff, het HOLD-rapport en de eerder geëxporteerde
+bewijsindex lokaal selecteren en hun onderlinge SHA-256-verwijzingen vergelijken.
+Na iedere nieuwe bestandskeuze vervalt de eerdere waarneming; de controle is
+uitsluitend indicatief en geeft geen bevoegdheid. De browserparser kan (anders
+dan de Python-validator) dubbele JSON-sleutels niet zelfstandig uitsluiten.
+Daarom vervangt dit paneel de onafhankelijke, strengere validatie niet.
+
 Zelfstandig prototype met een Nederlandstalige, responsive interface. De lokale
 PP-engine gebruikt de Python-standaardbibliotheek; geen externe lettertypen of
 analytics. Python 3.11+ vereist. Optionele e-mail gebruikt een externe SMTP-provider;

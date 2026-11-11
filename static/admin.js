@@ -23,11 +23,13 @@ let auditStatus = "";
 let reviewAssessment = null;
 let bundleAssessment = null;
 let bundleSelectionVersion = 0;
+let chainSelectionVersion = 0;
 
 function clearReview() {
   reviewAssessment = null;
   bundleAssessment = null;
   bundleSelectionVersion += 1;
+  chainSelectionVersion += 1;
   $("admin-review-file").value = "";
   $("admin-review-note").value = "";
   $("admin-review-result").textContent = "Nog geen bestand beoordeeld.";
@@ -36,6 +38,8 @@ function clearReview() {
   $("admin-bundle-report").value = "";
   $("admin-bundle-result").textContent = "Nog geen bewijsbinding beoordeeld.";
   $("admin-bundle-export").disabled = true;
+  for (const id of ["admin-chain-handoff", "admin-chain-report", "admin-chain-index"]) $(id).value = "";
+  $("admin-chain-result").textContent = "Geen ketencontrole uitgevoerd. HOLD / DENY.";
 }
 
 function notice(message, error = false) {
@@ -512,5 +516,75 @@ $("admin-bundle-export").addEventListener("click", () => {
   anchor.remove();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
   $("admin-bundle-result").textContent = "Bewijsindex aangeboden als lokale download. Autorisatie blijft HOLD / DENY.";
+});
+
+for (const id of ["admin-chain-handoff", "admin-chain-report", "admin-chain-index"]) {
+  $(id).addEventListener("change", () => {
+    chainSelectionVersion += 1;
+    $("admin-chain-result").textContent = "Bestandskeuze gewijzigd; controle nog niet uitgevoerd. HOLD / DENY.";
+  });
+}
+
+$("admin-chain-check").addEventListener("click", async () => {
+  if (!authenticated || busy) return;
+  const output = $("admin-chain-result");
+  const files = ["admin-chain-handoff", "admin-chain-report", "admin-chain-index"]
+    .map((id) => $(id).files?.[0]);
+  if (files.some((file) => !file || file.size < 1 || file.size > 16384)) {
+    output.textContent = "GEWEIGERD / Selecteer drie niet-lege JSON-bestanden van elk maximaal 16 KB. HOLD / DENY.";
+    return;
+  }
+  const selectedVersion = chainSelectionVersion;
+  const adminName = $("admin-name").textContent;
+  output.textContent = "Lokale bestandsvingerafdrukken worden vergeleken. HOLD / DENY.";
+  try {
+    const bytes = await Promise.all(files.map((file) => file.arrayBuffer()));
+    const digests = await Promise.all(bytes.slice(0, 2)
+      .map((data) => crypto.subtle.digest("SHA-256", data)));
+    if (!authenticated || busy || chainSelectionVersion !== selectedVersion ||
+        $("admin-name").textContent !== adminName) {
+      output.textContent = "SESSIE OF BESTANDSKEUZE GEWIJZIGD / Controle opnieuw vereist. HOLD / DENY.";
+      return;
+    }
+    const decoder = new TextDecoder("utf-8", { fatal: true });
+    const [handoff, report, index] = bytes.map((data) => JSON.parse(decoder.decode(data)));
+    const plain = (value) => value && typeof value === "object" && !Array.isArray(value);
+    const hex = (digest) => Array.from(new Uint8Array(digest),
+      (byte) => byte.toString(16).padStart(2, "0")).join("");
+    const handoffSha256 = hex(digests[0]);
+    const reportSha256 = hex(digests[1]);
+    const expectedIndex = {
+      schema: "palaco.pp.evidence-index.v0", reference: "PP-RECOVERY-002",
+      linkage: "HASH_MATCH_UNTRUSTED_CLIENT_OBSERVATION",
+      verification: "NOT_VERIFIED", reviewDecision: "HOLD", authorization: "HOLD",
+      accessDecision: "DENY", issuance: "NOT_AUTHORIZED",
+      note: "Geen digitale handtekening, onafhankelijke bronverificatie of accountkoppeling.",
+    };
+    const valid = plain(handoff) && plain(report) && plain(index) &&
+      handoff.schema === "palaco.pp.one.review-handoff.v0" &&
+      handoff.reference === "PP-RECOVERY-002" &&
+      handoff.authorization === "HOLD" && handoff.accessDecision === "DENY" &&
+      handoff.identityVerification === "NOT_VERIFIED" &&
+      handoff.issuance === "NOT_AUTHORIZED" &&
+      handoff.provenance === "UNSIGNED_USER_CONTROLLED_FILE" &&
+      report.schema === "palaco.pp.manual-review.v0" &&
+      report.evidenceReference === "PP-RECOVERY-002" &&
+      report.structuralStatus === "CLIENT_STRUCTURE_RECOGNIZED_UNTRUSTED" &&
+      report.fileSha256 === handoffSha256 &&
+      report.verification === "NOT_VERIFIED" && report.reviewDecision === "HOLD" &&
+      report.authorization === "HOLD" && report.accessDecision === "DENY" &&
+      report.issuance === "NOT_AUTHORIZED" &&
+      Object.keys(index).length === 12 &&
+      Object.entries(expectedIndex).every(([key, value]) => index[key] === value) &&
+      typeof index.createdAt === "string" &&
+      /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z$/.test(index.createdAt) &&
+      Number.isFinite(Date.parse(index.createdAt)) &&
+      index.handoffSha256 === handoffSha256 && index.reportSha256 === reportSha256;
+    output.textContent = valid
+      ? "DRIE HASHVERWIJZINGEN CONSISTENT / Alleen lokale, onvertrouwde bestandsbinding. Geen identiteitsbewijs. HOLD / DENY."
+      : "KETEN AFGEWEZEN / Schema, referenties, hashes of HOLD-contractvelden wijken af. HOLD / DENY.";
+  } catch (_error) {
+    output.textContent = "ONGELDIG / Ketenbestanden konden niet veilig worden verwerkt. HOLD / DENY.";
+  }
 });
 action(loadSession);
