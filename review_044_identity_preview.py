@@ -7,6 +7,7 @@ It performs no filesystem/network I/O and does not execute Review 044 tests.
 import json
 from typing import Any
 
+from review_044_observations import _utc_timestamp
 from review_044_runner import EXPECTED
 
 
@@ -34,6 +35,18 @@ def _unique_pairs(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
     return result
 
 
+def _canonical_utc(value: Any) -> str:
+    if type(value) is not str:
+        raise ValueError("PP_REVIEW_044_PREVIEW_INVALID")
+    try:
+        canonical = _utc_timestamp(value)
+    except ValueError as exc:
+        raise ValueError("PP_REVIEW_044_PREVIEW_INVALID") from exc
+    if value != canonical:
+        raise ValueError("PP_REVIEW_044_PREVIEW_INVALID")
+    return canonical
+
+
 def preview_identity_handoff(raw_report: bytes) -> dict[str, object]:
     """Inspect an unsigned self-report; never promote it to identity evidence."""
     if type(raw_report) is not bytes or not 0 < len(raw_report) <= MAX_REPORT_BYTES:
@@ -54,8 +67,7 @@ def preview_identity_handoff(raw_report: bytes) -> dict[str, object]:
     }
     if any(report[key] != value for key, value in required.items()):
         raise ValueError("PP_REVIEW_044_PREVIEW_INVALID")
-    if type(report["recordedAt"]) is not str or not report["recordedAt"].endswith("Z"):
-        raise ValueError("PP_REVIEW_044_PREVIEW_INVALID")
+    report_time = _canonical_utc(report["recordedAt"])
     rows = report["scenarios"]
     if type(rows) is not list or len(rows) != len(EXPECTED):
         raise ValueError("PP_REVIEW_044_PREVIEW_INVALID")
@@ -76,7 +88,7 @@ def preview_identity_handoff(raw_report: bytes) -> dict[str, object]:
                     or row["comparison"] != "NOT_ASSESSED"):
                 raise ValueError("PP_REVIEW_044_PREVIEW_INVALID")
         else:
-            if type(timestamp) is not str or not timestamp.endswith("Z"):
+            if _canonical_utc(timestamp) > report_time:
                 raise ValueError("PP_REVIEW_044_PREVIEW_INVALID")
             if row["evidence_kind"] != "SELF_REPORTED":
                 raise ValueError("PP_REVIEW_044_PREVIEW_INVALID")

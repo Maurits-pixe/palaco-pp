@@ -78,6 +78,10 @@ worden geweigerd met `PP_REVIEW_044_PREVIEW_INVALID`. De functie produceert
 alleen een geminimaliseerde preview: geen persoonsgegevens, geen P.P.-nummer,
 geen login, geen accountbinding en geen bewijs van identiteit. Een lokale
 zelfrapportage kan deze grens niet zelfstandig opheffen.
+Tijdstempels moeten exacte UTC ISO-8601-milliseconden met `Z` zijn en geen
+waarneming mag na het rapporttijdstip liggen. Ook syntactisch geldige maar
+semantisch afwijkende datums worden geweigerd. Een timestamp is uitsluitend
+een door de client opgegeven tijd, geen onafhankelijke tijdsattestatie.
 
 Deze adapter is **DRAFT / NOT EXECUTED**. Er is nog geen echte PALACO ONE
 runtimekoppeling en geen toestemming voor activatie.
