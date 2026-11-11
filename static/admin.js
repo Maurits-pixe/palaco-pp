@@ -166,6 +166,8 @@ function clearReview() {
   $("admin-review044-registry-add").disabled = true;
   $("admin-review044-registry-export").disabled = true;
   $("admin-review044-registry-result").textContent = "Geen registerversie voorbereid. HOLD / DENY.";
+  $("admin-review044-registry-rows").replaceChildren();
+  $("admin-review044-registry-overview").hidden = true;
   $("admin-review044-scenario").selectedIndex = 0;
   $("admin-review044-observed").value = "NOT_OBSERVED";
   $("admin-review044-result").textContent = "Nog geen eigen waarnemingen vastgelegd. HOLD / DENY.";
@@ -1094,6 +1096,30 @@ function resetReview044Registry() {
   $("admin-review044-registry-export").disabled = true;
   $("admin-review044-registry-add").disabled = !review044DossierAssessment;
   $("admin-review044-registry-result").textContent = "Registerkeuze of dossier gewijzigd. Nieuwe beoordeling nodig. HOLD / DENY.";
+  $("admin-review044-registry-rows").replaceChildren();
+  $("admin-review044-registry-overview").hidden = true;
+}
+
+function showReview044RegistryRows(rows) {
+  const body = $("admin-review044-registry-rows");
+  body.replaceChildren();
+  for (const row of rows) {
+    const tr = document.createElement("tr");
+    const cells = [
+      `${row.sequence}${row.sequence === rows.length ? " · nieuw" : ""}`,
+      row.entrySha256.slice(0, 12) + "…",
+      row.previousEntrySha256 === null ? "BEGIN" : row.previousEntrySha256.slice(0, 12) + "…",
+      "INTERN CONSISTENT · NIET GEVERIFIEERD",
+      "HOLD / DENY",
+    ];
+    for (const value of cells) {
+      const td = document.createElement("td");
+      td.textContent = value;
+      tr.append(td);
+    }
+    body.append(tr);
+  }
+  $("admin-review044-registry-overview").hidden = false;
 }
 
 $("admin-review044-registry-file").addEventListener("change", () => resetReview044Registry());
@@ -1181,6 +1207,7 @@ $("admin-review044-registry-add").addEventListener("click", async () => {
     const serialized = JSON.stringify(snapshot, null, 2) + "\n";
     if (new TextEncoder().encode(serialized).length > 256 * 1024) throw new Error("REGISTRY_TOO_LARGE");
     review044RegistryDraft = serialized;
+    showReview044RegistryRows(snapshot.entries);
     $("admin-review044-registry-export").disabled = false;
     output.textContent = `${snapshot.entries.length} lokale dossierverwijzing(en) voorbereid. Ongetekend en onvertrouwd; download vereist. HOLD / DENY.`;
   } catch (_error) {

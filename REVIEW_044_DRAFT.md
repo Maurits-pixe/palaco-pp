@@ -231,6 +231,10 @@ dossierverwijzingen alvorens één rij toe te voegen. Het schrijft niets op de
 server en vervangt het vorige bestand niet. De browser kan dubbele sleutels
 in JSON niet betrouwbaar afwijzen en verifieert geen externe historie:
 `review_044_owner_registry.py` blijft het normatieve validatiecontract.
+Het voorbereide snapshot wordt in een scrollbare tabel samengevat met
+volgnummer, verkorte entry-hash, voorgangerhash en de vaste HOLD/DENY-status.
+Bij bestandswissel wordt het oude overzicht gewist. De term
+`INTERN CONSISTENT` is geen externe authenticiteitsverklaring.
 
 Status: **DRAFT / NOT EXECUTED / HOLD / DENY**.
 

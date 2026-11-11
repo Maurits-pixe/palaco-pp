@@ -170,6 +170,14 @@
           </div>
           <button id="admin-review044-registry-add" type="button" class="secondary" disabled>Bereid nieuwe registerversie voor</button>
           <p id="admin-review044-registry-result" class="admin-review-result" role="status" aria-live="polite">Geen registerversie voorbereid. HOLD / DENY.</p>
+          <div id="admin-review044-registry-overview" hidden>
+            <h4>Lokale dossierverwijzingen — concept</h4>
+            <p class="auth-note">Deze rijen zijn alleen intern op hashconsistentie gecontroleerd, niet onafhankelijk geverifieerd. Verkorte hashes dienen uitsluitend ter herkenning.</p>
+            <div class="admin-table-wrap admin-registry-rows"><table>
+              <thead><tr><th>Volgnummer</th><th>Dossierhash</th><th>Ketenverwijzing</th><th>Herkomstcontrole</th><th>Besluit</th></tr></thead>
+              <tbody id="admin-review044-registry-rows"></tbody>
+            </table></div>
+          </div>
           <button id="admin-review044-registry-export" type="button" class="secondary" disabled>Download nieuw registersnapshot (.json)</button>
           <p class="auth-note">Controleer vóór gebruik altijd het originele dossier met de striktere Python-module. Deze browserregistratie is indicatief en bevat geen tijds- of identiteitsbewijs. Geen serveropslag of autorisatie.</p>
         </div>

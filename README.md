@@ -195,6 +195,10 @@ en de nieuwe versie downloaden. De vorige download wordt nooit overschreven;
 een nieuwe bestandskeuze maakt de voorbereide export ongeldig. Browsercontrole
 is niet normatief, detecteert geen dubbele JSON-sleutels en verleent geen
 bevoegdheid. Gebruik de Python-module voor de strikte beoordeling.
+Na een consistente voorbereiding toont de backoffice een scrollbaar overzicht
+met dossiernummer, verkorte entry- en voorgangerhash, indicatieve
+consistentiemarkering en ongewijzigde HOLD/DENY-beslissing. Bij een wijziging
+van het dossier of register verdwijnt dit overzicht meteen.
 
 Zelfstandig prototype met een Nederlandstalige, responsive interface. De lokale
 PP-engine gebruikt de Python-standaardbibliotheek; geen externe lettertypen of
