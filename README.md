@@ -106,6 +106,17 @@ Bij een nieuwe bestandskeuze vervalt het rapport in het geheugen en wordt de
 downloadknop opnieuw geblokkeerd. De uitvoer is niet ondertekend en vormt
 geen bewijs van een uitgevoerde menselijke identiteitscontrole.
 
+`review_chain.py` biedt de strengere, lokale controle
+`link_hold_chain(handoff, report, index, observation)` voor alle **vier**
+oorspronkelijke bytebestanden. Eerst moet de bestaande drie-bestandenketen
+strikt geldig zijn. Vervolgens controleert de functie het vaste
+`palaco.pp.chain-observation.v0`-contract, de UTC-tijd, dubbele sleutels,
+de HOLD/DENY-velden en drie SHA-256-vingerafdrukken. Bij enige afwijking:
+`PP_CHAIN_INVALID`; anders uitsluitend
+`FOUR_FILE_HASH_MATCH_UNTRUSTED` met onveranderlijke HOLD/DENY-uitkomst.
+Dit is geen bewijs van authenticiteit of bevoegdheid. Er is geen automatische
+koppeling naar PALACO ONE of uitgifte. Tests blijven NOT EXECUTED op verzoek.
+
 Zelfstandig prototype met een Nederlandstalige, responsive interface. De lokale
 PP-engine gebruikt de Python-standaardbibliotheek; geen externe lettertypen of
 analytics. Python 3.11+ vereist. Optionele e-mail gebruikt een externe SMTP-provider;
