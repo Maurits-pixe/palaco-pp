@@ -420,3 +420,33 @@ autorisatie uitgevoerd. De server biedt de beide Review 044-scripts
 uitsluitend aan via twee expliciete statische allowlist-paden.
 
 **Status: DRAFT / NOT EXECUTED / NOT_VERIFIED / HOLD / DENY.**
+
+### Backoffice — twee-bestandenbinding van het inspectiewerkblad
+
+Het afzonderlijke paneel **Review 044 / technische rapportbinding met
+eigenaarwerkblad** leest twee originele lokale JSON-bestanden: het
+synthetische technische inspectierapport (maximaal 64 KiB) en het
+eigenaarwerkblad (maximaal 48 KiB). Het vergelijkt de vaste
+rapportcontracten, 24 scenario's, gemelde markeringen, interne aantallen
+en SHA-256 van beide oorspronkelijke bytestromen.
+
+Een consistente browserindicatie toont de volledige hashes, de
+technisch *geclaimde* vergelijking en de eigenaarsmarkeringen.
+Een optionele expliciete download schrijft alleen een nieuwe, ongetekende
+`palaco.pp.review-044-inspection-owner-browser-binding.v0` met
+`CLIENT_TWO_FILE_HASH_MATCH_UNTRUSTED` en vaste
+`NOT_VERIFIED / HOLD / DENY / NOT_AUTHORIZED`-velden. Een nieuwe
+bestandskeuze of afmelding wist eerdere resultaten en blokkeert export.
+
+**Bewijsgrens:** `JSON.parse` kan dubbele JSON-sleutels niet
+betrouwbaar detecteren. De browser voert dus *geen* strikte Python-validatie
+uit. Gebruik voor de normatieve controle later de pure functie
+`review_044_inspection_owner_binding.validate_inspection_owner_worksheet(
+technical_report_bytes, worksheet_bytes)` op beide originele bestanden.
+Die functie kan alleen interne consistentie vaststellen, geen
+onafhankelijke authenticiteit, tijd, daadwerkelijke testuitvoering,
+persoonlijke identiteit of bevoegdheid.
+
+De server serveert het nieuwe script alleen via een expliciete lokale
+allowlist-route. Geen algemene bestandsserver, uploadendpoint of
+autorisatieroute is toegevoegd. **DRAFT / NOT EXECUTED / HOLD / DENY.**
