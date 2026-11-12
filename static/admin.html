@@ -12,6 +12,7 @@
   <script src="/review044-inspection-binding.js" defer></script>
   <script src="/review044-evidence-view.js" defer></script>
   <script src="/review044-recovery-coordination.js" defer></script>
+  <script src="/review044-recovery-decision.js" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -259,6 +260,22 @@
             <p id="admin-pp-recovery002-status" class="admin-review-result" role="status" aria-live="polite">Geen hersteloverzicht geladen. HOLD / DENY.</p>
             <div id="admin-pp-recovery002-details" hidden></div>
             <p class="auth-note">De drie rubrieken zijn gescheiden: lokale registratie, technische bewijsclaim en geblokkeerde identiteitsrechten. Ook bij consistente bronbestanden blijft crossSourceSubjectBinding = NOT_ESTABLISHED. De oorspronkelijke bestanden moeten later streng in Python worden beoordeeld. HOLD / DENY / NOT_AUTHORIZED.</p>
+          </section>
+          <section class="admin-bundle-panel" aria-labelledby="admin-pp-decision-title">
+            <h3 id="admin-pp-decision-title">PP-RECOVERY-002 / beslisdossier — vijf bewijsvereisten</h3>
+            <p class="auth-note">Toon een reeds lokaal opgesteld beslisdossier. Alle vijf vereisten blijven geblokkeerd, ook bij onderling consistente technische bewijsbestanden. Dit paneel voert geen tests of Python uit, verleent geen rechten en uploadt niets.</p>
+            <div class="admin-review-grid"><div>
+              <label for="admin-pp-decision-file">Beslisdossier (.json, maximaal 16 KiB)</label>
+              <input id="admin-pp-decision-file" type="file" accept=".json,application/json">
+            </div></div>
+            <button id="admin-pp-decision-load" type="button" class="secondary">Toon mijn beslisdossier lokaal</button>
+            <p id="admin-pp-decision-status" class="admin-review-result" role="status" aria-live="polite">Geen beslisdossier geladen. HOLD / DENY.</p>
+            <div class="admin-table-wrap admin-registry-rows"><table aria-label="Vijf open bewijsvereisten">
+              <thead><tr><th>Vereiste</th><th>Bewijsstatus</th><th>Eigenaarsmarkering</th><th>Poort</th></tr></thead>
+              <tbody id="admin-pp-decision-rows"></tbody>
+            </table></div>
+            <dl id="admin-pp-decision-details" class="admin-registry-inspector"></dl>
+            <p class="auth-note">De browser toont claims uit een ongetekend JSON-bestand. Een echte beoordeling vereist de oorspronkelijke bestanden, onafhankelijke bewijsbronnen en een bevoegde menselijke reviewer. PALACO ONE-overdracht = BLOCKED; identiteit = NOT_ESTABLISHED; NOT_VERIFIED / HOLD / DENY / NOT_AUTHORIZED.</p>
           </section>
           <button id="admin-review044-registry-export" type="button" class="secondary" disabled>Download nieuw registersnapshot (.json)</button>
           <p class="auth-note">Controleer vóór gebruik altijd het originele dossier met de striktere Python-module. Deze browserregistratie is indicatief en bevat geen tijds- of identiteitsbewijs. Geen serveropslag of autorisatie.</p>
