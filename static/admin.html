@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="/admin.css">
   <script src="/admin.js" defer></script>
   <script src="/review044-inspection-import.js" defer></script>
+  <script src="/review044-inspection-owner.js" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -205,6 +206,21 @@
             <button id="admin-review044-inspection-import-check" type="button" class="secondary">Vergelijk geselecteerde regel lokaal (indicatief)</button>
             <p id="admin-review044-inspection-import-result" class="admin-review-result" role="status" aria-live="polite">NOT EXECUTED / HOLD / DENY.</p>
             <p class="auth-note">Strikte offline controle gebeurt uitsluitend via <code>python review_044_inspection_cli.py --run --registry "register.json" --inspection "inspectie.json"</code> in je eigen terminal. De browser uploadt niets en start geen Python.</p>
+          </section>
+          <section class="admin-bundle-panel" aria-labelledby="admin-review044-inspection-owner-title">
+            <h3 id="admin-review044-inspection-owner-title">Review 044 / eigenaarwerkblad inspectieregressies (24 scenario's)</h3>
+            <p class="auth-note">Kies een reeds bestaand technisch runner-JSON (maximaal 64 KiB). Dit paneel start geen runner, voert geen tests uit en uploadt geen bestanden. De 24 scenario's blijven uitsluitend een lokale browserindicatie; Python is normatief, onder andere voor dubbele JSON-sleutels.</p>
+            <div class="admin-review-grid">
+              <div><label for="admin-review044-inspection-owner-file">Technisch inspectierapport (.json, maximaal 64 KiB)</label><input id="admin-review044-inspection-owner-file" type="file" accept=".json,application/json"></div>
+            </div>
+            <button id="admin-review044-inspection-owner-load" type="button" class="secondary">Laad technisch rapport lokaal</button>
+            <p id="admin-review044-inspection-owner-status" class="admin-review-result" role="status" aria-live="polite">Geen technisch rapport geladen. HOLD / DENY.</p>
+            <div class="admin-table-wrap admin-registry-rows"><table aria-label="24 inspectiescenario's en eigenaarsmarkeringen">
+              <thead><tr><th>Nr.</th><th>Scenario</th><th>Technisch geclaimd</th><th>Mijn eigen waarneming</th></tr></thead>
+              <tbody id="admin-review044-inspection-owner-rows"></tbody>
+            </table></div>
+            <button id="admin-review044-inspection-owner-export" type="button" class="secondary" disabled>Download mijn 24-scenario-eigenaarwerkblad (.json)</button>
+            <p class="auth-note">Niet gekozen = NO_OBSERVATION / NOT_REVIEWED. Alleen een handmatig gekozen markering krijgt SELF_REPORTED. Het resultaat is ongetekend; het bewijst geen daadwerkelijke uitvoering of onafhankelijk beoordeelde identiteit. Geen autorisatie, geen uitgifte: HOLD / DENY.</p>
           </section>
           <button id="admin-review044-registry-export" type="button" class="secondary" disabled>Download nieuw registersnapshot (.json)</button>
           <p class="auth-note">Controleer vóór gebruik altijd het originele dossier met de striktere Python-module. Deze browserregistratie is indicatief en bevat geen tijds- of identiteitsbewijs. Geen serveropslag of autorisatie.</p>
