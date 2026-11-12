@@ -28,6 +28,7 @@
   <script src="/review044-reviewer-interface-contract.js" defer></script>
   <script src="/review044-trust-transition.js" defer></script>
   <script src="/review044-revocation-recovery.js" defer></script>
+  <script src="/review044-security-assurance.js" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -591,6 +592,24 @@
               <tbody id="admin-revocation-recovery"></tbody>
             </table></div>
             <p class="auth-note">Geen revocation feed, vertrouwde klok, credentialscontrole, actieve audit of bevoegd herstelbesluit aangesloten. De browser leest slechts een ongetekend JSON-contract en controleert niet de elf originele bronbestanden. Geen intrekking, accountmutatie, reviewerautorisatie, PALACO ONE-sessie of uitgifte. NOT_EXECUTED / NOT_VERIFIED / NOT_READY / HOLD / DENY / NOT_AUTHORIZED.</p>
+          </section>
+          <section class="admin-bundle-panel" aria-labelledby="admin-assurance-title">
+            <h3 id="admin-assurance-title">PP-RECOVERY-002 / Security Assurance Dossier — centrale bewijsgrenzen</h3>
+            <p class="auth-note">Het dossier koppelt twaalf originele documenten, reviewer-authenticatievoorwaarden, trust transitions, intrekkingen en herstelchecks. Een ongetekend rapport is geen externe attestatie en mag nooit een reviewer, PP-nummer of PALACO ONE-sessie vrijgeven.</p>
+            <div class="admin-review-grid"><div>
+              <label for="admin-assurance-file">Offline assurance-dossier (.json, maximaal 64 KiB)</label>
+              <input id="admin-assurance-file" type="file" accept=".json,application/json">
+            </div></div>
+            <button id="admin-assurance-load" type="button" class="secondary">Toon assurance-dossier lokaal</button>
+            <p id="admin-assurance-status" class="admin-review-result" role="status" aria-live="polite">Geen assurance-dossier geladen. HOLD / DENY.</p>
+            <h4>Twaalf bronverwijzingen — extern onbevestigd</h4>
+            <div class="admin-table-wrap admin-registry-rows"><table aria-label="Bronvingerafdrukken Security Assurance Dossier">
+              <thead><tr><th>Nr.</th><th>Bron</th><th>SHA-256 (verkort)</th><th>Authenticiteit</th></tr></thead>
+              <tbody id="admin-assurance-sources"></tbody>
+            </table></div>
+            <h4>Elf onafhankelijke assurance-gaps — allemaal open</h4>
+            <ul id="admin-assurance-gaps"></ul>
+            <p class="auth-note">Alle vijf beslispoorten blijven BLOCKED. Acht reviewercontroles en acht herstelstappen zijn niet voltooid; vier intrekkingen zijn niet uitgevoerd; drie trust transitions blijven DENY. De browser leest uitsluitend een ongetekend JSON-rapport en herberekent niet de oorspronkelijke twaalf bronbestanden. NOT_VERIFIED / NOT_READY / HOLD / DENY / NOT_AUTHORIZED.</p>
           </section>
           <button id="admin-review044-registry-export" type="button" class="secondary" disabled>Download nieuw registersnapshot (.json)</button>
           <p class="auth-note">Controleer vóór gebruik altijd het originele dossier met de striktere Python-module. Deze browserregistratie is indicatief en bevat geen tijds- of identiteitsbewijs. Geen serveropslag of autorisatie.</p>
