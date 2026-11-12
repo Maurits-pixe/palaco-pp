@@ -386,3 +386,37 @@ wanneer en hoe de eigen tests en waarnemingen plaatsvinden.
 **Huidige status: DRAFT / NOT EXECUTED / NOT_VERIFIED / HOLD / DENY /
 NOT_AUTHORIZED.** Ook een consistente tweebestandenbinding geeft geen
 PALACO ONE-inlogrecht, identiteit, uitgifte of productiebevoegdheid.
+
+### Backoffice — eigenaarwerkblad voor 24 inspectiescenario's
+
+De bestaande lokale beheerpagina heeft nu het afzonderlijke paneel
+**Review 044 / eigenaarwerkblad inspectieregressies (24 scenario's)**.
+De eigenaar kiest een reeds bestaand, synthetisch technisch runner-JSON
+(maximaal 64 KiB), laadt dit expliciet in de browser en ziet de
+24 scenario's met hun geclaimde technische MATCH/MISMATCH-uitkomst.
+
+Iedere regel kan afzonderlijk worden gemarkeerd als:
+
+- niet ingevoerd: `NOT_REVIEWED / NO_OBSERVATION`;
+- expliciet niet beoordeeld: `NOT_REVIEWED / SELF_REPORTED`;
+- waargenomen zoals gerapporteerd: `OBSERVED_AS_REPORTED / SELF_REPORTED`;
+- afwijking gerapporteerd: `DISCREPANCY_REPORTED / SELF_REPORTED`.
+
+Een klik op **Download mijn 24-scenario-eigenaarwerkblad (.json)**
+maakt uitsluitend lokaal het contract
+`palaco.pp.review-044-inspection-owner-worksheet.v0` aan, met de
+SHA-256-vingerafdruk van het originele technische rapport.
+De browseruitvoer houdt dezelfde veldnamen, volgorde en vaste
+HOLD/DENY-grenzen aan als de pure Python-werkbladbouwer.
+Een bestandswissel of afmelding wist de tijdelijke markeringen.
+
+**Geen onafhankelijke controle:** de browserparser kan dubbele
+JSON-sleutels niet betrouwbaar afwijzen en bewijst de uitvoering van
+een runner niet. De strikte controle blijft bij
+`assess_inspection_technical_report()` en
+`validate_inspection_owner_worksheet()` in Python. Er wordt geen
+serverupload, databasewijziging, PALACO ONE-koppeling of automatische
+autorisatie uitgevoerd. De server biedt de beide Review 044-scripts
+uitsluitend aan via twee expliciete statische allowlist-paden.
+
+**Status: DRAFT / NOT EXECUTED / NOT_VERIFIED / HOLD / DENY.**
