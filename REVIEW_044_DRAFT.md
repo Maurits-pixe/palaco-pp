@@ -1022,3 +1022,56 @@ is enkel via de expliciete lokale server-allowlist bereikbaar.
 
 **DRAFT / NOT EXECUTED / NOT_VERIFIED / HOLD / DENY /
 NOT_AUTHORIZED.**
+
+### Centraal PP-RECOVERY-002 herstelstatusrapport — blokkades en vervolgstappen
+
+De pure functie `review_044_recovery_status.build_recovery_status_report(
+dossier_bytes, queue_bytes, intake_bytes, plan_bytes, observations_bytes)`
+valideert vijf oorspronkelijke lokale JSON-bestanden via de bestaande
+strikte herstelcockpit. Ongeldige broncontracten, inconsistente
+verwijzingen, afwijkende eventketens en vrijgaveclaims worden geweigerd.
+Het resultaat bevat SHA-256-verwijzingen, aantallen, een vaste set van
+**vijf geblokkeerde beslispoorten** en zes onveranderlijk
+`NOT_STARTED / NOT_VERIFIED` controlefasen.
+
+De acht voorgestelde **toekomstige handmatige acties** zijn geordend:
+oorspronkelijke bestanden behouden, bewijsbytes hervergelijken,
+bronherkomst onafhankelijk onderbouwen, indiener authenticeren,
+reviewerbevoegdheid vaststellen, subjectbinding aantonen,
+bevoegde menselijke review vastleggen en pas daarna een afzonderlijk
+bevoegd HOLD-besluit laten herbeoordelen. De acties worden in dit
+rapport **niet uitgevoerd** en hebben
+`authorizationEffect=NONE`. De herbeoordeling is een
+voorstel voor een externe bevoegde workflow, nooit een automatische
+opheffing van HOLD.
+
+De opt-in CLI `review_044_recovery_status_cli.py` leest geen
+bronbestanden zonder `--run`. Tijdens een latere testsessie kan
+de eigenaar een statusrapport opstellen met:
+
+```powershell
+python .\review_044_recovery_status_cli.py --run --dossier "PP_RECOVERY_DECISION_HOLD.json" --queue "PP_REVIEW_QUEUE_001.json" --intake "PP_REVIEW_INTAKE_001.json" --plan "PP_VERIFICATION_PLAN_HOLD.json" --observations "PP_OBSERVATION_001.json" --export "PP_RECOVERY_STATUS_HOLD.json"
+```
+
+Met `--export` wordt uitsluitend een **nieuw** bestand gemaakt;
+bestaande bestanden worden nooit overschreven. Zonder
+`--export` schrijft de CLI alleen JSON naar stdout. Er worden
+geen tests, proof checks, accountsessies of autorisatiehandelingen
+gestart.
+
+Het nieuwe backofficepaneel **PP-RECOVERY-002 / centraal
+herstelstatusrapport — alleen lezen** leest het geëxporteerde JSON
+van maximaal 32 KiB. Het toont brongetallen, de vijf poorten,
+de zes controlefasen en acht handmatige vervolgstappen. De browser
+weigert tegenstrijdige vaste HOLD-statussen, maar valideert niet
+opnieuw de vijf originele broncontracten, de volledige SHA-256-ketens
+of de herkomst van het statusbestand. Het blijft een **ongetekende
+browserindicatie**, geen onafhankelijk Python-attest.
+
+Het JavaScriptbestand staat op de expliciete lokale server-allowlist.
+Er is geen nieuwe upload/API-route, testuitvoering, merge of
+productie-uitrol. Bij bestandswijziging of afmelden wordt de tijdelijke
+weergave gewist.
+
+**DRAFT / NOT EXECUTED / NOT_VERIFIED / HOLD / DENY /
+NOT_AUTHORIZED.**
