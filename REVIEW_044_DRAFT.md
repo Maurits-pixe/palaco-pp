@@ -291,3 +291,33 @@ Vul na uitvoering per scenario apart in:
   volgorde voor de latere testsessie; afwijkingen worden afzonderlijk hersteld.
 
 **Status:** PREPARED / NOT EXECUTED / HOLD / DENY.
+
+### Inspectierapporten lokaal importeren — alleen voorbereiding
+
+De backoffice heeft een apart importpaneel voor het oorspronkelijke
+Review 044-registersnapshot (maximaal 256 KiB) en een gedownload
+regelinspectierapport (maximaal 16 KiB). De knop **Vergelijk geselecteerde
+regel lokaal (indicatief)** leest beide bestanden uitsluitend via de
+browser-File API. Er is geen upload en geen databasehandeling.
+
+**Bewijsgrens:** de browser controleert alleen de herkenbare velden van
+de geselecteerde regel. Hij controleert *niet* de volledige hashketen en
+weigert niet betrouwbaar dubbele JSON-sleutels. Zelfs bij overeenkomst
+is dit **geen** strikte Python-verificatie.
+
+Een afzonderlijke opt-in CLI gebruikt de bestaande normatieve validator:
+`review_044_inspection_cli.py`. Pas tijdens de eigenaartestsessie:
+
+```powershell
+python .\review_044_inspection_cli.py --run --registry "PAD_NAAR_REGISTER.json" --inspection "PAD_NAAR_INSPECTIE.json" --json
+```
+
+Zonder `--run` worden geen bestanden gelezen. Een weigering geeft
+`PP_REVIEW_044_OWNER_INSPECTION_INVALID` en exitcode 1; een technisch
+consistente binding geeft exitcode 0, maar uitsluitend het label
+`REGISTER_ROW_HASH_BINDING_CONSISTENT_UNTRUSTED`. Bevoegdheden blijven
+`NOT_VERIFIED / HOLD / DENY / NOT_AUTHORIZED`. De CLI leest uitsluitend
+expliciet genoemde lokale bestanden, schrijft niets, toont geen
+bestandsinhoud of persoonsgegevens, en maakt geen netwerkverbinding.
+Deze nieuwe functie is **NOT EXECUTED**; pas jouw testwaarnemingen later
+als `SELF_REPORTED` vast.
