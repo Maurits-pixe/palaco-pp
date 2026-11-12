@@ -20,6 +20,7 @@
   <script src="/review044-observation-register.js" defer></script>
   <script src="/review044-recovery-cockpit.js" defer></script>
   <script src="/review044-recovery-status.js" defer></script>
+  <script src="/review044-release-readiness.js" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -429,6 +430,24 @@
               <tbody id="admin-status-report-next"></tbody>
             </table></div>
             <p class="auth-note">Dit paneel leest alleen lokale JSON en bewijst niet dat de Python-validator is uitgevoerd. Het voert geen controles, handelingen of accountmutaties uit. Alle bewijsstatussen blijven NOT_VERIFIED, HOLD / DENY en NOT_AUTHORIZED. PALACO ONE blijft geblokkeerd.</p>
+          </section>
+          <section class="admin-bundle-panel" aria-labelledby="admin-readiness-title">
+            <h3 id="admin-readiness-title">PP-RECOVERY-002 / vrijgavegereedheid — ontbrekende voorwaarden</h3>
+            <p class="auth-note">Een rapport van ontbrekende voorwaarden is geen besluit tot vrijgave. Dit alleen-lezen paneel toont zes globale blokkades, vijf niet-gereedstaande poorten en per poort een afzonderlijke handmatige vervolgrichting. Geen automatisch PASS, identiteitsbinding, PALACO ONE-sessie of uitgifte.</p>
+            <div class="admin-review-grid"><div>
+              <label for="admin-readiness-file">Offline gereedheidsanalyse (.json, maximaal 32 KiB)</label>
+              <input id="admin-readiness-file" type="file" accept=".json,application/json">
+            </div></div>
+            <button id="admin-readiness-load" type="button" class="secondary">Toon ontbrekende vrijgavevoorwaarden lokaal</button>
+            <p id="admin-readiness-status" class="admin-review-result" role="status" aria-live="polite">Geen vrijgavegereedheidsrapport geladen. HOLD / DENY.</p>
+            <h4>Globale blokkades — niet zelfstandig ophefbaar</h4>
+            <ul id="admin-readiness-blockers"></ul>
+            <h4>Vijf niet-gereedstaande beslispoorten</h4>
+            <div class="admin-table-wrap admin-registry-rows"><table aria-label="Ontbrekende vrijgavevereisten">
+              <thead><tr><th>Poort</th><th>Ontbrekende controles</th><th>Handmatige vervolgstap</th><th>Gereedheid</th></tr></thead>
+              <tbody id="admin-readiness-gates"></tbody>
+            </table></div>
+            <p class="auth-note">De browser toont uitsluitend de structuur van een ongetekend JSON-rapport; de oorspronkelijke vijf bestanden en Python-validatie worden hier niet herhaald. Iedere poort blijft NOT_READY / BLOCKED; NOT_VERIFIED / HOLD / DENY / NOT_AUTHORIZED.</p>
           </section>
           <button id="admin-review044-registry-export" type="button" class="secondary" disabled>Download nieuw registersnapshot (.json)</button>
           <p class="auth-note">Controleer vóór gebruik altijd het originele dossier met de striktere Python-module. Deze browserregistratie is indicatief en bevat geen tijds- of identiteitsbewijs. Geen serveropslag of autorisatie.</p>
