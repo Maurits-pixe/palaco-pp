@@ -1525,3 +1525,65 @@ autorisatie, daadwerkelijke intrekking of PALACO ONE-sessie.
 
 **DRAFT / NOT EXECUTED / NOT_IMPLEMENTED / NOT_VERIFIED /
 NOT_READY / HOLD / DENY / NOT_AUTHORIZED.**
+
+### PP-RECOVERY-002 — centraal Security Assurance Dossier (twaalf bronbestanden)
+
+De nieuwe pure module `review_044_security_assurance.py` vormt een
+centrale, **ongetekende interne samenhangsrapportage** van twaalf
+oorspronkelijke bytebestanden: beslisdossier, review-queue, intake,
+verificatieplan, observatieregister, handoffmanifest, receiptprotocol,
+reviewer-authenticatie-eisen, reviewer-service-blauwdruk,
+interfacecontracten, trust-transitions en revocation/recovery.
+
+`prepare_security_assurance_dossier` controleert de bestandsgrootte
+en strikte typevereisten, reconstrueert het laatste
+revocation/recoverycontract uit de eerdere elf bronnen, vergelijkt het
+type-exact met het twaalfde bestand en koppelt de **originele SHA-256
+bytevingerafdrukken** aan alle bronrollen. Onjuiste onderlinge
+referenties of een afwijkend afsluitend contract worden geweigerd
+met `PP_RECOVERY_002_SECURITY_ASSURANCE_INVALID`. Deze interne
+consistentiecontrole is **geen** onafhankelijke bewijsattestatie.
+
+Het dossier toont acht `NOT_ESTABLISHED` reviewercontroles,
+drie `BLOCKED / DENY` trust-transitions,
+vier niet-uitgevoerde intrekkingsscenario's,
+acht `NOT_STARTED` herstelcontroles, vijf
+`BLOCKED / NOT_VERIFIED` beslispoorten en
+elf expliciet openstaande assurance-gaps:
+bronherkomst, indieneridentiteit, reviewerauthenticatie,
+reviewerbevoegdheid, subjectbinding, cryptografische controle,
+ondertekende ontvangst, onafhankelijke audit, daadwerkelijke
+intrekkingsverwerking, menselijke review en PALACO ONE-autorisatie.
+
+**Onveranderlijke uitvoerstatussen:** `NOT_VERIFIED`,
+`NOT_COMPLETED`, `NOT_ESTABLISHED`, `NOT_READY`,
+`palacoOneHandoff=BLOCKED`, `palacoOneSession=NOT_CREATED`,
+`authorization=HOLD`, `accessDecision=DENY`,
+`issuance=NOT_AUTHORIZED`. Lokale SHA-256-hashes en de
+interne reconstrueerbaarheid van JSON-contracten bewijzen geen
+authenticiteit van de maker, vertrouwde timestamp, actieve
+intrekking, herkomst van originele bewijsbytes of bevoegd besluit.
+
+De expliciete offline CLI
+`review_044_security_assurance_cli.py`
+leest niets zonder `--run` en schrijft alleen een nieuw bestand met
+`--export` via create-only `xb`, zonder overschrijven.
+Voor een eventuele latere handmatige eigenaartestsessie:
+
+```powershell
+python .\review_044_security_assurance_cli.py --run --dossier "PP_RECOVERY_DECISION_HOLD.json" --queue "PP_REVIEW_QUEUE_001.json" --intake "PP_REVIEW_INTAKE_001.json" --plan "PP_VERIFICATION_PLAN_HOLD.json" --observations "PP_OBSERVATION_001.json" --manifest "PP_HUMAN_REVIEW_HANDOFF_HOLD.json" --protocol "PP_REVIEW_PROTOCOL_001.json" --contract "PP_REVIEWER_AUTH_REQUIREMENTS_HOLD.json" --blueprint "PP_REVIEWER_SERVICE_BLUEPRINT_HOLD.json" --interfaces "PP_REVIEWER_INTERFACE_CONTRACT_HOLD.json" --transitions "PP_TRUST_TRANSITIONS_HOLD.json" --revocation "PP_REVOCATION_RECOVERY_HOLD.json" --export "PP_SECURITY_ASSURANCE_HOLD.json"
+```
+
+Het backofficepaneel **PP-RECOVERY-002 / Security Assurance Dossier —
+centrale bewijsgrenzen** leest lokaal tot 64 KiB JSON en toont
+twaalf bronverwijzingen en elf openstaande gaps. Deze
+browserweergave valideert een beperkte vaste structuur, maar
+**herberekent niet de twaalf originele broncontracten**,
+controleert geen externe handtekeningen of revieweridentiteiten en
+mag geen PASS, vrijgave of ontvangst bevestigen.
+Het statische script staat op de expliciete server-allowlist.
+Geen API, tests, merge, productie-uitrol, credentialintrekking,
+reviewbesluit of PALACO ONE-sessie uitgevoerd.
+
+**DRAFT / NOT EXECUTED / NOT_IMPLEMENTED / NOT_VERIFIED /
+NOT_READY / HOLD / DENY / NOT_AUTHORIZED.**
