@@ -722,3 +722,41 @@ of PALACO ONE-inlog. De status is zonder uitzondering:
 `NOT_VERIFIED / HOLD / DENY / NOT_AUTHORIZED`.
 
 **Status: DRAFT / NOT EXECUTED.**
+
+### Backoffice — read-only intakeoverzicht bewijsstukken en reviewerclaims
+
+De bestaande lokale beheerpagina heeft nu het paneel
+**PP-RECOVERY-002 / bewijs-intake en reviewerclaims — alleen lezen**.
+De eigenaar kan drie bestaande lokale bestanden kiezen: het
+beslisdossier (maximaal 16 KiB), de bijbehorende human-review queue
+(maximaal 128 KiB) en het review-intake-snapshot (maximaal 16 KiB).
+Het paneel leest de bestanden alleen na een expliciete klik, uitsluitend
+via de browser-File API.
+
+De presentatie scheidt:
+- **Bewijsverwijzingen**: volgnummer, reviewverzoek, bewijsvereiste,
+  bewijstype en verkorte SHA-256 van het oorspronkelijke bewijsbestand;
+- **Reviewer-/indienersrolclaims**: `OWNER_CLAIMED`,
+  `REVIEWER_CLAIMED` of `SOURCE_CLAIMED`, expliciet onbevestigd;
+- **Alle vijf beslisvereisten**: altijd `NOT_ESTABLISHED / BLOCKED`;
+- **Statusoverzicht**: `reviewerAuthority=NOT_ESTABLISHED`,
+  `sourceAuthenticity=NOT_ESTABLISHED`, PALACO ONE-overdracht
+  `BLOCKED`, `NOT_VERIFIED / HOLD / DENY / NOT_AUTHORIZED`.
+
+De browser controleert herkenbare vaste velden, grenzen, rijvolgorde,
+het verband met de opgegeven queue-verzoeken en tegenstrijdige
+autorisatieclaims. Dit is **geen normatieve SHA-256-ketenvalidatie**:
+de browser herberekent de canonieke dossier- en queuehashes niet,
+controleert de volledige historische keten niet en kan dubbele JSON-sleutels
+niet betrouwbaar detecteren. De bestaande Python-module
+`review_044_review_intake.py` blijft het strikte in-memory contract.
+Zelfs een strikt consistente intake is een ongetekende, niet-onafhankelijk
+geverifieerde claim.
+
+Bij bestandswissel of afmelding wordt de vorige intakeweergave gewist.
+Het script is toegevoegd aan de beperkte lokale server-allowlist.
+Er is geen nieuw uploadendpoint, databasewijziging, aanmeldroute,
+achtergrondtaak, testuitvoering, merge of publicatie.
+
+**Status: DRAFT / NOT EXECUTED / NOT_VERIFIED / HOLD / DENY /
+NOT_AUTHORIZED.**
