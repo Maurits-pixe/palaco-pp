@@ -1587,3 +1587,58 @@ reviewbesluit of PALACO ONE-sessie uitgevoerd.
 
 **DRAFT / NOT EXECUTED / NOT_IMPLEMENTED / NOT_VERIFIED /
 NOT_READY / HOLD / DENY / NOT_AUTHORIZED.**
+
+### Centrale versie- en compatibiliteitsregistratie — twaalf v0-contracten
+
+De pure module `review_044_contract_compatibility.py`
+biedt `build_contract_compatibility_register` voor de twaalf
+oorspronkelijke bronbestanden plus het eerder geëxporteerde
+Security Assurance Dossier (dertien byte-inputs). Voor ieder bronbestand
+controleert zij het expliciet verwachte `schema`,
+`reference=PP-RECOVERY-002`, het maximale bestandsformaat en
+de originele byte-SHA-256. Het hele assurance-dossier wordt via
+de bestaande strikte Pythonketen opnieuw opgebouwd en
+**type-exact** vergeleken; alleen identieke v0-broncontracten
+zijn intern compatibel. Foutieve koppelingen en onbekende versies
+worden geweigerd met `PP_RECOVERY_002_COMPATIBILITY_INVALID`.
+
+Het register geeft per bron `majorVersion=0`,
+`compatibility=INTERNALLY_MATCHED_V0_ONLY`,
+`externalAttestation=NOT_VERIFIED` en
+`migration=NOT_PERFORMED`. De centrale compatibiliteitsregels
+zijn expliciet:
+
+- onbekende schema's weigeren;
+- gemengde versies weigeren;
+- stille migraties verbieden;
+- voorwaartse versies niet stilzwijgend accepteren;
+- broncontracten volledig opnieuw valideren;
+- voor bevoegdheidsconclusies onafhankelijke externe attestatie eisen.
+
+Het register zelf **migreert of wijzigt geen data**, ondersteunt
+geen automatische schema-upgrade, en is geen bewijs van externe
+authenticiteit of cryptografische handtekening. Een
+breaking change vereist een nieuwe onafhankelijke review.
+Alle vijf poorten blijven `BLOCKED / NOT_VERIFIED`;
+`NOT_READY / HOLD / DENY / NOT_AUTHORIZED` blijft verplicht.
+
+De opt-in CLI `review_044_contract_compatibility_cli.py` leest
+zonder `--run` geen bestanden en schrijft bij `--export`
+uitsluitend een nieuw JSON-bestand via create-only `xb`.
+Tijdens een latere eigenaarssessie:
+
+```powershell
+python .\review_044_contract_compatibility_cli.py --run --dossier "PP_RECOVERY_DECISION_HOLD.json" --queue "PP_REVIEW_QUEUE_001.json" --intake "PP_REVIEW_INTAKE_001.json" --plan "PP_VERIFICATION_PLAN_HOLD.json" --observations "PP_OBSERVATION_001.json" --manifest "PP_HUMAN_REVIEW_HANDOFF_HOLD.json" --protocol "PP_REVIEW_PROTOCOL_001.json" --contract "PP_REVIEWER_AUTH_REQUIREMENTS_HOLD.json" --blueprint "PP_REVIEWER_SERVICE_BLUEPRINT_HOLD.json" --interfaces "PP_REVIEWER_INTERFACE_CONTRACT_HOLD.json" --transitions "PP_TRUST_TRANSITIONS_HOLD.json" --revocation "PP_REVOCATION_RECOVERY_HOLD.json" --assurance "PP_SECURITY_ASSURANCE_HOLD.json" --export "PP_CONTRACT_COMPATIBILITY_HOLD.json"
+```
+
+Het nieuwe alleen-lezen backofficepaneel
+**PP-RECOVERY-002 / versie- en compatibiliteitsregister**
+leest maximaal 64 KiB lokaal JSON, toont twaalf v0-contractregels
+en zes compatibiliteitsbeperkingen. De browser doet uitsluitend
+indicatieve schema- en statuscontrole en herberekent geen dertien
+originele bronnen. De statische JavaScriptmodule is opgenomen
+in de bestaande lokale server-allowlist; geen nieuwe endpoint,
+migratie, test, merge of deploy toegevoegd.
+
+**DRAFT / NOT EXECUTED / NOT_VERIFIED / NOT_READY /
+HOLD / DENY / NOT_AUTHORIZED.**
