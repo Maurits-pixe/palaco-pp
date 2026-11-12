@@ -15,6 +15,7 @@
   <script src="/review044-recovery-decision.js" defer></script>
   <script src="/review044-human-review-queue.js" defer></script>
   <script src="/review044-review-intake.js" defer></script>
+  <script src="/review044-intake-assessment.js" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -316,6 +317,22 @@
             </table></div>
             <dl id="admin-intake-summary" class="admin-registry-inspector"></dl>
             <p class="auth-note">De browser controleert alleen herkenbare velden, lokale rijverwijzingen en statusclaims. Hij verifieert geen canonieke dossierhash, volledige keten, dubbele JSON-sleutels of identiteit van de reviewer. Python blijft normatief. NOT_VERIFIED / HOLD / DENY / NOT_AUTHORIZED.</p>
+          </section>
+          <section class="admin-bundle-panel" aria-labelledby="admin-intake-assessment-title">
+            <h3 id="admin-intake-assessment-title">PP-RECOVERY-002 / intakebeoordeling — ontbrekende controles</h3>
+            <p class="auth-note">Lees een eerder lokaal geëxporteerd Python-beoordelingsrapport. Het rapport beschrijft zes nog ontbrekende controles per intake-item en vijf geblokkeerde beslisvereisten. Een browserimport bewijst geen Python-uitvoering of reviewerbevoegdheid.</p>
+            <div class="admin-review-grid"><div><label for="admin-intake-assessment-file">Intakebeoordelingsrapport (.json, maximaal 64 KiB)</label><input id="admin-intake-assessment-file" type="file" accept=".json,application/json"></div></div>
+            <button id="admin-intake-assessment-load" type="button" class="secondary">Toon ontbrekende controles lokaal</button>
+            <p id="admin-intake-assessment-status" class="admin-review-result" role="status" aria-live="polite">Geen intakebeoordeling geladen. HOLD / DENY.</p>
+            <h4>Intake-items — elk zes ontbrekende controles</h4>
+            <div class="admin-table-wrap admin-registry-rows"><table aria-label="Ontbrekende bewijscontroles per intake">
+              <thead><tr><th>Nr.</th><th>Vereiste</th><th>Bewijstype</th><th>Ingediende rolclaim</th><th>Open controles</th><th>Status</th></tr></thead>
+              <tbody id="admin-intake-assessment-rows"></tbody></table></div>
+            <h4>Bewijsvereisten — geen vrijgave</h4>
+            <div class="admin-table-wrap admin-registry-rows"><table aria-label="Geblokkeerde beslispoorten">
+              <thead><tr><th>Vereiste</th><th>Gekoppelde bewijsclaims</th><th>Bewijsstatus</th><th>Poort</th></tr></thead>
+              <tbody id="admin-intake-assessment-gates"></tbody></table></div>
+            <p class="auth-note">De open controles zijn: originele bewijsbytes hercontroleren, bronprovenance attesteren, indiener authenticeren, reviewerbevoegdheid vaststellen, subjectbinding verifiëren en onafhankelijke review uitvoeren. Dit blijft een ongetekende bestandsclaim. NOT_VERIFIED / HOLD / DENY / NOT_AUTHORIZED.</p>
           </section>
           <button id="admin-review044-registry-export" type="button" class="secondary" disabled>Download nieuw registersnapshot (.json)</button>
           <p class="auth-note">Controleer vóór gebruik altijd het originele dossier met de striktere Python-module. Deze browserregistratie is indicatief en bevat geen tijds- of identiteitsbewijs. Geen serveropslag of autorisatie.</p>
