@@ -1297,3 +1297,57 @@ identiteitsuitgifte of wijziging van HOLD.
 
 **DRAFT / NOT EXECUTED / NOT_VERIFIED / NOT_READY /
 REVIEWER_AUTHORITY_NOT_ESTABLISHED / HOLD / DENY / NOT_AUTHORIZED.**
+
+### Reviewer-identiteitsdienst — gescheiden architectuurcontract (niet actief)
+
+`review_044_reviewer_service_blueprint.py` definieert drie strikt
+gescheiden trust boundaries: **AUTHENTICATION**, **AUTHORIZATION** en
+**AUDIT**. De module valideert eerst de vijf originele bronbestanden,
+het ongetekende human-review handoffmanifest, het ontvangstprotocol
+en het eerdere reviewer-authenticatiecontract. De oorspronkelijke
+contractbytes worden gebonden via SHA-256. Het authenticatiecontract
+moet exact overeenkomen met de opnieuw berekende structuur; een
+afwijking wordt geweigerd met
+`PP_RECOVERY_002_REVIEWER_SERVICE_BLUEPRINT_INVALID`.
+
+De drie grenzen bevatten alleen **nog te implementeren eisen**:
+
+- **Authenticatie**: vertrouwde issuer, doelgroepgebonden challenge,
+  algoritme-/handtekeningcontrole, vertrouwde tijd, replaypreventie,
+  sleutelintrekking. Toekomstige output: `IDENTITY_ASSERTION`.
+- **Autorisatie**: onafhankelijke rolattestatie, PP-RECOVERY-002-scope,
+  least privilege, functiescheiding, conflict-/intrekkingscontrole,
+  deny-by-default. Toekomstige output: `REVIEWER_SCOPE_DECISION`.
+- **Audit**: exact-manifestgebonden ondertekende ontvangst, onafhankelijke
+  auditverankering, vertrouwde timestamp en externe verificatie.
+  Toekomstige output: `SIGNED_RECEIPT_AND_IMMUTABLE_AUDIT_REFERENCE`.
+
+De module **verifieert geen tokens, sleutels of handtekeningen**,
+raadpleegt geen identity provider en schrijft geen auditrecord. De
+drie services hebben `implementation=NOT_IMPLEMENTED`,
+`trustEvaluation=NOT_PERFORMED` en `outboundAuthority=NONE`.
+Alle acht reviewer-eisen blijven `NOT_ESTABLISHED` en alle vijf
+beslispoorten `BLOCKED`. De vaste systeemstatus blijft
+`NOT_VERIFIED / NOT_READY / HOLD / DENY / NOT_AUTHORIZED`.
+Een claims-only ontvangst- of reviewerregistratie kan deze
+trust boundary nooit oversteken.
+
+De opt-in CLI `review_044_reviewer_service_blueprint_cli.py` opent
+geen bestanden zonder `--run`. `--export` is verplicht en maakt
+uitsluitend een nieuw bestand aan; er is geen overwrite, test-runner,
+netwerkactie of autorisatieroute. Voor een latere eigenaartestsessie:
+
+```powershell
+python .\review_044_reviewer_service_blueprint_cli.py --run --dossier "PP_RECOVERY_DECISION_HOLD.json" --queue "PP_REVIEW_QUEUE_001.json" --intake "PP_REVIEW_INTAKE_001.json" --plan "PP_VERIFICATION_PLAN_HOLD.json" --observations "PP_OBSERVATION_001.json" --manifest "PP_HUMAN_REVIEW_HANDOFF_HOLD.json" --protocol "PP_REVIEW_PROTOCOL_001.json" --contract "PP_REVIEWER_AUTH_REQUIREMENTS_HOLD.json" --export "PP_REVIEWER_SERVICE_BLUEPRINT_HOLD.json"
+```
+
+Het nieuwe backofficepaneel **PP-RECOVERY-002 / reviewer-identiteitsdienst —
+drie gescheiden beveiligingslagen** kan een bestaand lokaal JSON-rapport
+van maximaal 32 KiB indicatief tonen. Browserimport valideert niet de
+originele acht documenten, echte authenticatie of externe audit.
+Het script staat op de beperkte server-allowlist; bij afmelding
+of bestandwijziging wordt de lokale weergave gewist. Geen API, login,
+merge, deploy, issuance of functionele tests.
+
+**DRAFT / NOT EXECUTED / NOT_IMPLEMENTED / NOT_VERIFIED /
+NOT_READY / HOLD / DENY / NOT_AUTHORIZED.**
