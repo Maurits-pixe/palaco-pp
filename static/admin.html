@@ -29,6 +29,7 @@
   <script src="/review044-trust-transition.js" defer></script>
   <script src="/review044-revocation-recovery.js" defer></script>
   <script src="/review044-security-assurance.js" defer></script>
+  <script src="/review044-contract-compatibility.js" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -610,6 +611,24 @@
             <h4>Elf onafhankelijke assurance-gaps — allemaal open</h4>
             <ul id="admin-assurance-gaps"></ul>
             <p class="auth-note">Alle vijf beslispoorten blijven BLOCKED. Acht reviewercontroles en acht herstelstappen zijn niet voltooid; vier intrekkingen zijn niet uitgevoerd; drie trust transitions blijven DENY. De browser leest uitsluitend een ongetekend JSON-rapport en herberekent niet de oorspronkelijke twaalf bronbestanden. NOT_VERIFIED / NOT_READY / HOLD / DENY / NOT_AUTHORIZED.</p>
+          </section>
+          <section class="admin-bundle-panel" aria-labelledby="admin-compat-title">
+            <h3 id="admin-compat-title">PP-RECOVERY-002 / versie- en compatibiliteitsregister — twaalf broncontracten</h3>
+            <p class="auth-note">Dit register koppelt de twaalf originele v0-schema's aan hun lokale SHA-256-vingerafdrukken en de samenhang met het Security Assurance Dossier. Onbekende of gemengde versies worden geweigerd. Dit is geen automatische migratie, authenticatie of vrijgave.</p>
+            <div class="admin-review-grid"><div>
+              <label for="admin-compat-file">Lokaal compatibiliteitsregister (.json, maximaal 64 KiB)</label>
+              <input id="admin-compat-file" type="file" accept=".json,application/json">
+            </div></div>
+            <button id="admin-compat-load" type="button" class="secondary">Toon versie- en compatibiliteitsregister</button>
+            <p id="admin-compat-status" class="admin-review-result" role="status" aria-live="polite">Geen compatibiliteitsregister geladen. HOLD / DENY.</p>
+            <h4>Twaalf schema's — alleen versie v0</h4>
+            <div class="admin-table-wrap admin-registry-rows"><table aria-label="Compatibiliteitsstatus van twaalf PP broncontracten">
+              <thead><tr><th>Nr.</th><th>Broncontract</th><th>Versie</th><th>SHA-256 (verkort)</th><th>Externe verificatie</th></tr></thead>
+              <tbody id="admin-compat-rows"></tbody>
+            </table></div>
+            <h4>Compatibiliteits- en migratiebeperkingen</h4>
+            <ul id="admin-compat-rules"></ul>
+            <p class="auth-note">Deze browser leest alleen een ongetekend JSON-rapport; hij valideert niet opnieuw de dertien originele bestanden of externe bewijsherkomst. Alle vijf beslispoorten BLOCKED, PALACO ONE BLOCKED, NOT_VERIFIED / NOT_READY / HOLD / DENY / NOT_AUTHORIZED. Geen migratie of rechtenwijziging.</p>
           </section>
           <button id="admin-review044-registry-export" type="button" class="secondary" disabled>Download nieuw registersnapshot (.json)</button>
           <p class="auth-note">Controleer vóór gebruik altijd het originele dossier met de striktere Python-module. Deze browserregistratie is indicatief en bevat geen tijds- of identiteitsbewijs. Geen serveropslag of autorisatie.</p>
