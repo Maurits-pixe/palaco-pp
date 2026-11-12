@@ -493,3 +493,39 @@ Een technisch consistente uitkomst blijft
 NOT_AUTHORIZED`, zonder zelfstandige bevoegdheid of PASS-claim.
 
 **Status: DRAFT / NOT EXECUTED / NOT_VERIFIED / HOLD / DENY.**
+
+### Read-only backofficeweergave van een geëxporteerd Python-bewijsrapport
+
+Het lokale backofficepaneel **Review 044 / Python-bewijsrapport —
+alleen-lezen overzicht** kan een reeds door de eigenaar opgeslagen
+`palaco.pp.review-044-inspection-owner-evidence.v0`-JSON van maximaal
+16 KiB lezen. Er worden geen bestanden geüpload, opgeslagen, gewijzigd
+of verzonden en er wordt geen Python gestart.
+
+Het paneel splitst de inhoud in drie uitdrukkelijk verschillende
+categorieën:
+
+1. **Technisch geclaimd:** schema, twee volledige SHA-256-hashes,
+   aantallen en het label `STRICT_PYTHON_TWO_FILE_HASH_MATCH_UNTRUSTED`
+   zoals *in het gekozen bestand vermeld*.
+2. **Eigenaarswaarnemingen:** alleen aantallen van gerapporteerde
+   markeringen en afwijkingen; de uitvoeringsherkomst blijft
+   `NOT_INDEPENDENTLY_ESTABLISHED`.
+3. **Onafhankelijke verificatie:** uitsluitend
+   `NOT_VERIFIED / HOLD / DENY / NOT_AUTHORIZED`, zonder identiteit,
+   ondertekening, onveranderlijke historie of productiebevoegdheid.
+
+De browser weigert onbekende velden, verkeerde vaste statuswaarden,
+ongeldige SHA-256-vormen, onmogelijke aantallen of tegenstrijdige
+technische vergelijkingslabels. De ingelezen JSON blijft echter
+**onvertrouwde gebruikersinput**: een bestand kan nagemaakt zijn en
+`JSON.parse` detecteert geen dubbele sleutels. De browser voert daarom
+geen strikte broncontrole of echte herverificatie uit. Een strikt oordeel
+vereist later opnieuw de twee originele bronbestanden via
+`review_044_inspection_evidence_cli.py --run`.
+
+Bij nieuwe bestandskeuze of afmelden wordt de tijdelijke weergave
+gewist. Het extra JavaScriptbestand staat alleen op de expliciete
+lokale allowlist van de server.
+
+**Status: DRAFT / NOT EXECUTED / HOLD / DENY.**
