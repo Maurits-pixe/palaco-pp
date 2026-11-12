@@ -321,3 +321,35 @@ expliciet genoemde lokale bestanden, schrijft niets, toont geen
 bestandsinhoud of persoonsgegevens, en maakt geen netwerkverbinding.
 Deze nieuwe functie is **NOT EXECUTED**; pas jouw testwaarnemingen later
 als `SELF_REPORTED` vast.
+
+### Negatieve importregressies — voorbereid, NIET uitgevoerd
+
+`review_044_inspection_fixtures.build_inspection_fixtures()` levert
+**23 deterministische, volledig synthetische** scenario's als vier-tuples
+`(scenario_id, registry_bytes, inspection_bytes, expected_result)`.
+De fixturebouwer schrijft niets weg, gebruikt geen echte eigenaargegevens
+en roept de validator niet aan. De scenario's omvatten een uitsluitend
+technisch consistente basisbinding en afwijzingen voor:
+
+- onjuist of boolean volgnummer en mismatches in de vijf hashverwijzingen;
+- vervalste autorisatie-, verificatie- en historievermeldingen;
+- ontbrekende/onbekende velden en dubbele JSON-sleutels;
+- afgebroken, lege, ongeldige UTF-8 en te grote inspectiebestanden;
+- gemanipuleerde registerhash, volgorde, autorisatie, lege keten,
+  dubbele registersleutel en overschrijding van de registerlimiet.
+
+`review_044_inspection_runner.py` is een afzonderlijke opt-in runner.
+Hij roept de validator **alleen na expliciet `--run`** aan. Tijdens een
+latere, door de eigenaar gestarte testsessie:
+
+```powershell
+python .\review_044_inspection_runner.py --run --json
+```
+
+De JSON-uitvoer bevat technische waarnemingen onder
+`SYNTHETIC_AUTOMATED_LOCAL_EXECUTION`, nooit menselijke
+`SELF_REPORTED`-verklaringen of een onafhankelijk PASS-certificaat.
+Zonder `--run` blijft de uitvoering op NOT EXECUTED. Deze build heeft
+**geen fixtures uitgevoerd** en claimt geen testuitslagen. De code
+wijzigt geen PP-account, register, database of productieautorisatie.
+Alle bevoegdheidsvelden blijven `HOLD / DENY / NOT_AUTHORIZED`.
