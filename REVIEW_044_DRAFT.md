@@ -1123,3 +1123,57 @@ lokale server-allowlist toegevoegd.
 
 **Status: DRAFT / NOT EXECUTED / NOT_VERIFIED / NOT_READY /
 HOLD / DENY / NOT_AUTHORIZED.**
+
+### PP-RECOVERY-002 — ongetekend human-review handoffmanifest
+
+De nieuwe pure module `review_044_human_review_handoff.py` bereidt
+een overdrachts**manifest** voor op basis van de vijf oorspronkelijke
+bronbestanden. De module hergebruikt de strikte
+`analyze_release_readiness` en `build_recovery_status_report`
+en laat alle vijf poorten `BLOCKED`. De output bevat vijf ruwe
+bronbestand-SHA-256-referenties, de zes globale ontbrekende
+voorwaarden, alle per-poort ontbrekende checks en canonieke digests
+van de voorafgaande analyse- en statusobjecten. Er wordt geen
+oorspronkelijke bewijsinhoud, PP-nummer, persoon of account-ID
+in het manifest opgenomen.
+
+Het schema `palaco.pp.recovery-002-human-review-handoff.v0`
+verklaart expliciet `intendedRecipient=
+INDEPENDENT_AUTHORIZED_HUMAN_REVIEWER_UNASSIGNED`,
+`recipientAuthentication=NOT_ESTABLISHED`,
+`recipientAuthorization=NOT_ESTABLISHED`,
+`deliveryStatus=NOT_DELIVERED`,
+`receiptStatus=NOT_ACKNOWLEDGED`,
+`manifestProvenance=UNSIGNED_LOCAL_DRAFT`,
+`originalEvidenceIncluded=false`,
+`originalEvidenceRetention=REQUIRED_SEPARATELY`,
+`releaseReadiness=NOT_READY` en
+`HOLD / DENY / NOT_AUTHORIZED`.
+Een dergelijke manifestclaim is geen bewijs van verzending,
+ontvangst, onafhankelijke bronherkomst of bevoegde reviewer.
+
+De opt-in `review_044_human_review_handoff_cli.py` opent zonder
+`--run` geen bronbestanden. Later kan de eigenaar, tijdens de
+eigen testsessie, expliciet een **nieuw** manifest voorbereiden:
+
+```powershell
+python .\review_044_human_review_handoff_cli.py --run --dossier "PP_RECOVERY_DECISION_HOLD.json" --queue "PP_REVIEW_QUEUE_001.json" --intake "PP_REVIEW_INTAKE_001.json" --plan "PP_VERIFICATION_PLAN_HOLD.json" --observations "PP_OBSERVATION_001.json" --export "PP_HUMAN_REVIEW_HANDOFF_HOLD.json"
+```
+
+De export schrijft alleen een nieuw bestand (`xb`), nooit een
+bestaand bestand over; zonder `--export` alleen naar stdout.
+Er wordt niets verstuurd of geauthenticeerd.
+
+De backoffice heeft een afzonderlijk paneel
+**PP-RECOVERY-002 / overdrachtsmanifest menselijke review — alleen
+lezen**. De browser leest maximaal 32 KiB lokale JSON, toont
+vijf bronreferenties, globale blokkades en vijf open poorten,
+en weigert tegenstrijdige autorisatieclaims. De weergave is
+uitsluitend **indicatief**: er is geen onafhankelijke herberekening
+van de vijf originele bronhashes, geen strikte Python-validatie en
+geen cryptografische attestatie van de manifestmaker.
+Het nieuwe script staat uitsluitend op de expliciete lokale
+server-allowlist. Geen API, upload, merge, tests of uitrol.
+
+**DRAFT / NOT EXECUTED / NOT_DELIVERED / NOT_ACKNOWLEDGED /
+NOT_VERIFIED / NOT_READY / HOLD / DENY / NOT_AUTHORIZED.**
