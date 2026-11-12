@@ -578,3 +578,55 @@ geallowlist; geen API voor uploads, accountbinding of autorisatie is toegevoegd.
 
 **Status: DRAFT / NOT EXECUTED / NOT_VERIFIED / HOLD / DENY /
 NOT_AUTHORIZED.**
+
+### PP-RECOVERY-002 — beslisdossier met vijf geblokkeerde bewijsvereisten
+
+`review_044_recovery_decision.prepare_decision_dossier(handoff_bytes,
+technical_report_bytes, owner_worksheet_bytes, review_marks=None)`
+bereidt vanuit **de drie originele bytestromen** een nieuw, alleen-lezen
+beslisdossier voor. Het gebruikt de bestaande strikte herstelcoördinator
+en doet geen runtime-, test-, database-, netwerk- of PALACO ONE-operaties.
+
+Vijf vereisten staan **onvoorwaardelijk op `NOT_ESTABLISHED / BLOCKED`**:
+
+1. `SOURCE_ATTESTATION` — onafhankelijk bewijs van bronherkomst;
+2. `CROSS_SOURCE_SUBJECT` — onafhankelijk bewijs dat bronnen hetzelfde
+   subject betreffen;
+3. `OWNER_AUTHORITY` — geauthenticeerde eigenaarsbevoegdheid;
+4. `RUNTIME_EXECUTION` — onafhankelijke vaststelling van uitvoering;
+5. `HUMAN_REVIEW` — vastgelegde beoordeling door een bevoegde reviewer.
+
+Een optioneel, afzonderlijk bestand met maximaal vijf expliciete
+eigenaarsmarkeringen kan uitsluitend `NOT_REVIEWED`,
+`REVIEW_REQUESTED` of `BLOCKER_REPORTED` bevatten. Dit zijn
+**zelfgerapporteerde planningsmarkeringen**, geen afgeronde bewijscontroles.
+Niet ingevulde markeringen blijven `NO_OBSERVATION`. Geen enkele
+markering kan een bewijsstatus of autorisatiepoorten veranderen.
+
+`review_044_recovery_decision_cli.py` is uitsluitend opt-in; zonder
+`--run` leest hij geen bronbestanden. Een latere eigenaartestsessie kan
+de volgende opdracht gebruiken:
+
+```powershell
+python .\review_044_recovery_decision_cli.py --run --handoff "PP_HANDOFF.json" --technical "TECHNISCH.json" --worksheet "EIGENAAR.json" --export "PP_RECOVERY_DECISION_HOLD.json"
+```
+
+`--marks "MARKERINGEN.json"` is optioneel. Zonder `--export`
+schrijft de CLI uitsluitend naar de terminal; met `--export` wordt
+uitsluitend een **nieuw** bestand gemaakt. Een bestaand bestand
+wordt nooit overschreven.
+
+De backoffice heeft een aanvullend, alleen-lezen paneel
+**PP-RECOVERY-002 / beslisdossier — vijf bewijsvereisten**. Het leest
+een door de eigenaar gekozen dossier van maximaal 16 KiB lokaal en
+toont de vijf poorten, bronhashes en de geblokkeerde PALACO ONE-overdracht.
+Een browsercontrole op ingelezen JSON bewijst geen Python-uitvoering
+en detecteert geen dubbele sleutels. De server serveert uitsluitend het
+specifiek toegestane script. Geen upload, accountkoppeling of uitgifte.
+
+**Onvoorwaardelijke uitkomst:** `crossSourceSubjectBinding=NOT_ESTABLISHED`,
+`ownerAuthority=NOT_ESTABLISHED`, `humanReview=NOT_COMPLETED`,
+`palacoOneHandoff=BLOCKED`, `palacoOneSession=NOT_CREATED`,
+`NOT_VERIFIED / HOLD / DENY / NOT_AUTHORIZED`.
+
+**Status: DRAFT / NOT EXECUTED.**
