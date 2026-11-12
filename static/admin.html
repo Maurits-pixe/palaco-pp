@@ -26,6 +26,7 @@
   <script src="/review044-reviewer-auth-contract.js" defer></script>
   <script src="/review044-reviewer-service-blueprint.js" defer></script>
   <script src="/review044-reviewer-interface-contract.js" defer></script>
+  <script src="/review044-trust-transition.js" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -550,6 +551,24 @@
             <h4>Foutafhandeling — altijd DENY</h4>
             <ul id="admin-reviewer-interface-errors"></ul>
             <p class="auth-note">Intrekkingen van credentials, reviewerrollen, ondertekeningssleutels en auditverankeringen krijgen standaard DENY. De browser leest alleen een ongetekend contract en controleert niet de oorspronkelijke negen bestanden. Geen netwerkverzoeken, identiteitstoekenning, PALACO ONE-sessie, reviewerbevoegdheid of uitgifte. NOT_IMPLEMENTED / NOT_VERIFIED / HOLD / DENY / NOT_AUTHORIZED.</p>
+          </section>
+          <section class="admin-bundle-panel" aria-labelledby="admin-trust-transition-title">
+            <h3 id="admin-trust-transition-title">PP-RECOVERY-002 / trust-transition protocol — drie geblokkeerde grenzen</h3>
+            <p class="auth-note">Een toekomstige reviewer mag uitsluitend via apart gecontroleerde grenzen van authenticatie naar autorisatie, van autorisatie naar audit en van audit naar menselijke beoordeling gaan. Dit paneel toont een ongetekend ontwerp; het voert geen controles of overgangen uit.</p>
+            <div class="admin-review-grid"><div>
+              <label for="admin-trust-transition-file">Offline overgangscontract (.json, maximaal 32 KiB)</label>
+              <input id="admin-trust-transition-file" type="file" accept=".json,application/json">
+            </div></div>
+            <button id="admin-trust-transition-load" type="button" class="secondary">Toon geblokkeerde trust transitions lokaal</button>
+            <p id="admin-trust-transition-status" class="admin-review-result" role="status" aria-live="polite">Geen overgangscontract geladen. HOLD / DENY.</p>
+            <h4>Drie grenzen — geen enkele overgang geautoriseerd</h4>
+            <div class="admin-table-wrap admin-registry-rows"><table aria-label="Geblokkeerde vertrouwensovergangen">
+              <thead><tr><th>Volgorde</th><th>Grens</th><th>Externe bewijsvoorwaarden</th><th>Uitkomst</th></tr></thead>
+              <tbody id="admin-trust-transition-rows"></tbody>
+            </table></div>
+            <h4>Foutvoorwaarden — iedere fout DENY</h4>
+            <ul id="admin-trust-transition-errors"></ul>
+            <p class="auth-note">Geen cryptografische sleutelcontrole, vertrouwde tijd, credentialintrekking of externe audit uitgevoerd. De browser controleert alleen een beperkte JSON-structuur, niet de volledige tien originele bestanden. Geen endpoint, aanvraag, PALACO ONE-sessie of uitgifte. NOT_IMPLEMENTED / NOT_VERIFIED / NOT_READY / HOLD / DENY / NOT_AUTHORIZED.</p>
           </section>
           <button id="admin-review044-registry-export" type="button" class="secondary" disabled>Download nieuw registersnapshot (.json)</button>
           <p class="auth-note">Controleer vóór gebruik altijd het originele dossier met de striktere Python-module. Deze browserregistratie is indicatief en bevat geen tijds- of identiteitsbewijs. Geen serveropslag of autorisatie.</p>
