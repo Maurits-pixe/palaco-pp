@@ -5,10 +5,9 @@ Produces a *missing-controls* report; never certifies evidence, its submitter,
 a reviewer or a PALACO ONE identity. No filesystem, network or execution.
 """
 import hashlib
-import json
 
 from review_044_human_review_queue import _dossier, _queue, _digest
-from review_044_review_intake import _check_intake, _read_json, MAX_INTAKE_BYTES
+from review_044_review_intake import _check_intake
 from review_044_recovery_decision import REQUIREMENTS
 
 ERROR = "PP_RECOVERY_002_INTAKE_ASSESSMENT_INVALID"
