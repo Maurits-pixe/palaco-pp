@@ -58,10 +58,23 @@ def _loads(raw, maximum):
                       parse_constant=lambda _: (_ for _ in ()).throw(ValueError()))
 
 
+def _strict_equal(left, right):
+    """Do not accept bool == 1 or numeric-string / float coercions."""
+    if type(left) is not type(right):
+        return False
+    if type(left) is dict:
+        return (set(left) == set(right)
+                and all(_strict_equal(left[key], right[key]) for key in right))
+    if type(left) is list:
+        return (len(left) == len(right)
+                and all(_strict_equal(a, b) for a, b in zip(left, right)))
+    return left == right
+
+
 def _plan(raw, dossier_bytes, queue_bytes, intake_bytes):
     imported = _loads(raw, MAX_PLAN_BYTES)
     expected = prepare_verification_plan(dossier_bytes, queue_bytes, intake_bytes)
-    if type(imported) is not dict or imported != expected:
+    if not _strict_equal(imported, expected):
         raise ValueError
     return expected
 
