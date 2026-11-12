@@ -1400,7 +1400,8 @@ class Handler(BaseHTTPRequestHandler):
             if method == "POST" and self.headers.get("Origin") != f"http://{host}":
                 raise PPError("PP_ORIGIN_DENIED", 403)
             if method == "GET" and self.path in (
-                "/", "/app.js", "/style.css", "/admin", "/admin.js", "/admin.css"
+                "/", "/app.js", "/style.css", "/admin", "/admin.js", "/admin.css",
+                "/review044-inspection-import.js", "/review044-inspection-owner.js"
             ):
                 name, mime = {
                     "/": ("index.html", "text/html; charset=utf-8"),
@@ -1409,6 +1410,8 @@ class Handler(BaseHTTPRequestHandler):
                     "/admin": ("admin.html", "text/html; charset=utf-8"),
                     "/admin.js": ("admin.js", "text/javascript; charset=utf-8"),
                     "/admin.css": ("admin.css", "text/css; charset=utf-8"),
+                    "/review044-inspection-import.js": ("review044-inspection-import.js", "text/javascript; charset=utf-8"),
+                    "/review044-inspection-owner.js": ("review044-inspection-owner.js", "text/javascript; charset=utf-8"),
                 }[self.path]
                 self.respond(200, (ROOT / "static" / name).read_bytes(), mime)
                 return
