@@ -876,3 +876,57 @@ API, upload, databasewijziging, netwerkverzoek, runner, merge of uitrol.
 
 **Status: DRAFT / NOT EXECUTED / NOT_VERIFIED / HOLD / DENY /
 NOT_AUTHORIZED.**
+
+### PP-RECOVERY-002 — observatieregister voor verificatiestappen (DRAFT)
+
+De pure module `review_044_observation_register.py` biedt
+`append_observation(dossier_bytes, queue_bytes, intake_bytes,
+verification_plan_bytes, previous_register_bytes,
+intake_sequence, check_order, mark)`. Hij valideert opnieuw alle
+oorspronkelijke dossier-/queue-/intakecontracten, bouwt het
+verificatieplan in geheugen opnieuw op en vergelijkt de volledige
+planstructuur type-exact met het aangeleverde planbestand.
+Daarna controleert hij elk event uit het vorige register,
+inclusief volgnummer, verwijzingen en de SHA-256-hashketen.
+
+Er zijn uitsluitend drie **zelfgerapporteerde** markeringen:
+
+- `OBSERVATION_REPORTED` — een eigen waarneming gemeld;
+- `BLOCKER_REPORTED` — een blokkade gemeld;
+- `RECHECK_REQUESTED` — een nieuwe controle gevraagd.
+
+Iedere gebeurtenis bindt aan één `intakeSequence` en één
+`checkOrder` (1 t/m 6) met de onveranderlijke
+`checkId` uit het verificatieplan. Het nieuwe snapshot bevat
+maximaal 128 gebeurtenissen en 128 KiB JSON. De gehele
+historie is uitsluitend een **lokale hashketenclaim**; zonder
+onafhankelijke verankering of handtekening levert dit geen
+bewijs van ongewijzigde historie, tijd of revieweridentiteit.
+
+Alle events behouden `checkStatus=NOT_STARTED`,
+`verification=NOT_VERIFIED` en `gate=BLOCKED`.
+De registerkop houdt `humanReview=NOT_COMPLETED`,
+`reviewerAuthority=NOT_ESTABLISHED` en
+`HOLD / DENY / NOT_AUTHORIZED` vast. Er is geen actie
+voor PASS, COMPLETED, identiteitsactivatie of uitgifte.
+
+De lokale CLI `review_044_observation_register_cli.py` is
+uitdrukkelijk opt-in. Zonder `--run` wordt geen bestand
+geopend. Tijdens een latere eigenaartestsessie kan bijvoorbeeld
+een eerste snapshot worden aangemaakt:
+
+```powershell
+python .\review_044_observation_register_cli.py --run --dossier "PP_RECOVERY_DECISION_HOLD.json" --queue "PP_REVIEW_QUEUE_001.json" --intake "PP_REVIEW_INTAKE_001.json" --plan "PP_VERIFICATION_PLAN_HOLD.json" --intake-sequence 1 --check-order 1 --mark OBSERVATION_REPORTED --export "PP_OBSERVATION_001.json"
+```
+
+Voor opvolgende waarnemingen wordt ook het vorige bestand
+opgegeven met `--previous "PP_OBSERVATION_001.json"`,
+gecombineerd met een **nieuwe** `--export`-bestandsnaam.
+De CLI maakt uitsluitend een nieuw bestand aan, weigert
+overschrijven en verandert de oorspronkelijke bronnen niet.
+Zonder `--run` geen uitvoering; ook met `--run` worden
+geen technische of identiteitscontroles uitgevoerd — alleen
+bestaande JSON-contracten beoordeeld voor een self-report.
+
+**DRAFT / NOT EXECUTED / NOT_VERIFIED / HOLD / DENY /
+NOT_AUTHORIZED.**
