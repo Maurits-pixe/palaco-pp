@@ -4,6 +4,7 @@ Pure, offline, read-only. Structural validity is never an identity decision.
 The manual checklist records *requests*, not completed verification.
 """
 import hashlib
+import json
 from collections.abc import Mapping
 
 from review_044_recovery_coordination import compile_recovery_coordination
@@ -58,7 +59,7 @@ def prepare_decision_dossier(
             "coordinationSha256": hashlib.sha256(
                 # Digest a deterministic representation of the coordination
                 # claims; this is not an external timestamp or attestation.
-                __import__("json").dumps(
+                json.dumps(
                     coordination, sort_keys=True, separators=(",",":"),
                     ensure_ascii=False
                 ).encode("utf-8")
