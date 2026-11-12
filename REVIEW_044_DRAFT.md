@@ -630,3 +630,53 @@ specifiek toegestane script. Geen upload, accountkoppeling of uitgifte.
 `NOT_VERIFIED / HOLD / DENY / NOT_AUTHORIZED`.
 
 **Status: DRAFT / NOT EXECUTED.**
+
+### Human-review queue — ongetekende verzoeken, geen beslissingsbevoegdheid
+
+`review_044_human_review_queue.append_review_request(
+dossier_bytes, previous_queue_bytes, requirement_id, action)` bereidt
+een **nieuw lokaal snapshot** voor van een aan een specifiek beslisdossier
+gebonden rij verzoeken. De Python-parser weigert onbekende velden,
+dubbele JSON-sleutels, een onjuist beslisdossier, gewijzigde voorganger-
+of entry-hashes, volgordefouten en autorisatie-escalaties.
+Maximaal 128 gebeurtenissen / 128 KiB per snapshot.
+Een hashketen zonder externe verankering is **geen** bewijs van een
+onveranderlijke geschiedenis.
+
+Alleen deze verzoektypen bestaan:
+`REVIEW_REQUESTED`, `EVIDENCE_REQUESTED`,
+`BLOCKER_REPORTED`. Ze kunnen worden gekoppeld aan precies vijf
+vaste bewijsvereisten: `SOURCE_ATTESTATION`,
+`CROSS_SOURCE_SUBJECT`, `OWNER_AUTHORITY`,
+`RUNTIME_EXECUTION` en `HUMAN_REVIEW`.
+Er is opzettelijk **geen** `APPROVED`, `PASS`,
+`IDENTITY_VERIFIED` of `ISSUANCE`-actie.
+Geen authenticatie of bevoegdheid van een reviewer is in dit
+prototype vastgesteld: `UNSIGNED_LOCAL_REVIEW_REQUEST` is
+een beperkte provenanceclaim, geen menselijke ondertekening.
+
+`review_044_human_review_queue_cli.py` is opt-in. Zonder
+`--run` worden geen bestanden geopend. Later, tijdens de
+eigenaartestsessie, kan een nieuw snapshot worden voorbereid met:
+
+```powershell
+python .\review_044_human_review_queue_cli.py --run --dossier "PP_RECOVERY_DECISION_HOLD.json" --requirement "SOURCE_ATTESTATION" --action "EVIDENCE_REQUESTED" --export "PP_REVIEW_QUEUE_001.json"
+```
+
+Gebruik bij een volgende gebeurtenis ook
+`--previous "PP_REVIEW_QUEUE_001.json"` en een **nieuw**
+`--export`-pad. De CLI schrijft uitsluitend bij deze expliciete actie,
+weigert overschrijven en wijzigt de bronbestanden niet.
+
+De backoffice bevat het alleen-lezen paneel
+**PP-RECOVERY-002 / human-review queue** voor een bestaand
+beslisdossier en queue-snapshot. Het geeft uitsluitend een
+browservergelijking op herkenbare velden; het kan geen dubbele
+JSON-sleutels of de volledige cryptografische keten normatief
+beoordelen. De Python-module blijft leidend. De server heeft
+alleen een expliciete route voor het extra JavaScriptbestand.
+Geen accountmutatie, externe toegang, testen, merge of uitrol.
+
+**Alle vijf poorten blijven BLOCKED. Status:
+DRAFT / NOT EXECUTED / NOT_VERIFIED / HOLD / DENY /
+NOT_AUTHORIZED.**
