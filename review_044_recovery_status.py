@@ -5,6 +5,7 @@ cockpit contract. This produces an owner-oriented *action queue*, not
 an identity verdict, reviewer signoff, or completed verification.
 """
 import hashlib
+import json
 
 from review_044_recovery_cockpit import prepare_recovery_cockpit
 from review_044_recovery_decision import REQUIREMENTS
@@ -44,7 +45,7 @@ def build_recovery_status_report(
             "reference": "PP-RECOVERY-002",
             "sourceFingerprints": cockpit["sources"],
             "cockpitCanonicalSha256": hashlib.sha256(
-                __import__("json").dumps(
+                json.dumps(
                     cockpit, ensure_ascii=False, sort_keys=True,
                     separators=(",", ":")
                 ).encode("utf-8")
