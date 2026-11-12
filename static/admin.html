@@ -25,6 +25,7 @@
   <script src="/review044-review-protocol.js" defer></script>
   <script src="/review044-reviewer-auth-contract.js" defer></script>
   <script src="/review044-reviewer-service-blueprint.js" defer></script>
+  <script src="/review044-reviewer-interface-contract.js" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -531,6 +532,24 @@
             <h4>Acht niet-vastgestelde externe voorwaarden</h4>
             <ul id="admin-reviewer-service-requirements"></ul>
             <p class="auth-note">Geen netwerkcontact, identity provider, crypto-challenge, beleidsbesluit, ondertekende ontvangst of externe audit. Alle vijf poorten BLOCKED; PALACO ONE BLOCKED; NOT_VERIFIED / NOT_READY / HOLD / DENY / NOT_AUTHORIZED. De browser leest alleen ongetekende JSON en verifieert niet de oorspronkelijke acht documenten.</p>
+          </section>
+          <section class="admin-bundle-panel" aria-labelledby="admin-reviewer-interface-title">
+            <h3 id="admin-reviewer-interface-title">PP-RECOVERY-002 / interfacecontracten — authenticatie, autorisatie en audit</h3>
+            <p class="auth-note">Drie toekomstige, intern gescheiden API-contracten. De routes zijn niet geïmplementeerd en niet beschikbaar. Fouten, intrekkingen en ontbrekende vertrouwensbronnen leiden uitsluitend tot DENY. Geen opgegeven reviewerrol kan een grens passeren.</p>
+            <div class="admin-review-grid"><div>
+              <label for="admin-reviewer-interface-file">Offline interfacecontract (.json, maximaal 32 KiB)</label>
+              <input id="admin-reviewer-interface-file" type="file" accept=".json,application/json">
+            </div></div>
+            <button id="admin-reviewer-interface-load" type="button" class="secondary">Toon uitgeschakelde interfacecontracten</button>
+            <p id="admin-reviewer-interface-status" class="admin-review-result" role="status" aria-live="polite">Geen interfacecontract geladen. HOLD / DENY.</p>
+            <h4>Toekomstige interne API-grenzen — alle uitgeschakeld</h4>
+            <div class="admin-table-wrap admin-registry-rows"><table aria-label="Uitgeschakelde reviewer-authenticatie API-contracten">
+              <thead><tr><th>Dienst</th><th>Voorgestelde route</th><th>Beschikbaarheid</th><th>Standaardantwoord</th></tr></thead>
+              <tbody id="admin-reviewer-interface-rows"></tbody>
+            </table></div>
+            <h4>Foutafhandeling — altijd DENY</h4>
+            <ul id="admin-reviewer-interface-errors"></ul>
+            <p class="auth-note">Intrekkingen van credentials, reviewerrollen, ondertekeningssleutels en auditverankeringen krijgen standaard DENY. De browser leest alleen een ongetekend contract en controleert niet de oorspronkelijke negen bestanden. Geen netwerkverzoeken, identiteitstoekenning, PALACO ONE-sessie, reviewerbevoegdheid of uitgifte. NOT_IMPLEMENTED / NOT_VERIFIED / HOLD / DENY / NOT_AUTHORIZED.</p>
           </section>
           <button id="admin-review044-registry-export" type="button" class="secondary" disabled>Download nieuw registersnapshot (.json)</button>
           <p class="auth-note">Controleer vóór gebruik altijd het originele dossier met de striktere Python-module. Deze browserregistratie is indicatief en bevat geen tijds- of identiteitsbewijs. Geen serveropslag of autorisatie.</p>
