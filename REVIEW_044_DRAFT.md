@@ -809,3 +809,39 @@ normatieve strikte bronparser; de originele drie bestanden blijven
 nodig voor de Python-contractcontrole.
 
 **DRAFT / NOT EXECUTED / NOT_VERIFIED / HOLD / DENY / NOT_AUTHORIZED.**
+
+### Verificatieplan — zes afhankelijke stappen per bewijsstuk
+
+`review_044_verification_plan.prepare_verification_plan(
+decision_dossier_bytes, review_queue_bytes, intake_bytes)` valideert
+eerst de **originele drie bestanden** via het bestaande strikte
+intakebeoordelingscontract. Daarna wordt voor ieder intake-item
+een workflow met precies zes handmatige controles voorbereid:
+originele bewijsbytes vergelijken (1); onafhankelijke bronherkomst
+verkrijgen (2, na 1); indiener onafhankelijk authenticeren (3);
+reviewer onafhankelijk authenticeren en bevoegdheid vaststellen (4);
+subjectbinding aantonen (5, na 2 en 3); gedocumenteerde onafhankelijke
+review afronden (6, na 1 t/m 5).
+
+De vijf bestaande beslispoorten hebben ieder expliciete afhankelijkheden
+en blijven zonder uitzondering `NOT_ESTABLISHED / BLOCKED`.
+Elke geplande controle heeft `status=NOT_STARTED`,
+`verification=NOT_VERIFIED` en
+`reviewerAuthority=NOT_ESTABLISHED`. Geen automatisch bewijsresultaat,
+voltooiingsmarkering, PASS, identiteitsbinding of PALACO ONE-sessie.
+Bron- en beoordelingsdossier, queue en intake worden verbonden met
+SHA-256-verwijzingen. Een digest is geen onafhankelijke attestatie.
+
+De CLI `review_044_verification_plan_cli.py` is bewust opt-in:
+zonder `--run` worden geen bronbestanden geopend. Pas tijdens de
+latere eigenaartestsessie mag de gebruiker expliciet kiezen voor:
+
+```powershell
+python .\review_044_verification_plan_cli.py --run --dossier "PP_RECOVERY_DECISION_HOLD.json" --queue "PP_REVIEW_QUEUE_001.json" --intake "PP_REVIEW_INTAKE_001.json" --export "PP_VERIFICATION_PLAN_HOLD.json"
+```
+
+Zonder `--export` wordt alleen naar stdout geschreven; met
+`--export` uitsluitend naar een nieuw bestand. Geen overschrijving,
+netwerk, database, tests, reviewerautorisatie of productieactie.
+
+**DRAFT / NOT EXECUTED / NOT_VERIFIED / HOLD / DENY / NOT_AUTHORIZED.**
