@@ -680,3 +680,45 @@ Geen accountmutatie, externe toegang, testen, merge of uitrol.
 **Alle vijf poorten blijven BLOCKED. Status:
 DRAFT / NOT EXECUTED / NOT_VERIFIED / HOLD / DENY /
 NOT_AUTHORIZED.**
+
+### Human-review intake — bewijsstukken en reviewerclaims, niet geverifieerd
+
+`review_044_review_intake.append_review_intake(
+decision_dossier_bytes, review_queue_bytes, previous_intake_bytes,
+request_sequence, evidence_bytes, evidence_kind, submitter_role_claim)`
+bereidt offline een nieuw, beperkt `palaco.pp.recovery-002-review-intake.v0`
+JSON-snapshot voor. Het verlangt het **originele beslisdossier**, een
+volledig strikte queue-snapshot en het door de eigenaar bewust gekozen
+bewijsbestand (max. 64 KiB). Het koppelt dat bewijsbestand uitsluitend
+via SHA-256 aan een bestaand reviewverzoek. De uitvoer bevat geen
+bewijsinhoud, reviewernaam, P.P.-nummer, consumer-ID of sessietoken.
+
+`submitterRoleClaim` is beperkt tot `OWNER_CLAIMED`,
+`REVIEWER_CLAIMED` of `SOURCE_CLAIMED`. **Geen daarvan bewijst
+identiteit of bevoegdheid**. Bewijstypen zijn `DOCUMENT`,
+`SCREENSHOT`, `LOG_EXCERPT`, `OTHER_UNTRUSTED`.
+De intake weigert onbekende velden, dubbele JSON-sleutels, gemanipuleerde
+hashketens, ontbrekende reviewverzoeken, een verkeerde dossier- of
+queue-binding, dubbele bewijsverwijzingen binnen hetzelfde verzoek en
+pogingen tot autorisatieverhoging. Maximaal 64 intake-items en 16 KiB
+per JSON-snapshot. Ook een geldige keten bewijst zonder externe
+ondertekening geen onveranderlijke historie.
+
+`review_044_review_intake_cli.py` voert **niets** uit zonder `--run`.
+Later kan de eigenaar een nieuwe intake voorbereiden met:
+
+```powershell
+python .\review_044_review_intake_cli.py --run --dossier "PP_RECOVERY_DECISION_HOLD.json" --queue "PP_REVIEW_QUEUE_001.json" --request-sequence 1 --evidence "BEWIJSSTUK.json" --kind DOCUMENT --role-claim REVIEWER_CLAIMED --export "PP_REVIEW_INTAKE_001.json"
+```
+
+Bij een volgend item is `--previous "PP_REVIEW_INTAKE_001.json"`
+vereist. De bijbehorende **zelfde queue-snapshot** moet behouden blijven;
+nieuwe queueversies vergen een nieuwe intakeketen. Export is create-only,
+zonder overschrijven. De CLI start geen tests, upload, databasewijziging
+of PALACO ONE-inlog. De status is zonder uitzondering:
+`sourceAuthenticity=NOT_ESTABLISHED`,
+`reviewerAuthentication=NOT_ESTABLISHED`,
+`reviewerAuthority=NOT_ESTABLISHED`, `subjectBinding=NOT_ESTABLISHED`,
+`NOT_VERIFIED / HOLD / DENY / NOT_AUTHORIZED`.
+
+**Status: DRAFT / NOT EXECUTED.**
