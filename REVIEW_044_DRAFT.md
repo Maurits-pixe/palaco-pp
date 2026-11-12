@@ -966,3 +966,59 @@ lokale server-allowlist, zonder nieuw uploadendpoint.
 
 **Status: DRAFT / NOT EXECUTED / NOT_VERIFIED / HOLD / DENY /
 NOT_AUTHORIZED.**
+
+### Overkoepelende herstelcockpit — vijf bewijsstromen, één read-only status
+
+`review_044_recovery_cockpit.prepare_recovery_cockpit(
+dossier_bytes, queue_bytes, intake_bytes, plan_bytes, register_bytes)`
+bouwt een **beperkte samenhangsrapportage** uit de oorspronkelijke
+vijf lokale bestanden: beslisdossier, human-review queue,
+review-intake, verificatieplan en observatieregister. De Pythonmodule
+gebruikt de bestaande strikte parsers en eist onderlinge binding.
+Het plan wordt uit de originele bronnen opnieuw samengesteld en
+type-exact gecontroleerd; het observatieregister wordt opnieuw
+beoordeeld inclusief zijn lokale eventhashketen.
+Een ongeldig bestand, mismatch of rechtenescalatie wordt geweigerd
+met `PP_RECOVERY_002_COCKPIT_INVALID`.
+
+Het JSON-rapport scheidt vijf **ruwe bestands-SHA-256** van
+verzoek-, intake-, controle- en waarnemingsaantallen. Alle vijf
+beslispoorten blijven `BLOCKED / NOT_VERIFIED`; geen teller of
+technische consistentie kan dit wijzigen.
+`independentSourceAttestation=ABSENT`,
+`reviewerAuthority=NOT_ESTABLISHED`,
+`subjectBinding=NOT_ESTABLISHED`,
+`historicalImmutability=NOT_ESTABLISHED`,
+`palacoOneHandoff=BLOCKED`, `NOT_VERIFIED / HOLD / DENY /
+NOT_AUTHORIZED` blijven verplicht.
+
+De CLI `review_044_recovery_cockpit_cli.py` leest geen bestanden
+zonder `--run`. Tijdens de latere eigenaartestsessie kan de
+eigenaar expliciet een nieuw rapport voorbereiden:
+
+```powershell
+python .\review_044_recovery_cockpit_cli.py --run --dossier "PP_RECOVERY_DECISION_HOLD.json" --queue "PP_REVIEW_QUEUE_001.json" --intake "PP_REVIEW_INTAKE_001.json" --plan "PP_VERIFICATION_PLAN_HOLD.json" --observations "PP_OBSERVATION_001.json" --export "PP_RECOVERY_COCKPIT_HOLD.json"
+```
+
+`--export` is create-only, nooit een overschrijving. Zonder
+`--export` wordt uitsluitend JSON naar stdout geschreven.
+Dit is een opt-in lokale samenhangsbeoordeling, geen uitvoering van
+tests, bewijscontroles of identiteitsactivatie.
+
+Het lokale backofficepaneel **PP-RECOVERY-002 / herstelcockpit —
+alle vijf bewijsstromen** leest de vijf originele JSON-bestanden
+plus het eerder geëxporteerde cockpitrapport. De browser herberekent
+SHA-256 voor de **originele byteinhoud** van de vijf geselecteerde
+bestanden en vergelijkt die met de SHA-256 in het ongetekende
+cockpitrapport. De rapportclaims en vaste HOLD-staten zijn apart
+zichtbaar. Het paneel voert **niet** alle Python-validaties opnieuw
+uit, detecteert geen dubbele JSON-sleutels en bewijst niet wie het
+rapport heeft vervaardigd. Er is geen netwerkverkeer, upload,
+database-mutatie of account-API toegevoegd.
+
+Bij bestandswijziging, een verborgen beheerderssessie of afmelden
+wordt de tijdelijke weergave gewist. Het extra JavaScriptbestand
+is enkel via de expliciete lokale server-allowlist bereikbaar.
+
+**DRAFT / NOT EXECUTED / NOT_VERIFIED / HOLD / DENY /
+NOT_AUTHORIZED.**
