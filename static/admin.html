@@ -27,6 +27,7 @@
   <script src="/review044-reviewer-service-blueprint.js" defer></script>
   <script src="/review044-reviewer-interface-contract.js" defer></script>
   <script src="/review044-trust-transition.js" defer></script>
+  <script src="/review044-revocation-recovery.js" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -569,6 +570,27 @@
             <h4>Foutvoorwaarden — iedere fout DENY</h4>
             <ul id="admin-trust-transition-errors"></ul>
             <p class="auth-note">Geen cryptografische sleutelcontrole, vertrouwde tijd, credentialintrekking of externe audit uitgevoerd. De browser controleert alleen een beperkte JSON-structuur, niet de volledige tien originele bestanden. Geen endpoint, aanvraag, PALACO ONE-sessie of uitgifte. NOT_IMPLEMENTED / NOT_VERIFIED / NOT_READY / HOLD / DENY / NOT_AUTHORIZED.</p>
+          </section>
+          <section class="admin-bundle-panel" aria-labelledby="admin-revocation-title">
+            <h3 id="admin-revocation-title">PP-RECOVERY-002 / revocation &amp; recovery — alles standaard geblokkeerd</h3>
+            <p class="auth-note">Dit paneel toont een ongetekend ontwerpcontract voor de toekomstige intrekking van reviewercredentials, reviewerrollen, ondertekeningssleutels en auditvertrouwen. De vier scenario's beschrijven gevolgen; de backoffice voert geen echte intrekking of herstelhandeling uit.</p>
+            <div class="admin-review-grid"><div>
+              <label for="admin-revocation-file">Offline intrekkings- en herstelcontract (.json, maximaal 32 KiB)</label>
+              <input id="admin-revocation-file" type="file" accept=".json,application/json">
+            </div></div>
+            <button id="admin-revocation-load" type="button" class="secondary">Toon revocation &amp; recovery contract</button>
+            <p id="admin-revocation-status" class="admin-review-result" role="status" aria-live="polite">Geen intrekkingscontract geladen. HOLD / DENY.</p>
+            <h4>Vier toekomstige intrekkingsscenario's — niet uitgevoerd</h4>
+            <div class="admin-table-wrap admin-registry-rows"><table aria-label="Intrekkingsscenario's en afgeleide afhankelijkheden">
+              <thead><tr><th>Scenario</th><th>Eigenaar</th><th>Afhankelijke bewijssoorten</th><th>Status</th></tr></thead>
+              <tbody id="admin-revocation-scenarios"></tbody>
+            </table></div>
+            <h4>Acht vereiste herstelcontroles — allemaal open</h4>
+            <div class="admin-table-wrap admin-registry-rows"><table aria-label="Herstelcontroles zonder vrijgavebevoegdheid">
+              <thead><tr><th>Nr.</th><th>Externe herstelvoorwaarde</th><th>Status</th></tr></thead>
+              <tbody id="admin-revocation-recovery"></tbody>
+            </table></div>
+            <p class="auth-note">Geen revocation feed, vertrouwde klok, credentialscontrole, actieve audit of bevoegd herstelbesluit aangesloten. De browser leest slechts een ongetekend JSON-contract en controleert niet de elf originele bronbestanden. Geen intrekking, accountmutatie, reviewerautorisatie, PALACO ONE-sessie of uitgifte. NOT_EXECUTED / NOT_VERIFIED / NOT_READY / HOLD / DENY / NOT_AUTHORIZED.</p>
           </section>
           <button id="admin-review044-registry-export" type="button" class="secondary" disabled>Download nieuw registersnapshot (.json)</button>
           <p class="auth-note">Controleer vóór gebruik altijd het originele dossier met de striktere Python-module. Deze browserregistratie is indicatief en bevat geen tijds- of identiteitsbewijs. Geen serveropslag of autorisatie.</p>
