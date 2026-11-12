@@ -930,3 +930,39 @@ bestaande JSON-contracten beoordeeld voor een self-report.
 
 **DRAFT / NOT EXECUTED / NOT_VERIFIED / HOLD / DENY /
 NOT_AUTHORIZED.**
+
+### Backoffice — alleen-lezen observatiegeschiedenis per verificatiestap
+
+De PALACO PHONE-backoffice heeft nu het paneel
+**PP-RECOVERY-002 / voortgangsregister — ongetekende waarnemingen**.
+Het leest een eerder opgeslagen verificatieplan (maximaal 128 KiB)
+en een observatiesnapshot (maximaal 128 KiB) via de lokale browser-File API.
+Geen automatische runner, netwerkoverdracht, database-opslag of
+PALACO ONE-identiteitshandeling wordt aangeroepen.
+
+De browser controleert een beperkte herkenbare structuur en berekent
+SHA-256 van de **originele planbytes**, die gelijk moet zijn aan
+`verificationPlanSha256` in het observatiesnapshot. Per
+gebeurtenis toont het paneel volgnummer, intake, checknummer, check-ID,
+zelfrapportagemarkering en een verkorte eventhash. Het telt afzonderlijk
+`OBSERVATION_REPORTED`, `BLOCKER_REPORTED` en
+`RECHECK_REQUESTED`.
+
+**Verificatiegrens:** de browser herberekent niet de hele eventhashketen,
+kan dubbele JSON-sleutels niet betrouwbaar weigeren en controleert niet
+de originele onderliggende dossier-, queue- en intakecontracten.
+Het paneel is uitsluitend een **lokale indicatie** van ongetekende
+gebruikersbestanden. De pure Python-module
+`review_044_observation_register.py` blijft het strikte contract
+voor hashketen- en dossierconsistentie. Ook strikte consistentie
+bewijst geen externe historie, persoonlijke identiteit, menselijke
+review of bronauthenticiteit.
+
+Bij bestandwijziging, sessieverlies of afmelding wordt de weergave
+gewist. Het script is afzonderlijk toegevoegd aan de beperkte
+lokale server-allowlist, zonder nieuw uploadendpoint.
+**Alle controles blijven `NOT_STARTED`, de vijf beslispoorten
+`BLOCKED`, en PALACO ONE-overdracht blijft geblokkeerd.**
+
+**Status: DRAFT / NOT EXECUTED / NOT_VERIFIED / HOLD / DENY /
+NOT_AUTHORIZED.**
