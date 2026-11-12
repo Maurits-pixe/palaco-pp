@@ -1242,3 +1242,58 @@ Geen API, upload, tests, merge of uitrol.
 **DRAFT / NOT EXECUTED / NOT_DELIVERED /
 RECEIPT_NOT_VERIFIED / REVIEWER_AUTHORITY_NOT_ESTABLISHED /
 NOT_READY / HOLD / DENY / NOT_AUTHORIZED.**
+
+### Onafhankelijke reviewer-authenticatie — beveiligingscontract, geen authenticator
+
+De pure module `review_044_reviewer_auth_contract.py` levert het
+contract `palaco.pp.recovery-002-reviewer-auth-contract.v0`.
+Hij herbouwt het ongetekende handoffmanifest uit de oorspronkelijke
+vijf bronnen en eist een type-exacte match; vervolgens valideert
+hij het bijbehorende claims-only ontvangstprotocol en de volledige
+lokale SHA-256-eventketen. Het resultaat koppelt de byte-SHA-256
+van manifest en protocol aan de lijst van onvervulde externe eisen.
+Een correcte keten geeft **geen** identiteit, bevoegdheid of onafhankelijk
+bewijs van aflevering/ontvangst.
+
+De acht noodzakelijke externe controles zijn:
+1. betrouwbare, onafhankelijke identity provider;
+2. verse, doelgroepgebonden challenge met phishingbestendige authenticatie;
+3. onafhankelijk ondertekende reviewer-rolattestatie;
+4. scope- en doelbinding aan PP-RECOVERY-002;
+5. replaypreventie, geldigheid en intrekking met vertrouwde tijd en opslag;
+6. onafhankelijke functiescheiding en belangenconflictcontrole;
+7. ondertekend ontvangstbewijs over **exacte** manifestbytes;
+8. extern verankerde, manipulatiebestendige auditregistratie.
+
+De nieuwe contractmodule **implementeert geen enkele externe controle**:
+`identityProviderIntegration=NOT_CONFIGURED`,
+`credentialValidation=NOT_PERFORMED`,
+`reviewerAuthentication=NOT_ESTABLISHED`,
+`recipientAuthentication=NOT_ESTABLISHED`,
+`reviewerAuthority=NOT_ESTABLISHED`,
+`humanReview=NOT_COMPLETED` en alle vijf poorten blijven
+`NOT_VERIFIED / BLOCKED`. PALACO ONE krijgt geen sessie of token.
+Er bestaan geen PASS-, SIGN-, LOGIN- of GRANT-acties in dit contract.
+
+`review_044_reviewer_auth_contract_cli.py` leest niets zonder
+expliciet `--run`, en maakt uitsluitend een nieuw bestand
+via `--export`. Een mogelijke *latere* offline eigenaarshandeling:
+
+```powershell
+python .\review_044_reviewer_auth_contract_cli.py --run --dossier "PP_RECOVERY_DECISION_HOLD.json" --queue "PP_REVIEW_QUEUE_001.json" --intake "PP_REVIEW_INTAKE_001.json" --plan "PP_VERIFICATION_PLAN_HOLD.json" --observations "PP_OBSERVATION_001.json" --manifest "PP_HUMAN_REVIEW_HANDOFF_HOLD.json" --protocol "PP_REVIEW_PROTOCOL_001.json" --export "PP_REVIEWER_AUTH_REQUIREMENTS_HOLD.json"
+```
+
+Het lokale backofficepaneel **PP-RECOVERY-002 / onafhankelijke
+reviewer-authenticatie — eisencontract** leest uitsluitend een eerder
+opgeslagen JSON-bestand van maximaal 32 KiB. Het paneel controleert
+herkenbare vorm, acht vaste controle-ID's, vijf geblokkeerde poorten
+en afwezigheid van autorisatieclaims, maar controleert niet opnieuw
+de oorspronkelijke zeven documenten. Het is geen identiteitsprovider
+en geen bewijs dat Python, externe crypto-validatie of reviewercontrole
+heeft plaatsgevonden. Bij bestandwijziging of afmelden wordt de
+weergave gewist; de statische module is op de expliciete
+server-allowlist aangesloten. Geen tests, merge, deploy,
+identiteitsuitgifte of wijziging van HOLD.
+
+**DRAFT / NOT EXECUTED / NOT_VERIFIED / NOT_READY /
+REVIEWER_AUTHORITY_NOT_ESTABLISHED / HOLD / DENY / NOT_AUTHORIZED.**
