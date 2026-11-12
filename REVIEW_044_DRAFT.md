@@ -353,3 +353,36 @@ Zonder `--run` blijft de uitvoering op NOT EXECUTED. Deze build heeft
 **geen fixtures uitgevoerd** en claimt geen testuitslagen. De code
 wijzigt geen PP-account, register, database of productieautorisatie.
 Alle bevoegdheidsvelden blijven `HOLD / DENY / NOT_AUTHORIZED`.
+
+### Technisch rapport en eigenaarswerkblad — strikt gescheiden (DRAFT)
+
+Nieuwe pure modules:
+
+- `review_044_inspection_owner_review.assess_inspection_technical_report(raw)`
+  controleert **alle 24** scenario's, vaste volgorde, verwachte codes,
+  uitsluitend toegestane technische resultaatcodes, `MATCH/MISMATCH`
+  consistentie, exacte veldsets, UTF-8, grootte en dubbele JSON-sleutels.
+  Een technisch rapport is altijd `IMPORTED / UNATTESTED`: zelfs 24
+  geclaimde MATCH-resultaten betekenen `ALL_MATCH_CLAIMED`, nooit PASS.
+- `review_044_inspection_owner_review.make_inspection_owner_worksheet(raw, marks)`
+  maakt een uitsluitend lokaal, ongetekend 24-regelig eigenaarwerkblad.
+  Alleen expliciet aangeboden markeringen worden `SELF_REPORTED`;
+  ontbrekende blijven `NOT_REVIEWED / NO_OBSERVATION`. Er wordt geen
+  tijdstip of menselijke waarneming verzonnen.
+- `review_044_inspection_owner_binding.validate_inspection_owner_worksheet(
+  raw_report, raw_worksheet)` controleert het werkblad opnieuw tegen
+  de originele technische rapportbytes, de 24 scenarionamen en exacte
+  markeringen/provenance. Verkeerde aantallen, extra velden, gewijzigde
+  hashes of HOLD-escalaties geven één vaste weigering:
+  `PP_REVIEW_044_INSPECTION_WORKSHEET_INVALID`. Een overeenkomst heet
+  uitsluitend `TWO_FILE_HASH_MATCH_UNTRUSTED`.
+
+Het rapport is maximaal 64 KiB; een werkblad maximaal 48 KiB.
+Deze modules hebben geen database-, netwerk-, test-runner-, tijd- of
+bestandsschrijfacties. Ze worden **niet** aangeroepen door de
+backoffice of een automatisch proces. De eigenaar bepaalt later of,
+wanneer en hoe de eigen tests en waarnemingen plaatsvinden.
+
+**Huidige status: DRAFT / NOT EXECUTED / NOT_VERIFIED / HOLD / DENY /
+NOT_AUTHORIZED.** Ook een consistente tweebestandenbinding geeft geen
+PALACO ONE-inlogrecht, identiteit, uitgifte of productiebevoegdheid.
