@@ -1468,3 +1468,60 @@ sessiecreatie of overdracht naar PALACO ONE.
 
 **DRAFT / NOT EXECUTED / NOT_IMPLEMENTED / NOT_VERIFIED /
 NOT_READY / HOLD / DENY / NOT_AUTHORIZED.**
+
+### Revocation & Recovery Contract — vier scenario's, geen uitvoerende intrekking
+
+De pure module `review_044_revocation_recovery.py` beschrijft
+intrekkingsgevolgen en extern vereiste herstelstappen, maar voert
+**geen enkele intrekking of hersteloperatie** uit. De functie
+`prepare_revocation_recovery_contract` neemt de elf originele
+bytebestanden uit de reviewketen, reconstrueert het
+trust-transition contract en vergelijkt het aangeleverde
+contract opnieuw **type-exact**. Afwijkingen worden geweigerd
+met `PP_RECOVERY_002_REVOCATION_RECOVERY_INVALID`.
+
+De vier niet-uitgevoerde intrekkingsscenario's zijn:
+`CREDENTIAL_REVOKED` (AUTHENTICATION; kan afgeleide
+identiteitsasserties, scopebesluiten en ontvangstbewijzen raken),
+`ROLE_REVOKED` (AUTHORIZATION; scopebesluiten en ontvangsten),
+`SIGNING_KEY_REVOKED` (AUDIT; ondertekende ontvangsten) en
+`AUDIT_ANCHOR_COMPROMISED` (AUDIT; geankerde ontvangsten).
+Ze hebben alle
+`propagation=REQUIRED_ACROSS_DEPENDENT_SERVICES`,
+`detection=NOT_IMPLEMENTED`,
+`invalidationExecution=NOT_EXECUTED`,
+`effectiveDecision=DENY` en `restorePermission=NONE`.
+Het manifest is dus een **eisencontract**, geen bewijs dat
+afhankelijke rechten daadwerkelijk ingetrokken zijn.
+
+Acht voorbereide stappen vereisen onafhankelijke intrekkingsattestatie,
+quarantaine van afgeleide claims, nonce-/credentialverval,
+hercontrole van issuersleutels, nieuwe rol- en scopeverificatie,
+een opnieuw geverifieerde ondertekende ontvangst en auditanker,
+nieuwe bevoegde menselijke beoordeling en behoud van HOLD totdat
+een **afzonderlijk bevoegd extern besluit** is genomen.
+Geen herstelstap maakt lokaal nieuwe tokens, sessies of rechten aan.
+Alle drie de trust transitions blijven `BLOCKED / DENY`.
+
+De CLI `review_044_revocation_recovery_cli.py` vereist expliciet
+`--run` en `--export`; export maakt uitsluitend een nieuw bestand
+met `xb`. De latere handmatige opdracht:
+
+```powershell
+python .\review_044_revocation_recovery_cli.py --run --dossier "PP_RECOVERY_DECISION_HOLD.json" --queue "PP_REVIEW_QUEUE_001.json" --intake "PP_REVIEW_INTAKE_001.json" --plan "PP_VERIFICATION_PLAN_HOLD.json" --observations "PP_OBSERVATION_001.json" --manifest "PP_HUMAN_REVIEW_HANDOFF_HOLD.json" --protocol "PP_REVIEW_PROTOCOL_001.json" --contract "PP_REVIEWER_AUTH_REQUIREMENTS_HOLD.json" --blueprint "PP_REVIEWER_SERVICE_BLUEPRINT_HOLD.json" --interfaces "PP_REVIEWER_INTERFACE_CONTRACT_HOLD.json" --transitions "PP_TRUST_TRANSITIONS_HOLD.json" --export "PP_REVOCATION_RECOVERY_HOLD.json"
+```
+
+Het alleen-lezen backofficepaneel **PP-RECOVERY-002 / revocation &
+recovery** leest maximaal 32 KiB lokale JSON, toont vier
+intrekkingsscenario's en acht herstelcontroles en weigert herkenbare
+tegenstrijdige vrijgaveclaims. De browser controleert niet opnieuw
+de elf bronbestanden, externe credentials, daadwerkelijke
+intrekkingsregistraties of auditbewijzen. De nieuwe statische
+JavaScriptviewer is alleen op de expliciete lokale server-allowlist
+toegevoegd. Er is **geen runtime-API of revocation feed** geïnstalleerd.
+
+Geen tests, merge, deploy, identiteitshandeling,
+autorisatie, daadwerkelijke intrekking of PALACO ONE-sessie.
+
+**DRAFT / NOT EXECUTED / NOT_IMPLEMENTED / NOT_VERIFIED /
+NOT_READY / HOLD / DENY / NOT_AUTHORIZED.**
