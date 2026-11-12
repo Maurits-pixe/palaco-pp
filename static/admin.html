@@ -22,6 +22,7 @@
   <script src="/review044-recovery-status.js" defer></script>
   <script src="/review044-release-readiness.js" defer></script>
   <script src="/review044-human-review-handoff.js" defer></script>
+  <script src="/review044-review-protocol.js" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -472,6 +473,23 @@
               <tbody id="admin-handoff-manifest-gates"></tbody>
             </table></div>
             <p class="auth-note">De bron-SHA-256 zijn ongetekende claims; de browser herberekent de vijf originele bronhashes niet. Dit paneel authenticeert geen ontvanger, verstuurt geen bestanden en activeert geen PALACO ONE-sessie. NOT_DELIVERED / NOT_ACKNOWLEDGED / NOT_VERIFIED / NOT_READY / HOLD / DENY.</p>
+          </section>
+          <section class="admin-bundle-panel" aria-labelledby="admin-review-protocol-title">
+            <h3 id="admin-review-protocol-title">PP-RECOVERY-002 / ontvangst- en beoordelingsprotocol — alleen lezen</h3>
+            <p class="auth-note">Dit paneel registreert geen ontvangst of bevoegdheid. Het toont eerder lokaal vastgelegde, ongetekende claims over ontvangst, reviewverzoeken, ontbrekende authenticatie en bewijsblokkades. Voor een daadwerkelijke bevoegde beoordeling moet revieweridentiteit eerst onafhankelijk buiten deze module worden vastgesteld.</p>
+            <div class="admin-review-grid">
+              <div><label for="admin-review-protocol-manifest">Oorspronkelijk handoffmanifest (.json, maximaal 32 KiB)</label><input id="admin-review-protocol-manifest" type="file" accept=".json,application/json"></div>
+              <div><label for="admin-review-protocol-snapshot">Ontvangstprotocol-snapshot (.json, maximaal 64 KiB)</label><input id="admin-review-protocol-snapshot" type="file" accept=".json,application/json"></div>
+            </div>
+            <button id="admin-review-protocol-load" type="button" class="secondary">Toon ongetekende ontvangst- en reviewerclaims</button>
+            <p id="admin-review-protocol-status" class="admin-review-result" role="status" aria-live="polite">Geen ontvangstprotocol geladen. HOLD / DENY.</p>
+            <dl id="admin-review-protocol-details" class="admin-registry-inspector"></dl>
+            <h4>Lokale claims — nooit onafhankelijke reviewerbeoordelingen</h4>
+            <div class="admin-table-wrap admin-registry-rows"><table aria-label="Ongetekende ontvangst- en reviewerclaims">
+              <thead><tr><th>Nr.</th><th>Claim</th><th>Opgegeven rol</th><th>Bewijsvereiste</th><th>Validatiestatus</th></tr></thead>
+              <tbody id="admin-review-protocol-rows"></tbody>
+            </table></div>
+            <p class="auth-note">Een overeenkomende manifestbytehash bewijst geen levering of ontvangst. De browser valideert geen volledige eventhashketen, revieweridentiteit of autoriteit. Elke claim blijft SELF_REPORTED_UNAUTHENTICATED; ontvangst NOT_VERIFIED, reviewerAuthority NOT_ESTABLISHED en humanReview NOT_COMPLETED. Geen login, bewijsuitgifte of automatische beslissing.</p>
           </section>
           <button id="admin-review044-registry-export" type="button" class="secondary" disabled>Download nieuw registersnapshot (.json)</button>
           <p class="auth-note">Controleer vóór gebruik altijd het originele dossier met de striktere Python-module. Deze browserregistratie is indicatief en bevat geen tijds- of identiteitsbewijs. Geen serveropslag of autorisatie.</p>
