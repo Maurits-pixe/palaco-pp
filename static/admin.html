@@ -16,6 +16,7 @@
   <script src="/review044-human-review-queue.js" defer></script>
   <script src="/review044-review-intake.js" defer></script>
   <script src="/review044-intake-assessment.js" defer></script>
+  <script src="/review044-verification-plan.js" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -333,6 +334,28 @@
               <thead><tr><th>Vereiste</th><th>Gekoppelde bewijsclaims</th><th>Bewijsstatus</th><th>Poort</th></tr></thead>
               <tbody id="admin-intake-assessment-gates"></tbody></table></div>
             <p class="auth-note">De open controles zijn: originele bewijsbytes hercontroleren, bronprovenance attesteren, indiener authenticeren, reviewerbevoegdheid vaststellen, subjectbinding verifiëren en onafhankelijke review uitvoeren. Dit blijft een ongetekende bestandsclaim. NOT_VERIFIED / HOLD / DENY / NOT_AUTHORIZED.</p>
+          </section>
+          <section class="admin-bundle-panel" aria-labelledby="admin-verification-plan-title">
+            <h3 id="admin-verification-plan-title">PP-RECOVERY-002 / verificatieplan — zes afhankelijke stappen</h3>
+            <p class="auth-note">Open een eerder lokaal geëxporteerd verificatieplan. De zes stappen per intake-item en de afhankelijkheden van vijf beslispoorten worden alleen weergegeven, niet uitgevoerd. De JSON-import is geen onafhankelijke Python-hercontrole, identiteitsbewijs of bronattestatie.</p>
+            <div class="admin-review-grid"><div>
+              <label for="admin-verification-plan-file">Offline verificatieplan (.json, maximaal 128 KiB)</label>
+              <input id="admin-verification-plan-file" type="file" accept=".json,application/json">
+            </div></div>
+            <button id="admin-verification-plan-load" type="button" class="secondary">Toon verificatievolgorde lokaal (indicatief)</button>
+            <p id="admin-verification-plan-status" class="admin-review-result" role="status" aria-live="polite">Geen verificatieplan geladen. HOLD / DENY.</p>
+            <dl id="admin-verification-plan-summary" class="admin-registry-inspector"></dl>
+            <h4>Voorbereide handmatige stappen per bewijsstuk</h4>
+            <div class="admin-table-wrap admin-registry-rows"><table aria-label="Handmatige controles per intake-item">
+              <thead><tr><th>Intake</th><th>Bewijsvereiste</th><th>Stap</th><th>Controle</th><th>Eerst vereist</th><th>Uitvoering</th></tr></thead>
+              <tbody id="admin-verification-plan-rows"></tbody>
+            </table></div>
+            <h4>Beslisdrempels — geen vrijgave</h4>
+            <div class="admin-table-wrap admin-registry-rows"><table aria-label="Geblokkeerde verificatiepoorten">
+              <thead><tr><th>Vereiste</th><th>Afhankelijke stappen</th><th>Bewijsstatus</th><th>Poort</th></tr></thead>
+              <tbody id="admin-verification-plan-gates"></tbody>
+            </table></div>
+            <p class="auth-note">Alle stappen blijven NOT_STARTED en alle poorten BLOCKED. De browser kan dubbele JSON-sleutels of de volledige cryptografische bronbinding niet normatief beoordelen; alleen de originele drie bestanden kunnen later strikt in Python worden gecontroleerd. Geen upload, uitvoering, accountmutatie, PALACO ONE-sessie of uitgifte. NOT_VERIFIED / HOLD / DENY / NOT_AUTHORIZED.</p>
           </section>
           <button id="admin-review044-registry-export" type="button" class="secondary" disabled>Download nieuw registersnapshot (.json)</button>
           <p class="auth-note">Controleer vóór gebruik altijd het originele dossier met de striktere Python-module. Deze browserregistratie is indicatief en bevat geen tijds- of identiteitsbewijs. Geen serveropslag of autorisatie.</p>
