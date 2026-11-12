@@ -529,3 +529,52 @@ gewist. Het extra JavaScriptbestand staat alleen op de expliciete
 lokale allowlist van de server.
 
 **Status: DRAFT / NOT EXECUTED / HOLD / DENY.**
+
+### PP-RECOVERY-002 — alleen-lezen herstelcoördinatie
+
+De module `review_044_recovery_coordination.py` biedt
+`compile_recovery_coordination(handoff_bytes, technical_report_bytes,
+owner_worksheet_bytes)` aan. De functie herbeoordeelt drie originele
+lokale bytebestanden via de strikte bestaande contracten:
+`parse_review_handoff`, `assess_inspection_technical_report` en
+`validate_inspection_owner_worksheet` (via de bewijscompiler).
+Ongeldige invoer wordt geweigerd met
+`PP_RECOVERY_002_COORDINATION_INVALID`. De uitvoer bevat uitsluitend
+drie SHA-256-verwijzingen, niet-persoonsgebonden status- en telvelden,
+en verplichte blokkades. Er komen geen P.P.-nummers, consumer-ID's,
+gebruikersnamen, sessies of geheimen in het overzicht.
+
+**Zeer belangrijk:** de bronnen kunnen elk intern consistent zijn
+zonder dat de identiteit of bevoegdheid van hun maker, of een
+gemeenschappelijke subjectbinding, is vastgesteld. Daarom blijft
+`crossSourceSubjectBinding=NOT_ESTABLISHED`,
+`ownerAuthority=NOT_ESTABLISHED` en
+`palacoOneSession=NOT_CREATED`. Er wordt geen PALACO ONE-account
+aangemaakt, geen bestaande registratie aangepast en geen uitgifte toegestaan.
+De volgende stap is alleen
+`MANUAL_SOURCE_AND_IDENTITY_REVIEW_ONLY`.
+
+De opt-in CLI `review_044_recovery_coordination_cli.py` opent geen
+bronbestanden zonder expliciet `--run`. Tijdens de latere eigenaartestsessie:
+
+```powershell
+python .\review_044_recovery_coordination_cli.py --run --handoff "PP_HANDOFF.json" --technical "TECHNISCH.json" --worksheet "EIGENAAR.json"
+```
+
+Met optioneel `--export "PP_RECOVERY_002_HOLD.json"` wordt alleen een
+nieuw bestand aangemaakt; bestaande bestanden worden nooit overschreven.
+Zonder `--export` wordt alleen JSON naar de terminal geschreven.
+Er is geen netwerk-, database-, runtime- of authenticatieactie.
+
+De backoffice bevat nu het paneel **PP-RECOVERY-002 /
+herstelcoördinatie — alleen lezen**. Het leest een bestaand JSON-rapport
+(maximaal 16 KiB) via de lokale File API en toont drie afzonderlijke
+rubrieken: P.P.-status, Review 044-bewijsclaim en de identiteitsblokkades.
+Dit is uitsluitend een browserindicatie van **onvertrouwde** JSON:
+`JSON.parse` is geen bewijs van een uitgevoerde Python-validator en
+detecteert geen dubbele sleutels. Bij bestandswissel of afmelding wordt
+de weergave gewist. De serverroute voor dit script is expliciet
+geallowlist; geen API voor uploads, accountbinding of autorisatie is toegevoegd.
+
+**Status: DRAFT / NOT EXECUTED / NOT_VERIFIED / HOLD / DENY /
+NOT_AUTHORIZED.**
