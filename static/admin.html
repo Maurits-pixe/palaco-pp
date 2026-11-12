@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="/style.css">
   <link rel="stylesheet" href="/admin.css">
   <script src="/admin.js" defer></script>
+  <script src="/review044-inspection-import.js" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -194,6 +195,17 @@
               <p id="admin-review044-inspect-result" class="auth-note" role="status" aria-live="polite">Geen inspectierapport geselecteerd.</p>
             </section>
           </div>
+          <section class="admin-bundle-panel" aria-labelledby="admin-review044-inspection-import-title">
+            <h3 id="admin-review044-inspection-import-title">Review 044 / inspectierapport importeren (lokaal)</h3>
+            <p class="auth-note">Selecteer het oorspronkelijke registersnapshot en een eerder gedownload regelinspectierapport. Deze browser geeft slechts een indicatie van de geselecteerde regelvelden; hij voert GEEN strikte Python-controle uit, en detecteert geen dubbele JSON-sleutels of volledige ketenafwijkingen. Beide bestanden blijven lokaal.</p>
+            <div class="admin-review-grid">
+              <div><label for="admin-review044-inspection-import-registry">Registersnapshot (.json, max. 256 KiB)</label><input id="admin-review044-inspection-import-registry" type="file" accept=".json,application/json"></div>
+              <div><label for="admin-review044-inspection-import-report">Regelinspectierapport (.json, max. 16 KiB)</label><input id="admin-review044-inspection-import-report" type="file" accept=".json,application/json"></div>
+            </div>
+            <button id="admin-review044-inspection-import-check" type="button" class="secondary">Vergelijk geselecteerde regel lokaal (indicatief)</button>
+            <p id="admin-review044-inspection-import-result" class="admin-review-result" role="status" aria-live="polite">NOT EXECUTED / HOLD / DENY.</p>
+            <p class="auth-note">Strikte offline controle gebeurt uitsluitend via <code>python review_044_inspection_cli.py --run --registry "register.json" --inspection "inspectie.json"</code> in je eigen terminal. De browser uploadt niets en start geen Python.</p>
+          </section>
           <button id="admin-review044-registry-export" type="button" class="secondary" disabled>Download nieuw registersnapshot (.json)</button>
           <p class="auth-note">Controleer vóór gebruik altijd het originele dossier met de striktere Python-module. Deze browserregistratie is indicatief en bevat geen tijds- of identiteitsbewijs. Geen serveropslag of autorisatie.</p>
         </div>
