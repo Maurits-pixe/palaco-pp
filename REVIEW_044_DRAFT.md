@@ -450,3 +450,46 @@ persoonlijke identiteit of bevoegdheid.
 De server serveert het nieuwe script alleen via een expliciete lokale
 allowlist-route. Geen algemene bestandsserver, uploadendpoint of
 autorisatieroute is toegevoegd. **DRAFT / NOT EXECUTED / HOLD / DENY.**
+
+### Offline vastleggen van de strikte Python-beoordeling (DRAFT)
+
+`review_044_inspection_evidence.compile_inspection_owner_evidence(
+technical_report, owner_worksheet)` leest geen bestanden en voert geen
+tests uit. Hij roept uitsluitend de twee strikte, bestaande in-memory
+contractbeoordelaars aan voor de **originele bytebestanden**. Onjuiste
+rapportstructuur, dubbele JSON-sleutels, afwijkende scenariorijen,
+vervalste eigenaarsmarkeringen of gebroken SHA-256-binding leiden tot
+`PP_REVIEW_044_INSPECTION_EVIDENCE_INVALID`.
+
+De uitvoer bevat onder andere de SHA-256 van beide bronnen, het aantal
+technisch *geclaimde* afwijkingen, expliciet door de eigenaar gemarkeerde
+scenario's, en de vaste bewijsstatus. De uitkomst
+`STRICT_PYTHON_TWO_FILE_HASH_MATCH_UNTRUSTED` duidt **alleen op strikte
+interne consistentie**, niet op een bewezen uitgevoerde runner, tijd,
+bronidentiteit, eigenaarshandtekening of autorisatie.
+
+De opt-in opdrachtregel `review_044_inspection_evidence_cli.py` gebruikt
+dezelfde functie. **Tot de latere eigenaarstestsessie niet uitvoeren.**
+Zonder `--run` worden geen bestanden geopend. Tijdens een expliciet
+geautoriseerde lokale testsessie kan de eigenaar kiezen voor een
+consoleweergave:
+
+```powershell
+python .\review_044_inspection_evidence_cli.py --run --technical "PAD_NAAR_TECHNISCH.json" --worksheet "PAD_NAAR_WERKBLAD.json"
+```
+
+Of een expliciet nieuw JSON-bestand (niet overschrijven):
+
+```powershell
+python .\review_044_inspection_evidence_cli.py --run --technical "PAD_NAAR_TECHNISCH.json" --worksheet "PAD_NAAR_WERKBLAD.json" --export "review-044-evidence-hold.json"
+```
+
+De CLI leest maximaal 64 KiB technische rapportbytes en 48 KiB
+werkbladbytes, geeft geen broninhoud terug bij een fout en weigert een
+bestaand exportpad. Zonder `--export` schrijft hij niets naar schijf.
+Er is geen webserver, database of PALACO ONE-runtimekoppeling.
+Een technisch consistente uitkomst blijft
+`UNSIGNED_LOCAL_PYTHON_VALIDATION_RESULT / NOT_VERIFIED / HOLD / DENY /
+NOT_AUTHORIZED`, zonder zelfstandige bevoegdheid of PASS-claim.
+
+**Status: DRAFT / NOT EXECUTED / NOT_VERIFIED / HOLD / DENY.**
