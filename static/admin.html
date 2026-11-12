@@ -13,6 +13,7 @@
   <script src="/review044-evidence-view.js" defer></script>
   <script src="/review044-recovery-coordination.js" defer></script>
   <script src="/review044-recovery-decision.js" defer></script>
+  <script src="/review044-human-review-queue.js" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -276,6 +277,21 @@
             </table></div>
             <dl id="admin-pp-decision-details" class="admin-registry-inspector"></dl>
             <p class="auth-note">De browser toont claims uit een ongetekend JSON-bestand. Een echte beoordeling vereist de oorspronkelijke bestanden, onafhankelijke bewijsbronnen en een bevoegde menselijke reviewer. PALACO ONE-overdracht = BLOCKED; identiteit = NOT_ESTABLISHED; NOT_VERIFIED / HOLD / DENY / NOT_AUTHORIZED.</p>
+          </section>
+          <section class="admin-bundle-panel" aria-labelledby="admin-reviewqueue-title">
+            <h3 id="admin-reviewqueue-title">PP-RECOVERY-002 / human-review queue — alleen lezen</h3>
+            <p class="auth-note">Dit paneel toont uitsluitend ongetekende verzoeken voor de vijf geblokkeerde bewijsvereisten. Het is geen beoordeling door een geauthenticeerde reviewer. Geen automatische PASS, accountbinding, PALACO ONE-sessie of uitgifte.</p>
+            <div class="admin-review-grid">
+              <div><label for="admin-reviewqueue-dossier">Oorspronkelijk beslisdossier (.json, maximaal 16 KiB)</label><input id="admin-reviewqueue-dossier" type="file" accept=".json,application/json"></div>
+              <div><label for="admin-reviewqueue-file">Queue-snapshot (.json, maximaal 128 KiB)</label><input id="admin-reviewqueue-file" type="file" accept=".json,application/json"></div>
+            </div>
+            <button id="admin-reviewqueue-view" type="button" class="secondary">Toon reviewverzoeken lokaal (indicatief)</button>
+            <p id="admin-reviewqueue-status" class="admin-review-result" role="status" aria-live="polite">Geen queue geladen. HOLD / DENY.</p>
+            <div class="admin-table-wrap admin-registry-rows"><table aria-label="Human-review verzoeken — ongetekend">
+              <thead><tr><th>Volgnummer</th><th>Bewijsvereiste</th><th>Verzoek</th><th>Entry-hash (verkort)</th><th>Besluit</th></tr></thead>
+              <tbody id="admin-reviewqueue-rows"></tbody>
+            </table></div>
+            <p class="auth-note">Een browservergelijking bevestigt geen volledige hashketen, canonieke dossierbinding, provenance of daadwerkelijke menselijke verificatie. Strikte offline controle volgt uitsluitend via de Python-module in een latere testsessie. Vijf poorten BLOCKED / NOT_VERIFIED / HOLD / DENY.</p>
           </section>
           <button id="admin-review044-registry-export" type="button" class="secondary" disabled>Download nieuw registersnapshot (.json)</button>
           <p class="auth-note">Controleer vóór gebruik altijd het originele dossier met de striktere Python-module. Deze browserregistratie is indicatief en bevat geen tijds- of identiteitsbewijs. Geen serveropslag of autorisatie.</p>
