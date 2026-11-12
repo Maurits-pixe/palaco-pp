@@ -10,6 +10,7 @@
   <script src="/review044-inspection-import.js" defer></script>
   <script src="/review044-inspection-owner.js" defer></script>
   <script src="/review044-inspection-binding.js" defer></script>
+  <script src="/review044-evidence-view.js" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -235,6 +236,17 @@
             <dl id="admin-review044-inspection-binding-detail" class="admin-registry-inspector"></dl>
             <button id="admin-review044-inspection-binding-export" type="button" class="secondary" disabled>Download browserindicatie bewijsbinding (.json)</button>
             <p class="auth-note">Het JSON-resultaat is <code>CLIENT_TWO_FILE_HASH_MATCH_UNTRUSTED</code>, niet de normatieve Python-beoordeling. De browser kan dubbele JSON-sleutels niet uitsluiten. Beoordeel beide oorspronkelijke bestanden later afzonderlijk met <code>validate_inspection_owner_worksheet()</code> in Python. NOT_VERIFIED / HOLD / DENY / NOT_AUTHORIZED.</p>
+          </section>
+          <section class="admin-bundle-panel" aria-labelledby="admin-review044-evidence-view-title">
+            <h3 id="admin-review044-evidence-view-title">Review 044 / Python-bewijsrapport — alleen-lezen overzicht</h3>
+            <p class="auth-note">Lees een eerder lokaal geëxporteerd, ongetekend Python-rapport. De browser controleert uitsluitend de herkenbare bestandsstructuur en interne statussen; het is GEEN heruitvoering van de strikte Python-validator, geen originele broncontrole en geen attestatie.</p>
+            <div class="admin-review-grid">
+              <div><label for="admin-review044-evidence-view-file">Geëxporteerd Python-bewijsrapport (.json, maximaal 16 KiB)</label><input id="admin-review044-evidence-view-file" type="file" accept=".json,application/json"></div>
+            </div>
+            <button id="admin-review044-evidence-view-load" type="button" class="secondary">Toon ingelezen bewijsrapport lokaal</button>
+            <p id="admin-review044-evidence-view-status" class="admin-review-result" role="status" aria-live="polite">Nog geen bewijsrapport geïnspecteerd. HOLD / DENY.</p>
+            <div id="admin-review044-evidence-view-details" hidden></div>
+            <p class="auth-note">Drie strikt gescheiden rubrieken: technische consistentieclaim, niet-ondertekende eigenaarswaarnemingen, en onafhankelijke verificatie. Een JSON-rapport kan aangepast of nagemaakt zijn; controleer de originele bestanden met de opt-in Python-route. Geen upload, opslag, accountkoppeling of autorisatie. NOT_VERIFIED / HOLD / DENY / NOT_AUTHORIZED.</p>
           </section>
           <button id="admin-review044-registry-export" type="button" class="secondary" disabled>Download nieuw registersnapshot (.json)</button>
           <p class="auth-note">Controleer vóór gebruik altijd het originele dossier met de striktere Python-module. Deze browserregistratie is indicatief en bevat geen tijds- of identiteitsbewijs. Geen serveropslag of autorisatie.</p>
