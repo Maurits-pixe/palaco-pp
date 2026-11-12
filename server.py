@@ -1402,7 +1402,7 @@ class Handler(BaseHTTPRequestHandler):
             if method == "GET" and self.path in (
                 "/", "/app.js", "/style.css", "/admin", "/admin.js", "/admin.css",
                 "/review044-inspection-import.js", "/review044-inspection-owner.js",
-                "/review044-inspection-binding.js"
+                "/review044-inspection-binding.js", "/review044-evidence-view.js"
             ):
                 name, mime = {
                     "/": ("index.html", "text/html; charset=utf-8"),
@@ -1414,6 +1414,7 @@ class Handler(BaseHTTPRequestHandler):
                     "/review044-inspection-import.js": ("review044-inspection-import.js", "text/javascript; charset=utf-8"),
                     "/review044-inspection-owner.js": ("review044-inspection-owner.js", "text/javascript; charset=utf-8"),
                     "/review044-inspection-binding.js": ("review044-inspection-binding.js", "text/javascript; charset=utf-8"),
+                    "/review044-evidence-view.js": ("review044-evidence-view.js", "text/javascript; charset=utf-8"),
                 }[self.path]
                 self.respond(200, (ROOT / "static" / name).read_bytes(), mime)
                 return
