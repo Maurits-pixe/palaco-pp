@@ -325,7 +325,7 @@ als `SELF_REPORTED` vast.
 ### Negatieve importregressies — voorbereid, NIET uitgevoerd
 
 `review_044_inspection_fixtures.build_inspection_fixtures()` levert
-**23 deterministische, volledig synthetische** scenario's als vier-tuples
+**24 deterministische, volledig synthetische** scenario's als vier-tuples
 `(scenario_id, registry_bytes, inspection_bytes, expected_result)`.
 De fixturebouwer schrijft niets weg, gebruikt geen echte eigenaargegevens
 en roept de validator niet aan. De scenario's omvatten een uitsluitend
