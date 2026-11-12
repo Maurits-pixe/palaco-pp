@@ -760,3 +760,52 @@ achtergrondtaak, testuitvoering, merge of publicatie.
 
 **Status: DRAFT / NOT EXECUTED / NOT_VERIFIED / HOLD / DENY /
 NOT_AUTHORIZED.**
+
+### Intakebeoordeling — per bewijsstuk ontbrekende controles (DRAFT)
+
+De pure functie `review_044_intake_assessment.assess_review_intake(
+decision_dossier_bytes, review_queue_bytes, intake_bytes)`
+controleert opnieuw de oorspronkelijke dossier-, queue- en intakecontracten.
+Een fout in structuur, volgorde, digestketen, queuebinding, rolclaim
+of duplicaatverwijzing wordt geweigerd met
+`PP_RECOVERY_002_INTAKE_ASSESSMENT_INVALID`.
+Ze leest geen bewijsinhoud van schijf, voert geen tests uit en stelt
+nimmer bron- of revieweridentiteit vast.
+
+Ieder intake-item krijgt zes expliciet openstaande controles:
+
+1. `ORIGINAL_EVIDENCE_BYTES_NOT_RECHECKED`;
+2. `SOURCE_PROVENANCE_NOT_ATTESTED`;
+3. `SUBMITTER_IDENTITY_NOT_AUTHENTICATED`;
+4. `REVIEWER_AUTHORITY_NOT_ESTABLISHED`;
+5. `SUBJECT_BINDING_NOT_ESTABLISHED`;
+6. `INDEPENDENT_REVIEW_NOT_COMPLETED`.
+
+Het rapport bevat tevens de SHA-256 van de originele intakebytes,
+de canonieke dossier- en queuedigests, aantallen en vijf open
+bewijsvereisten, die allemaal `NOT_ESTABLISHED / BLOCKED` blijven.
+Het originele bewijsbestand wordt niet meegeleverd en zijn hash
+wordt daarom **niet opnieuw vergeleken** met originele bewijsbytes.
+Interne consistentie is geen attestatie of bewijs van de uitvoerder.
+
+De opt-in `review_044_intake_assessment_cli.py` leest niets zonder
+`--run`. Tijdens een latere door de eigenaar uitgevoerde testsessie:
+
+```powershell
+python .\review_044_intake_assessment_cli.py --run --dossier "PP_RECOVERY_DECISION_HOLD.json" --queue "PP_REVIEW_QUEUE_001.json" --intake "PP_REVIEW_INTAKE_001.json" --export "PP_INTAKE_ASSESSMENT_HOLD.json"
+```
+
+Zonder `--export` geeft de CLI JSON op de terminal; met `--export`
+maakt hij alleen een nieuw bestand aan. Overschrijven wordt geweigerd.
+Geen PALACO ONE-accountactie, netwerkverzoek, databasewijziging,
+testuitvoering of stilzwijgende bevoegdheidsverlening.
+
+Het backofficepaneel **PP-RECOVERY-002 / intakebeoordeling —
+ontbrekende controles** kan een eerder opgeslagen rapport van maximaal
+64 KiB uitsluitend lokaal tonen. De browser controleert het herkenbare
+schema, vaste HOLD-velden, aantallen en vereisten, maar verifieert
+niet onafhankelijk dat Python is uitgevoerd. `JSON.parse` is geen
+normatieve strikte bronparser; de originele drie bestanden blijven
+nodig voor de Python-contractcontrole.
+
+**DRAFT / NOT EXECUTED / NOT_VERIFIED / HOLD / DENY / NOT_AUTHORIZED.**
