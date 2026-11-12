@@ -1402,7 +1402,7 @@ class Handler(BaseHTTPRequestHandler):
             if method == "GET" and self.path in (
                 "/", "/app.js", "/style.css", "/admin", "/admin.js", "/admin.css",
                 "/review044-inspection-import.js", "/review044-inspection-owner.js",
-                "/review044-inspection-binding.js", "/review044-evidence-view.js", "/review044-recovery-coordination.js", "/review044-recovery-decision.js", "/review044-human-review-queue.js", "/review044-review-intake.js", "/review044-intake-assessment.js", "/review044-verification-plan.js", "/review044-observation-register.js", "/review044-recovery-cockpit.js", "/review044-recovery-status.js"
+                "/review044-inspection-binding.js", "/review044-evidence-view.js", "/review044-recovery-coordination.js", "/review044-recovery-decision.js", "/review044-human-review-queue.js", "/review044-review-intake.js", "/review044-intake-assessment.js", "/review044-verification-plan.js", "/review044-observation-register.js", "/review044-recovery-cockpit.js", "/review044-recovery-status.js", "/review044-release-readiness.js"
             ):
                 name, mime = {
                     "/": ("index.html", "text/html; charset=utf-8"),
@@ -1424,6 +1424,7 @@ class Handler(BaseHTTPRequestHandler):
                     "/review044-observation-register.js": ("review044-observation-register.js", "text/javascript; charset=utf-8"),
                     "/review044-recovery-cockpit.js": ("review044-recovery-cockpit.js", "text/javascript; charset=utf-8"),
                     "/review044-recovery-status.js": ("review044-recovery-status.js", "text/javascript; charset=utf-8"),
+                    "/review044-release-readiness.js": ("review044-release-readiness.js", "text/javascript; charset=utf-8"),
                 }[self.path]
                 self.respond(200, (ROOT / "static" / name).read_bytes(), mime)
                 return
