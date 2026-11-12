@@ -9,6 +9,7 @@
   <script src="/admin.js" defer></script>
   <script src="/review044-inspection-import.js" defer></script>
   <script src="/review044-inspection-owner.js" defer></script>
+  <script src="/review044-inspection-binding.js" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -221,6 +222,19 @@
             </table></div>
             <button id="admin-review044-inspection-owner-export" type="button" class="secondary" disabled>Download mijn 24-scenario-eigenaarwerkblad (.json)</button>
             <p class="auth-note">Niet gekozen = NO_OBSERVATION / NOT_REVIEWED. Alleen een handmatig gekozen markering krijgt SELF_REPORTED. Het resultaat is ongetekend; het bewijst geen daadwerkelijke uitvoering of onafhankelijk beoordeelde identiteit. Geen autorisatie, geen uitgifte: HOLD / DENY.</p>
+          </section>
+          <section class="admin-bundle-panel" aria-labelledby="admin-review044-inspection-binding-title">
+            <h3 id="admin-review044-inspection-binding-title">Review 044 / technische rapportbinding met eigenaarwerkblad</h3>
+            <p class="auth-note">Selecteer twee originele JSON-bestanden: het synthetische technische inspectierapport en het eerder lokaal gedownloade 24-scenario-eigenaarwerkblad. De browser vergelijkt vaste velden, alle scenario's, markeringen, aantallen en SHA-256. Geen upload, runner, accountwijziging of autorisatie.</p>
+            <div class="admin-review-grid">
+              <div><label for="admin-review044-inspection-binding-technical">1. Technisch rapport (.json, maximaal 64 KiB)</label><input id="admin-review044-inspection-binding-technical" type="file" accept=".json,application/json"></div>
+              <div><label for="admin-review044-inspection-binding-owner">2. Eigenaarwerkblad (.json, maximaal 48 KiB)</label><input id="admin-review044-inspection-binding-owner" type="file" accept=".json,application/json"></div>
+            </div>
+            <button id="admin-review044-inspection-binding-check" type="button" class="secondary">Vergelijk twee bestanden lokaal (indicatief)</button>
+            <p id="admin-review044-inspection-binding-status" class="admin-review-result" role="status" aria-live="polite">Nog geen bewijsbinding beoordeeld. HOLD / DENY.</p>
+            <dl id="admin-review044-inspection-binding-detail" class="admin-registry-inspector"></dl>
+            <button id="admin-review044-inspection-binding-export" type="button" class="secondary" disabled>Download browserindicatie bewijsbinding (.json)</button>
+            <p class="auth-note">Het JSON-resultaat is <code>CLIENT_TWO_FILE_HASH_MATCH_UNTRUSTED</code>, niet de normatieve Python-beoordeling. De browser kan dubbele JSON-sleutels niet uitsluiten. Beoordeel beide oorspronkelijke bestanden later afzonderlijk met <code>validate_inspection_owner_worksheet()</code> in Python. NOT_VERIFIED / HOLD / DENY / NOT_AUTHORIZED.</p>
           </section>
           <button id="admin-review044-registry-export" type="button" class="secondary" disabled>Download nieuw registersnapshot (.json)</button>
           <p class="auth-note">Controleer vóór gebruik altijd het originele dossier met de striktere Python-module. Deze browserregistratie is indicatief en bevat geen tijds- of identiteitsbewijs. Geen serveropslag of autorisatie.</p>
