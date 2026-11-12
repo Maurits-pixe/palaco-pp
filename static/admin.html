@@ -17,6 +17,7 @@
   <script src="/review044-review-intake.js" defer></script>
   <script src="/review044-intake-assessment.js" defer></script>
   <script src="/review044-verification-plan.js" defer></script>
+  <script src="/review044-observation-register.js" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -356,6 +357,23 @@
               <tbody id="admin-verification-plan-gates"></tbody>
             </table></div>
             <p class="auth-note">Alle stappen blijven NOT_STARTED en alle poorten BLOCKED. De browser kan dubbele JSON-sleutels of de volledige cryptografische bronbinding niet normatief beoordelen; alleen de originele drie bestanden kunnen later strikt in Python worden gecontroleerd. Geen upload, uitvoering, accountmutatie, PALACO ONE-sessie of uitgifte. NOT_VERIFIED / HOLD / DENY / NOT_AUTHORIZED.</p>
+          </section>
+          <section class="admin-bundle-panel" aria-labelledby="admin-observations-title">
+            <h3 id="admin-observations-title">PP-RECOVERY-002 / voortgangsregister — ongetekende waarnemingen</h3>
+            <p class="auth-note">Open een bestaand verificatieplan en een reeds opgeslagen observatiesnapshot. De browser toont alleen zelfgerapporteerde gebeurtenissen bij de zes controles per bewijsstuk. Niets wordt uitgevoerd, afgevinkt of aan PALACO ONE gekoppeld.</p>
+            <div class="admin-review-grid">
+              <div><label for="admin-observations-plan-file">Origineel verificatieplan (.json, maximaal 128 KiB)</label><input id="admin-observations-plan-file" type="file" accept=".json,application/json"></div>
+              <div><label for="admin-observations-register-file">Observatiesnapshot (.json, maximaal 128 KiB)</label><input id="admin-observations-register-file" type="file" accept=".json,application/json"></div>
+            </div>
+            <button id="admin-observations-load" type="button" class="secondary">Toon mijn observatiegeschiedenis lokaal</button>
+            <p id="admin-observations-status" class="admin-review-result" role="status" aria-live="polite">Geen voortgangsregister geladen. HOLD / DENY.</p>
+            <dl id="admin-observations-summary" class="admin-registry-inspector"></dl>
+            <h4>Waarnemingshistorie per intake en verificatiestap</h4>
+            <div class="admin-table-wrap admin-registry-rows"><table aria-label="Zelfgerapporteerde controlewaarnemingen">
+              <thead><tr><th>Volgnummer</th><th>Intake</th><th>Stap</th><th>Controle</th><th>Eigen markering</th><th>Eventhash (verkort)</th><th>Verificatiestatus</th></tr></thead>
+              <tbody id="admin-observations-rows"></tbody>
+            </table></div>
+            <p class="auth-note">De browser vergelijkt de SHA-256 van de originele planbytes maar verifieert niet de volledige eventhashketen, dubbele JSON-sleutels, identiteit of reviewerbevoegdheid. Een waarneming is nooit onafhankelijke verificatie. Alle controles blijven NOT_STARTED en alle vijf poorten BLOCKED. Geen upload, serveropslag, accountactie of uitgifte. NOT_VERIFIED / HOLD / DENY / NOT_AUTHORIZED.</p>
           </section>
           <button id="admin-review044-registry-export" type="button" class="secondary" disabled>Download nieuw registersnapshot (.json)</button>
           <p class="auth-note">Controleer vóór gebruik altijd het originele dossier met de striktere Python-module. Deze browserregistratie is indicatief en bevat geen tijds- of identiteitsbewijs. Geen serveropslag of autorisatie.</p>
