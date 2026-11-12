@@ -845,3 +845,34 @@ Zonder `--export` wordt alleen naar stdout geschreven; met
 netwerk, database, tests, reviewerautorisatie of productieactie.
 
 **DRAFT / NOT EXECUTED / NOT_VERIFIED / HOLD / DENY / NOT_AUTHORIZED.**
+
+### Backoffice — alleen-lezen verificatieplan met afhankelijkheden
+
+Het aanvullende paneel **PP-RECOVERY-002 / verificatieplan —
+zes afhankelijke stappen** leest een reeds opgeslagen
+`palaco.pp.recovery-002-verification-plan.v0`-JSON van maximaal
+128 KiB volledig lokaal. De eigenaar ziet per intake-item de zes
+voorbereide controles, de expliciete voorwaarden voor elke stap en
+de vijf beslispoorten met hun afhankelijke controlevolgordes.
+
+De browser weigert een afwijkend schema, onbekende velden, onjuiste
+hashvormen, onmogelijke aantallen, ontbrekende controles, afwijkende
+volgorde, gewijzigde afhankelijkheden, of enige claim van uitvoering
+of vrijgave. `NOT_STARTED / NOT_VERIFIED / NOT_ESTABLISHED / BLOCKED`
+zijn vaste contractwaarden. Geen check wordt uitgevoerd of afgevinkt.
+
+**Strikte scheiding:** de ingelezen JSON kan nagemaakt zijn en
+`JSON.parse` herkent dubbele sleutels niet als fout. Het paneel
+controleert niet opnieuw de oorspronkelijke dossier-, queue- en
+intakebytes. De bestaande offline Python-module
+`review_044_verification_plan.py` blijft het normatieve contract voor
+interne consistentie; ook die module verstrekt geen externe attestatie
+of identiteitsautorisatie.
+
+Het afzonderlijke JavaScriptbestand is toegevoegd aan de expliciete
+lokale server-allowlist. Bij bestandswissel, verborgen beheerderssessie
+of afmelding wordt de tijdelijke weergave gewist. Er is geen nieuwe
+API, upload, databasewijziging, netwerkverzoek, runner, merge of uitrol.
+
+**Status: DRAFT / NOT EXECUTED / NOT_VERIFIED / HOLD / DENY /
+NOT_AUTHORIZED.**
