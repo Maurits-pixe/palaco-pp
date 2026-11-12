@@ -1075,3 +1075,51 @@ weergave gewist.
 
 **DRAFT / NOT EXECUTED / NOT_VERIFIED / HOLD / DENY /
 NOT_AUTHORIZED.**
+
+### PP-RECOVERY-002 — vrijgavegereedheidsanalyse: alleen ontbrekende voorwaarden
+
+`review_044_release_readiness.analyze_release_readiness(
+dossier_bytes, queue_bytes, intake_bytes, plan_bytes, observations_bytes)`
+hergebruikt de strikte vijfbron-controle via
+`build_recovery_status_report`. De functie retourneert een
+niet-autorisatieverlenend rapport van **zes globale blokkades**,
+**vijf afzonderlijke beslispoorten** en voor elke poort precies
+de ontbrekende handmatige verificatiestappen uit het eerder
+vastgelegde zesstappenplan. De geblokkeerde poorten krijgen
+één voorgestelde externe handmatige vervolgrichting.
+
+Het schema `palaco.pp.recovery-002-release-readiness.v0` heeft
+onvoorwaardelijk `overallReadiness=NOT_READY`,
+`blockedGateCount=5`, `gate=BLOCKED`,
+`readiness=NOT_READY`, `manualDecision=REQUIRED_OUTSIDE_THIS_MODULE`,
+`independentVerification=NOT_VERIFIED`,
+`reviewerAuthority=NOT_ESTABLISHED`,
+`authorization=HOLD`, `accessDecision=DENY`,
+`issuance=NOT_AUTHORIZED` en `palacoOneHandoff=BLOCKED`.
+Interne consistentie of het bestaan van veel zelfrapportages
+is geen toestemming, revieweridentiteit of onafhankelijke attestatie.
+
+De opt-in `review_044_release_readiness_cli.py` leest niets zonder
+`--run`. Tijdens een latere gebruikerssessie kan een nieuw rapport
+als volgt worden voorbereid:
+
+```powershell
+python .\review_044_release_readiness_cli.py --run --dossier "PP_RECOVERY_DECISION_HOLD.json" --queue "PP_REVIEW_QUEUE_001.json" --intake "PP_REVIEW_INTAKE_001.json" --plan "PP_VERIFICATION_PLAN_HOLD.json" --observations "PP_OBSERVATION_001.json" --export "PP_READINESS_GAPS_HOLD.json"
+```
+
+`--export` maakt een nieuw bestand; overschrijven is verboden.
+Zonder `--export` wordt het JSON-rapport uitsluitend naar stdout
+geschreven. Er worden geen tests, identiteitscontroles, merge, deploy
+of autorisatiehandelingen gestart.
+
+Het backofficepaneel **PP-RECOVERY-002 / vrijgavegereedheid —
+ontbrekende voorwaarden** leest een bestaand rapport tot 32 KiB
+via de browser-File API. Het controleert op herkenbare schema-,
+teller- en blokkadevelden, maar voert geen volledige strikte Python-
+validatie uit en verifieert niet de oorspronkelijke vijf bronbestanden.
+Ook het geraadpleegde rapport is een **ongetekende claim**.
+Het nieuwe JavaScriptbestand is alleen aan de expliciete
+lokale server-allowlist toegevoegd.
+
+**Status: DRAFT / NOT EXECUTED / NOT_VERIFIED / NOT_READY /
+HOLD / DENY / NOT_AUTHORIZED.**
