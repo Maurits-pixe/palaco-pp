@@ -19,6 +19,7 @@
   <script src="/review044-verification-plan.js" defer></script>
   <script src="/review044-observation-register.js" defer></script>
   <script src="/review044-recovery-cockpit.js" defer></script>
+  <script src="/review044-recovery-status.js" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -401,6 +402,33 @@
               <tbody id="admin-recovery-cockpit-gates"></tbody>
             </table></div>
             <p class="auth-note">De browser berekent alleen de SHA-256 van de geselecteerde bronbytes en toetst herkenbare vormen en statussen. Dit is geen normatieve controle van alle JSON-contracten, dubbele sleutels of gebeurtenisketens. Het Python-cockpitrapport kan nagemaakt zijn. Geen upload, automatische toetsing, accountbinding of PALACO ONE-toegang. NOT_VERIFIED / HOLD / DENY / NOT_AUTHORIZED.</p>
+          </section>
+          <section class="admin-bundle-panel" aria-labelledby="admin-status-report-title">
+            <h3 id="admin-status-report-title">PP-RECOVERY-002 / centraal herstelstatusrapport — alleen lezen</h3>
+            <p class="auth-note">Dit rapport brengt vijf geblokkeerde bewijsvereisten, zes niet-uitgevoerde controlefasen en acht toegestane toekomstige handmatige stappen samen. Het is een ongetekende statusclaim, geen uitgifte-, bevoegdheids- of identiteitsbesluit.</p>
+            <div class="admin-review-grid"><div>
+              <label for="admin-status-report-file">Offline herstelstatusrapport (.json, maximaal 32 KiB)</label>
+              <input id="admin-status-report-file" type="file" accept=".json,application/json">
+            </div></div>
+            <button id="admin-status-report-load" type="button" class="secondary">Toon herstelstatus lokaal (indicatief)</button>
+            <p id="admin-status-report-status" class="admin-review-result" role="status" aria-live="polite">Geen herstelstatusrapport geladen. HOLD / DENY.</p>
+            <dl id="admin-status-report-summary" class="admin-registry-inspector"></dl>
+            <h4>Vijf beslisblokkades</h4>
+            <div class="admin-table-wrap admin-registry-rows"><table aria-label="Vijf geblokkeerde herstelpoorten">
+              <thead><tr><th>Vereiste</th><th>Controlevolgorde</th><th>Status</th></tr></thead>
+              <tbody id="admin-status-report-gates"></tbody>
+            </table></div>
+            <h4>Zes nog niet uitgevoerde controlefasen</h4>
+            <div class="admin-table-wrap admin-registry-rows"><table aria-label="Open verificatiefasen">
+              <thead><tr><th>Stap</th><th>Controle</th><th>Afhankelijkheden</th><th>Status</th></tr></thead>
+              <tbody id="admin-status-report-checks"></tbody>
+            </table></div>
+            <h4>Toegestane vervolgstappen — handmatig, zonder automatische vrijgave</h4>
+            <div class="admin-table-wrap admin-registry-rows"><table aria-label="Handmatige herstelacties">
+              <thead><tr><th>Prioriteit</th><th>Actie</th><th>Beschrijving</th></tr></thead>
+              <tbody id="admin-status-report-next"></tbody>
+            </table></div>
+            <p class="auth-note">Dit paneel leest alleen lokale JSON en bewijst niet dat de Python-validator is uitgevoerd. Het voert geen controles, handelingen of accountmutaties uit. Alle bewijsstatussen blijven NOT_VERIFIED, HOLD / DENY en NOT_AUTHORIZED. PALACO ONE blijft geblokkeerd.</p>
           </section>
           <button id="admin-review044-registry-export" type="button" class="secondary" disabled>Download nieuw registersnapshot (.json)</button>
           <p class="auth-note">Controleer vóór gebruik altijd het originele dossier met de striktere Python-module. Deze browserregistratie is indicatief en bevat geen tijds- of identiteitsbewijs. Geen serveropslag of autorisatie.</p>
