@@ -21,6 +21,7 @@
   <script src="/review044-recovery-cockpit.js" defer></script>
   <script src="/review044-recovery-status.js" defer></script>
   <script src="/review044-release-readiness.js" defer></script>
+  <script src="/review044-human-review-handoff.js" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -448,6 +449,29 @@
               <tbody id="admin-readiness-gates"></tbody>
             </table></div>
             <p class="auth-note">De browser toont uitsluitend de structuur van een ongetekend JSON-rapport; de oorspronkelijke vijf bestanden en Python-validatie worden hier niet herhaald. Iedere poort blijft NOT_READY / BLOCKED; NOT_VERIFIED / HOLD / DENY / NOT_AUTHORIZED.</p>
+          </section>
+          <section class="admin-bundle-panel" aria-labelledby="admin-handoff-manifest-title">
+            <h3 id="admin-handoff-manifest-title">PP-RECOVERY-002 / overdrachtsmanifest menselijke review — alleen lezen</h3>
+            <p class="auth-note">Dit ongetekende manifest verwijst naar vijf bestanden, zes globale blokkades en vijf open poorten. Het is uitsluitend voorbereiding: geen reviewer is toegewezen, geen bestand verzonden en geen ontvangst bevestigd.</p>
+            <div class="admin-review-grid"><div>
+              <label for="admin-handoff-manifest-file">Offline review-handoffmanifest (.json, maximaal 32 KiB)</label>
+              <input id="admin-handoff-manifest-file" type="file" accept=".json,application/json">
+            </div></div>
+            <button id="admin-handoff-manifest-load" type="button" class="secondary">Toon ongetekend overdrachtsmanifest lokaal</button>
+            <p id="admin-handoff-manifest-status" class="admin-review-result" role="status" aria-live="polite">Geen handoffmanifest geladen. HOLD / DENY.</p>
+            <h4>Vijf bronverwijzingen — niet geleverd</h4>
+            <div class="admin-table-wrap admin-registry-rows"><table aria-label="Ongetekende bronmanifestverwijzingen">
+              <thead><tr><th>Bron</th><th>SHA-256 (verkort)</th><th>Overdracht</th></tr></thead>
+              <tbody id="admin-handoff-manifest-sources"></tbody>
+            </table></div>
+            <h4>Ontbrekende globale bewijsvoorwaarden</h4>
+            <ul id="admin-handoff-manifest-blockers"></ul>
+            <h4>Open poorten — geen reviewerbesluit</h4>
+            <div class="admin-table-wrap admin-registry-rows"><table aria-label="Handoffvereisten zonder reviewerbesluit">
+              <thead><tr><th>Vereiste</th><th>Open controles</th><th>Status</th></tr></thead>
+              <tbody id="admin-handoff-manifest-gates"></tbody>
+            </table></div>
+            <p class="auth-note">De bron-SHA-256 zijn ongetekende claims; de browser herberekent de vijf originele bronhashes niet. Dit paneel authenticeert geen ontvanger, verstuurt geen bestanden en activeert geen PALACO ONE-sessie. NOT_DELIVERED / NOT_ACKNOWLEDGED / NOT_VERIFIED / NOT_READY / HOLD / DENY.</p>
           </section>
           <button id="admin-review044-registry-export" type="button" class="secondary" disabled>Download nieuw registersnapshot (.json)</button>
           <p class="auth-note">Controleer vóór gebruik altijd het originele dossier met de striktere Python-module. Deze browserregistratie is indicatief en bevat geen tijds- of identiteitsbewijs. Geen serveropslag of autorisatie.</p>
