@@ -1351,3 +1351,67 @@ merge, deploy, issuance of functionele tests.
 
 **DRAFT / NOT EXECUTED / NOT_IMPLEMENTED / NOT_VERIFIED /
 NOT_READY / HOLD / DENY / NOT_AUTHORIZED.**
+
+### Reviewer-service interfacecontracten — drie gescheiden, uitgeschakelde API's
+
+`review_044_reviewer_interface_contract.py` definieert een
+machineleesbaar ontwerp voor drie toekomstige interne interfaces,
+**geen bestaande HTTP-routes**:
+`POST /internal/reviewer-auth/assert` (AUTHENTICATION),
+`POST /internal/reviewer-auth/scope` (AUTHORIZATION),
+en `POST /internal/reviewer-auth/receipt` (AUDIT).
+De request- en toekomstige responsevelden zijn gespecificeerd,
+maar elk interfaceobject blijft
+`implementation=NOT_IMPLEMENTED`,
+`endpointEnabled=false`,
+`acceptsSelfReportedRoleClaims=false`,
+`responseToday=DENY_UNIMPLEMENTED`.
+
+De pure functie `prepare_reviewer_interface_contract` krijgt de
+vijf oorspronkelijke bronbestanden, het handoffmanifest,
+ontvangstprotocol, reviewer-authenticatiecontract en de voorgaande
+drie-lagen-blauwdruk als **negen byte-inputs**. Zij valideert de
+complete onderlinge bronbinding via eerdere strikte Pythonmodules,
+vereist een type-exact identieke blauwdruk en maakt alleen een
+ongetekend ontwerpcontract. Een afwijking wordt
+`PP_RECOVERY_002_REVIEWER_INTERFACE_INVALID`. Deze controle
+is nog niet uitgevoerd in de huidige bouwstap.
+
+Het foutcontract vermeldt 16 specifieke toekomstige foutcodes,
+waaronder `INVALID_SIGNATURE`, `REPLAY_DETECTED`,
+`CREDENTIAL_REVOKED`, `AUDIT_UNAVAILABLE` en
+`TRUSTED_TIME_UNAVAILABLE`. Onbekende fouten en onbeschikbare
+afhankelijkheden zijn **DENY**. Geheime credentials en privésleutels
+mogen niet in fout- of auditlogs verschijnen. Vier intrekkingen
+zijn afzonderlijk toegewezen aan de verantwoordelijke laag:
+credential, reviewerrol, ondertekeningssleutel en
+auditverankering. Iedere intrekking is `DENY` tot een nieuwe
+onafhankelijke beoordeling.
+
+De contractuele scheiding is expliciet: authenticatie
+verleent geen autorisatie; autorisatie authenticeert niet;
+audit verleent nooit rechten; één enkele dienst kan HOLD
+niet opheffen. PALACO ONE-sessiecreatie is verboden.
+Geen endpoint, identity provider, tokenvalidator, beleidsengine,
+auditanker of cryptografische handtekening is hiermee gebouwd.
+
+De opt-in `review_044_reviewer_interface_contract_cli.py`
+leest zonder `--run` geen bestanden en schrijft met
+`--export` uitsluitend een nieuw JSON-bestand, nooit een
+bestaand bestand over. Voor een toekomstige eigenaartestsessie:
+
+```powershell
+python .\review_044_reviewer_interface_contract_cli.py --run --dossier "PP_RECOVERY_DECISION_HOLD.json" --queue "PP_REVIEW_QUEUE_001.json" --intake "PP_REVIEW_INTAKE_001.json" --plan "PP_VERIFICATION_PLAN_HOLD.json" --observations "PP_OBSERVATION_001.json" --manifest "PP_HUMAN_REVIEW_HANDOFF_HOLD.json" --protocol "PP_REVIEW_PROTOCOL_001.json" --contract "PP_REVIEWER_AUTH_REQUIREMENTS_HOLD.json" --blueprint "PP_REVIEWER_SERVICE_BLUEPRINT_HOLD.json" --export "PP_REVIEWER_INTERFACE_CONTRACT_HOLD.json"
+```
+
+Het backofficepaneel **PP-RECOVERY-002 / interfacecontracten —
+authenticatie, autorisatie en audit** toont een eerder opgeslagen
+lokaal JSON-contract van maximaal 32 KiB. Het controleert
+herkenbare vaste structuur, drie uitgeschakelde routes, foutcodes,
+intrekkingen en functiescheiding. Het is geen normatieve hercontrole
+van negen originele inputbestanden en kan geen onafhankelijke
+bevoegdheid vaststellen. De statische viewer staat op de expliciete
+lokale server-allowlist; geen nieuwe server-API is toegevoegd.
+
+**DRAFT / NOT EXECUTED / NOT_IMPLEMENTED / NOT_VERIFIED /
+NOT_READY / HOLD / DENY / NOT_AUTHORIZED.**
