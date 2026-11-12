@@ -1415,3 +1415,56 @@ lokale server-allowlist; geen nieuwe server-API is toegevoegd.
 
 **DRAFT / NOT EXECUTED / NOT_IMPLEMENTED / NOT_VERIFIED /
 NOT_READY / HOLD / DENY / NOT_AUTHORIZED.**
+
+### PP-RECOVERY-002 — trust-transition protocol, uitsluitend geblokkeerde overgangen
+
+De pure module `review_044_trust_transition.py` definieert het
+versiegebonden contract
+`palaco.pp.recovery-002-trust-transition.v0`. De functie
+`prepare_trust_transition_protocol` neemt tien strikt gekoppelde
+bronbestanden als bytes, valideert het eerdere interfacecontract
+type-exact tegenover de opnieuw gegenereerde Pythonstructuur
+en vereist dat alle toekomstige API-endpoints uitgeschakeld blijven.
+
+Het protocol beschrijft precies drie, **niet uitgevoerde** overgangen:
+
+1. `AUTHENTICATION_TO_AUTHORIZATION` — een door een externe
+   vertrouwde issuer gecontroleerde identiteitsassertie, gebonden aan
+   challenge, audience, purpose, geldigheid en intrekkingscontrole.
+2. `AUTHORIZATION_TO_AUDIT` — onafhankelijke rolattestatie,
+   scopecontrole, functiescheiding en handoff-manifestbinding,
+   waarna ondertekende ontvangst en externe audit vereist zijn.
+3. `AUDIT_TO_MANUAL_REVIEW` — een onafhankelijk geverifieerde
+   ondertekening, externe auditankercontrole, betrouwbare timestamp
+   en **afzonderlijk bevoegd menselijk reviewbesluit**.
+
+Iedere overgang heeft vier verplichte externe bewijsvoorwaarden,
+`proofAcceptance=NOT_IMPLEMENTED`, `status=BLOCKED`
+en `decision=DENY`. Negen gebundelde mislukkingstypen, inclusief
+replay, intrekking, ontbrekende handtekening, ongeldige scope,
+onbereikbare audit en onbetrouwbare tijd, leiden altijd tot DENY.
+Een eerdere self-report, lokaal ontvangstprotocol of interne
+SHA-256-keten kan nooit zelf een overgang voltooien.
+
+De opt-in `review_044_trust_transition_cli.py` opent
+zonder `--run` geen invoerbestanden; `--export` maakt
+uitsluitend een nieuw JSON-bestand aan. Voor een latere
+eigenaartestsessie is de opdracht:
+
+```powershell
+python .\review_044_trust_transition_cli.py --run --dossier "PP_RECOVERY_DECISION_HOLD.json" --queue "PP_REVIEW_QUEUE_001.json" --intake "PP_REVIEW_INTAKE_001.json" --plan "PP_VERIFICATION_PLAN_HOLD.json" --observations "PP_OBSERVATION_001.json" --manifest "PP_HUMAN_REVIEW_HANDOFF_HOLD.json" --protocol "PP_REVIEW_PROTOCOL_001.json" --contract "PP_REVIEWER_AUTH_REQUIREMENTS_HOLD.json" --blueprint "PP_REVIEWER_SERVICE_BLUEPRINT_HOLD.json" --interfaces "PP_REVIEWER_INTERFACE_CONTRACT_HOLD.json" --export "PP_TRUST_TRANSITIONS_HOLD.json"
+```
+
+Het backofficepaneel **PP-RECOVERY-002 / trust-transition protocol —
+drie geblokkeerde grenzen** leest lokaal maximaal 32 KiB JSON
+en presenteert de drie overgangen en negen DENY-fouten. Deze
+browserweergave controleert geen originele bronketen, ondertekening,
+cryptografische identiteitsbewijzen of actieve audit. De statische
+script-URL is expliciet aan de lokale server-allowlist toegevoegd:
+er bestaat **geen nieuwe runtime-API**.
+
+Geen tests, merge, uitrol, reviewbesluit, vrijgave, uitgifte,
+sessiecreatie of overdracht naar PALACO ONE.
+
+**DRAFT / NOT EXECUTED / NOT_IMPLEMENTED / NOT_VERIFIED /
+NOT_READY / HOLD / DENY / NOT_AUTHORIZED.**
