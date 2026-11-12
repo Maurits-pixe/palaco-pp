@@ -1177,3 +1177,68 @@ server-allowlist. Geen API, upload, merge, tests of uitrol.
 
 **DRAFT / NOT EXECUTED / NOT_DELIVERED / NOT_ACKNOWLEDGED /
 NOT_VERIFIED / NOT_READY / HOLD / DENY / NOT_AUTHORIZED.**
+
+### Ontvangst- en reviewerprotocol — uitsluitend onbevestigde claims
+
+De pure module `review_044_review_protocol.py` biedt
+`append_review_protocol_claim(dossier_bytes, queue_bytes, intake_bytes,
+plan_bytes, observations_bytes, manifest_bytes,
+previous_protocol_bytes, mark, role_claim, requirement_id)`.
+Hij reconstrueert het bestaande, ongetekende handoffmanifest uit de vijf
+originele bronnen, eist een **type-exacte** overeenkomst met het
+aangeleverde manifest, bindt het protocol aan de SHA-256 van de
+originele manifestbytes en valideert de hashketen van een eerder
+protocol-snapshot. Onjuiste, te grote en tegenstrijdige gegevens worden
+afgewezen met `PP_RECOVERY_002_REVIEW_PROTOCOL_INVALID`.
+
+Het protocol accepteert uitsluitend **zelfgerapporteerde** categorieën:
+`RECEIPT_CLAIMED`, `REVIEW_REQUESTED`,
+`IDENTITY_CHECK_REQUESTED`, `AUTHORITY_CHECK_REQUESTED`,
+`AUTHENTICATION_BLOCKER_REPORTED`, `EVIDENCE_GAP_REPORTED`
+en `RECHECK_REQUESTED`. Een opgegeven rol is uitsluitend
+`OWNER_CLAIMED`, `RECIPIENT_CLAIMED` of
+`REVIEWER_CLAIMED`. Iedere claim is verbonden met één van de vijf
+bewijspoorten en krijgt een volgnummer en lokale SHA-256-hashverwijzing.
+Er is geen markering `RECEIVED_VERIFIED`, `REVIEW_APPROVED`,
+`PASS` of `AUTHORIZED`.
+
+Het register is maximaal 64 KiB, 64 events, en houdt
+`receiptVerification=NOT_VERIFIED`,
+`reviewerAuthentication=NOT_ESTABLISHED`,
+`reviewerAuthority=NOT_ESTABLISHED`,
+`humanReview=NOT_COMPLETED`, `gate=BLOCKED`,
+`palacoOneHandoff=BLOCKED` en `HOLD / DENY /
+NOT_AUTHORIZED` vast. De lokale hashketen heeft geen onafhankelijke
+handtekening, timestamp of externe onveranderlijke verankering.
+
+De CLI `review_044_review_protocol_cli.py` opent geen bestanden
+zonder expliciet `--run`; `--export` is create-only en verplicht
+voor een registratie. Tijdens een latere eigenaartestsessie:
+
+```powershell
+python .\review_044_review_protocol_cli.py --run --dossier "PP_RECOVERY_DECISION_HOLD.json" --queue "PP_REVIEW_QUEUE_001.json" --intake "PP_REVIEW_INTAKE_001.json" --plan "PP_VERIFICATION_PLAN_HOLD.json" --observations "PP_OBSERVATION_001.json" --manifest "PP_HUMAN_REVIEW_HANDOFF_HOLD.json" --mark IDENTITY_CHECK_REQUESTED --role-claim REVIEWER_CLAIMED --requirement HUMAN_REVIEW --export "PP_REVIEW_PROTOCOL_001.json"
+```
+
+Bij de volgende registratie is `--previous` met het vorige
+protocol-snapshot nodig, terwijl `--export` naar een **nieuwe**
+bestandsnaam verwijst. Een `RECEIPT_CLAIMED` is geen bewezen
+ontvangst: voor een werkelijke beoordeling moet de reviewer via een
+afzonderlijk onafhankelijk authenticatie- en autorisatieproces
+worden vastgesteld, met een separaat besluitrecord buiten dit
+claims-only protocol.
+
+De backoffice heeft nu het nieuwe paneel
+**PP-RECOVERY-002 / ontvangst- en beoordelingsprotocol — alleen lezen**.
+De browser leest lokaal een manifest van maximaal 32 KiB en een
+protocolsnapshot van maximaal 64 KiB, vergelijkt de
+SHA-256 van de ongewijzigde manifestbytes en presenteert de
+onbevestigde claims. De browser herberekent niet de complete
+eventketen of de vijf oorspronkelijke broncontracten en kan dubbele
+JSON-sleutels niet normatief uitsluiten. Het paneel is daarom
+uitdrukkelijk niet geschikt als bewijs van ontvangst,
+reviewerbevoegdheid, onafhankelijke beoordeling of vrijgave.
+Geen API, upload, tests, merge of uitrol.
+
+**DRAFT / NOT EXECUTED / NOT_DELIVERED /
+RECEIPT_NOT_VERIFIED / REVIEWER_AUTHORITY_NOT_ESTABLISHED /
+NOT_READY / HOLD / DENY / NOT_AUTHORIZED.**
