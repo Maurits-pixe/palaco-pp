@@ -24,6 +24,7 @@
   <script src="/review044-human-review-handoff.js" defer></script>
   <script src="/review044-review-protocol.js" defer></script>
   <script src="/review044-reviewer-auth-contract.js" defer></script>
+  <script src="/review044-reviewer-service-blueprint.js" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -512,6 +513,24 @@
               <tbody id="admin-reviewer-auth-gates"></tbody>
             </table></div>
             <p class="auth-note">Deze browser leest alleen ongetekende JSON. Er wordt geen identity provider, cryptografische challenge, rolattestatie, handtekening of onafhankelijke audit gevalideerd. Reviewerbevoegdheid NOT_ESTABLISHED, menselijke review NOT_COMPLETED, PALACO ONE BLOCKED, NOT_READY / HOLD / DENY / NOT_AUTHORIZED.</p>
+          </section>
+          <section class="admin-bundle-panel" aria-labelledby="admin-reviewer-service-title">
+            <h3 id="admin-reviewer-service-title">PP-RECOVERY-002 / reviewer-identiteitsdienst — drie gescheiden beveiligingslagen</h3>
+            <p class="auth-note">Dit is een architectuurcontract, geen werkende identity provider, authenticatie, autorisatie of auditdienst. De beveiligingsgrenzen zijn gescheiden en geen ongetekende rolclaim mag bevoegdheid opleveren.</p>
+            <div class="admin-review-grid"><div>
+              <label for="admin-reviewer-service-file">Offline architectuurrapport (.json, maximaal 32 KiB)</label>
+              <input id="admin-reviewer-service-file" type="file" accept=".json,application/json">
+            </div></div>
+            <button id="admin-reviewer-service-load" type="button" class="secondary">Toon architectuurcontract lokaal</button>
+            <p id="admin-reviewer-service-status" class="admin-review-result" role="status" aria-live="polite">Geen identiteitsarchitectuur geladen. HOLD / DENY.</p>
+            <h4>Authenticatie / autorisatie / audit — nog niet geïmplementeerd</h4>
+            <div class="admin-table-wrap admin-registry-rows"><table aria-label="Drie gescheiden reviewer-veiligheidsdiensten">
+              <thead><tr><th>Trust boundary</th><th>Toekomstige output</th><th>Vereisten</th><th>Status</th></tr></thead>
+              <tbody id="admin-reviewer-service-services"></tbody>
+            </table></div>
+            <h4>Acht niet-vastgestelde externe voorwaarden</h4>
+            <ul id="admin-reviewer-service-requirements"></ul>
+            <p class="auth-note">Geen netwerkcontact, identity provider, crypto-challenge, beleidsbesluit, ondertekende ontvangst of externe audit. Alle vijf poorten BLOCKED; PALACO ONE BLOCKED; NOT_VERIFIED / NOT_READY / HOLD / DENY / NOT_AUTHORIZED. De browser leest alleen ongetekende JSON en verifieert niet de oorspronkelijke acht documenten.</p>
           </section>
           <button id="admin-review044-registry-export" type="button" class="secondary" disabled>Download nieuw registersnapshot (.json)</button>
           <p class="auth-note">Controleer vóór gebruik altijd het originele dossier met de striktere Python-module. Deze browserregistratie is indicatief en bevat geen tijds- of identiteitsbewijs. Geen serveropslag of autorisatie.</p>
