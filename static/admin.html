@@ -18,6 +18,7 @@
   <script src="/review044-intake-assessment.js" defer></script>
   <script src="/review044-verification-plan.js" defer></script>
   <script src="/review044-observation-register.js" defer></script>
+  <script src="/review044-recovery-cockpit.js" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -374,6 +375,32 @@
               <tbody id="admin-observations-rows"></tbody>
             </table></div>
             <p class="auth-note">De browser vergelijkt de SHA-256 van de originele planbytes maar verifieert niet de volledige eventhashketen, dubbele JSON-sleutels, identiteit of reviewerbevoegdheid. Een waarneming is nooit onafhankelijke verificatie. Alle controles blijven NOT_STARTED en alle vijf poorten BLOCKED. Geen upload, serveropslag, accountactie of uitgifte. NOT_VERIFIED / HOLD / DENY / NOT_AUTHORIZED.</p>
+          </section>
+          <section class="admin-bundle-panel" aria-labelledby="admin-recovery-cockpit-title">
+            <h3 id="admin-recovery-cockpit-title">PP-RECOVERY-002 / herstelcockpit — alle vijf bewijsstromen</h3>
+            <p class="auth-note">Eén lokaal, alleen-lezen overzicht voor het beslisdossier, de human-review queue, de bewijs-intake, het verificatieplan en de observatiegeschiedenis. Kies daarnaast een eerder offline geëxporteerd Python-cockpitrapport. Het rapport is ongetekend: een overeenkomstige bestandsvingerafdruk bewijst geen onafhankelijk uitgevoerde Python-validator.</p>
+            <div class="admin-review-grid">
+              <div><label for="admin-recovery-cockpit-dossier">1. Beslisdossier (.json, maximaal 16 KiB)</label><input id="admin-recovery-cockpit-dossier" type="file" accept=".json,application/json"></div>
+              <div><label for="admin-recovery-cockpit-queue">2. Review-queue (.json, maximaal 128 KiB)</label><input id="admin-recovery-cockpit-queue" type="file" accept=".json,application/json"></div>
+              <div><label for="admin-recovery-cockpit-intake">3. Bewijs-intake (.json, maximaal 16 KiB)</label><input id="admin-recovery-cockpit-intake" type="file" accept=".json,application/json"></div>
+              <div><label for="admin-recovery-cockpit-plan">4. Verificatieplan (.json, maximaal 128 KiB)</label><input id="admin-recovery-cockpit-plan" type="file" accept=".json,application/json"></div>
+              <div><label for="admin-recovery-cockpit-observations">5. Observatieregister (.json, maximaal 128 KiB)</label><input id="admin-recovery-cockpit-observations" type="file" accept=".json,application/json"></div>
+              <div><label for="admin-recovery-cockpit-report">6. Offline cockpitrapport (.json, maximaal 16 KiB)</label><input id="admin-recovery-cockpit-report" type="file" accept=".json,application/json"></div>
+            </div>
+            <button id="admin-recovery-cockpit-load" type="button" class="secondary">Toon herstelcockpit lokaal (indicatief)</button>
+            <p id="admin-recovery-cockpit-status" class="admin-review-result" role="status" aria-live="polite">Geen herstelcockpit geladen. HOLD / DENY.</p>
+            <dl id="admin-recovery-cockpit-overview" class="admin-registry-inspector"></dl>
+            <h4>Vijf bronbestanden — lokale byteverwijzingen</h4>
+            <div class="admin-table-wrap admin-registry-rows"><table aria-label="Bronbestanden en lokale SHA-256 vergelijkingen">
+              <thead><tr><th>Bewijsstroom</th><th>SHA-256 (verkort)</th><th>Controlebereik</th></tr></thead>
+              <tbody id="admin-recovery-cockpit-sources"></tbody>
+            </table></div>
+            <h4>Beslisdrempels — volledig geblokkeerd</h4>
+            <div class="admin-table-wrap admin-registry-rows"><table aria-label="Vijf geblokkeerde bewijsvereisten">
+              <thead><tr><th>Vereiste</th><th>Verificatie</th><th>Poort</th></tr></thead>
+              <tbody id="admin-recovery-cockpit-gates"></tbody>
+            </table></div>
+            <p class="auth-note">De browser berekent alleen de SHA-256 van de geselecteerde bronbytes en toetst herkenbare vormen en statussen. Dit is geen normatieve controle van alle JSON-contracten, dubbele sleutels of gebeurtenisketens. Het Python-cockpitrapport kan nagemaakt zijn. Geen upload, automatische toetsing, accountbinding of PALACO ONE-toegang. NOT_VERIFIED / HOLD / DENY / NOT_AUTHORIZED.</p>
           </section>
           <button id="admin-review044-registry-export" type="button" class="secondary" disabled>Download nieuw registersnapshot (.json)</button>
           <p class="auth-note">Controleer vóór gebruik altijd het originele dossier met de striktere Python-module. Deze browserregistratie is indicatief en bevat geen tijds- of identiteitsbewijs. Geen serveropslag of autorisatie.</p>
