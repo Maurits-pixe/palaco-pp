@@ -1642,3 +1642,56 @@ migratie, test, merge of deploy toegevoegd.
 
 **DRAFT / NOT EXECUTED / NOT_VERIFIED / NOT_READY /
 HOLD / DENY / NOT_AUTHORIZED.**
+
+### PP-RECOVERY-002 — Change Impact Register (hypothetisch, niet uitvoerend)
+
+De pure module `review_044_change_impact.py` maakt een
+afhankelijkheidsanalyse van een **voorgestelde** contractwijziging.
+De functie `prepare_change_impact_register` vereist alle twaalf
+originele contractbestanden, het Security Assurance Dossier,
+het bestaande compatibiliteitsregister, een expliciete
+`changed_role` en een `change_type`.
+De bestaande dertien broncontracten worden opnieuw gevalideerd via
+`build_contract_compatibility_register`; het aangeleverde register
+moet **type-exact** overeenkomen met de opnieuw berekende structuur.
+Anders wordt geweigerd met
+`PP_RECOVERY_002_CHANGE_IMPACT_INVALID`.
+
+Er zijn vier expliciete hypothetische wijzigingstypes:
+`SCHEMA_CHANGE`, `VERSION_CHANGE`, `CONTENT_CHANGE` en
+`POLICY_CHANGE`. Het model maakt geen wijziging, ontvangt geen
+voorgestelde nieuwe bronbytes en **bewijst dus niet dat een
+toekomstige wijziging compatibel is**. De afhankelijkheidsketen
+is conservatief lineair: alle contracten van de opgegeven bronrol
+tot en met contract twaalf worden als mogelijk beïnvloed gemarkeerd.
+Het Security Assurance Dossier en het compatibiliteitsregister
+moeten altijd opnieuw worden gegenereerd. Alle vijf
+beslispoorten krijgen `reassessment=REQUIRED`,
+`gate=BLOCKED`, `verification=NOT_VERIFIED`.
+Unknown schema, gemengde versies, niet-beoordeelde wijzigingen
+of een release zonder extern bewijs blijven `DENY`;
+stille migratie is verboden.
+
+De opt-in `review_044_change_impact_cli.py` leest zonder
+`--run` geen bestanden en schrijft via `--export` uitsluitend
+een nieuw JSON-bestand (`xb`). Tijdens een latere
+eigenaarssessie kan bijvoorbeeld een *hypothetische*
+wijziging van de reviewer-authenticatie-eisen worden geanalyseerd:
+
+```powershell
+python .\review_044_change_impact_cli.py --run --dossier "PP_RECOVERY_DECISION_HOLD.json" --queue "PP_REVIEW_QUEUE_001.json" --intake "PP_REVIEW_INTAKE_001.json" --plan "PP_VERIFICATION_PLAN_HOLD.json" --observations "PP_OBSERVATION_001.json" --manifest "PP_HUMAN_REVIEW_HANDOFF_HOLD.json" --protocol "PP_REVIEW_PROTOCOL_001.json" --contract "PP_REVIEWER_AUTH_REQUIREMENTS_HOLD.json" --blueprint "PP_REVIEWER_SERVICE_BLUEPRINT_HOLD.json" --interfaces "PP_REVIEWER_INTERFACE_CONTRACT_HOLD.json" --transitions "PP_TRUST_TRANSITIONS_HOLD.json" --revocation "PP_REVOCATION_RECOVERY_HOLD.json" --assurance "PP_SECURITY_ASSURANCE_HOLD.json" --registry "PP_CONTRACT_COMPATIBILITY_HOLD.json" --changed-role REVIEWER_AUTH_REQUIREMENTS --change-type POLICY_CHANGE --export "PP_CHANGE_IMPACT_HOLD.json"
+```
+
+Het aparte lokale backofficepaneel **PP-RECOVERY-002 /
+Change Impact Register** leest een ongetekend rapport
+tot 64 KiB, toont de mogelijk getroffen broncontracten
+en markeert de vijf blijvend geblokkeerde poorten.
+Het controleert **niet** opnieuw de veertien oorspronkelijke
+bronbestanden en is geen autorisatie-, migratie- of
+reviewbeslissysteem. De statische viewer staat alleen
+op de expliciete lokale server-allowlist.
+Er zijn geen tests, merge, deploy, uitgifte, accountmutatie,
+echte wijziging of PALACO ONE-sessie uitgevoerd.
+
+**DRAFT / HYPOTHETICAL_NOT_APPLIED / NOT_EXECUTED /
+NOT_VERIFIED / NOT_READY / HOLD / DENY / NOT_AUTHORIZED.**
