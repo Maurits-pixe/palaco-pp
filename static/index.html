@@ -87,6 +87,40 @@
       <p id="consumer-reference" class="reference"></p>
     </section>
 
+    <section id="recovery-panel" class="workspace recovery-panel" aria-labelledby="recovery-title" hidden>
+      <div class="section-heading">
+        <div><p class="eyebrow">PP-RECOVERY-002 / OVERDRACHT</p><h2 id="recovery-title">Jouw registratiedossier.</h2></div>
+        <span class="recovery-hold">AUTORISATIE / HOLD</span>
+      </div>
+      <p class="memory-intro">Een leesbare samenvatting van wat deze lokale P.P.-engine zelf heeft vastgelegd. Dit dossier bewijst geen wettelijke identiteit en geeft geen toegang tot PALACO ONE of andere diensten.</p>
+      <dl class="recovery-facts">
+        <div><dt>Account</dt><dd id="recovery-account"></dd></div>
+        <div><dt>Lokale registratie</dt><dd id="recovery-status"></dd></div>
+        <div><dt>Identiteitsverificatie</dt><dd>NIET GEVERIFIEERD</dd></div>
+        <div><dt>Uitgifte en toegang</dt><dd>HOLD / DENY</dd></div>
+      </dl>
+      <p class="auth-note">Het JSON-dossier bevat je gebruikersnaam, consumer-ID, eventuele P.P.-nummer en tijdstippen. Bewaar het privé. Een download verandert de registratie niet en dient uitsluitend voor jouw latere beoordeling.</p>
+      <button id="recovery-export" type="button" class="secondary">Download hersteloverzicht (.json)</button>
+      <div class="handoff-panel">
+        <div><h3>PALACO ONE / voorbereid overdrachtscontract</h3>
+          <p class="auth-note">Maak een beperkt beoordelingspakket met alleen referentie-ID's, de laatste vier cijfers van je P.P.-nummer en tijdstippen. Geen wachtwoord, volledig nummer, notities of aanmeldtoken. De ontvanger mag hieruit nooit zelfstandig identiteit of toegangsrechten afleiden.</p></div>
+        <button id="handoff-export" type="button" class="secondary">Download overdracht voor beoordeling</button>
+        <p id="handoff-status" class="auth-note" role="status" aria-live="polite">Alleen beschikbaar voor een lokaal gekozen of ingetrokken P.P.-nummer.</p>
+        <div class="handoff-inspector">
+          <label for="handoff-file">Controleer een PALACO ONE-overdrachtsbestand (maximaal 16 KB)</label>
+          <input id="handoff-file" type="file" accept=".json,application/json">
+          <p id="handoff-inspection" class="recovery-inspection" role="status" aria-live="polite">Nog geen overdrachtsbestand geselecteerd.</p>
+        </div>
+      </div>
+      <div class="recovery-inspector">
+        <h3>Herstelbestand lokaal beoordelen</h3>
+        <p class="auth-note">Selecteer een eerder gedownload P.P.-dossier. De browser vergelijkt de referenties met je huidige aangemelde account; het bestand wordt niet geüpload, geïmporteerd of opgeslagen.</p>
+        <label for="recovery-file">Kies een JSON-bestand (maximaal 64 KB)</label>
+        <input id="recovery-file" type="file" accept=".json,application/json">
+        <p id="recovery-inspection" class="recovery-inspection" role="status" aria-live="polite">Nog geen bestand beoordeeld.</p>
+      </div>
+    </section>
+
     <details id="history-panel" class="history-panel" hidden>
       <summary><span>ENGINEHISTORIE</span><span id="history-count" class="count">0 gebeurtenissen</span></summary>
       <ol id="history-events" class="history-events"></ol>

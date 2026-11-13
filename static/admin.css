@@ -9,6 +9,13 @@
 .admin-metric strong { display: block; font-size: 32px; color: var(--green); }
 .admin-metric span { font-size: 12px; color: var(--muted); }
 .admin-table-wrap { overflow-x: auto; }
+.admin-registry-rows { max-height: 310px; overflow-y: auto; }
+.admin-registry-inspector { margin-top: 18px; padding: 18px; border: 1px solid var(--line); border-radius: 10px; background: #fffefa; }
+.admin-registry-inspector dl { display: grid; grid-template-columns: minmax(130px, 1fr) minmax(0, 2fr); gap: 9px 16px; font-size: 12px; }
+.admin-registry-inspector dt { font-weight: 700; }
+.admin-registry-inspector dd { margin: 0; overflow-wrap: anywhere; font-family: ui-monospace, monospace; }
+.admin-registry-inspector h4 { margin-top: 0; }
+.admin-registry-select { padding: 5px 9px; font: inherit; cursor: pointer; }
 .admin-filters { display: flex; align-items: end; flex-wrap: wrap; gap: 12px; margin-bottom: 16px; }
 .admin-filters > div { flex: 1 1 220px; }
 .admin-filters label { display: block; font-size: 12px; margin-bottom: 8px; }
@@ -21,7 +28,16 @@ td small { display: block; margin-top: 5px; color: var(--muted); overflow-wrap: 
 .admin-pagination { display: flex; align-items: center; justify-content: space-between; gap: 15px; margin-top: 20px; font-size: 12px; }
 #admin-revoke p { line-height: 1.7; font-size: 13px; overflow-wrap: anywhere; }
 #admin-reason { margin-top: 8px; }
+.admin-review-badge { border: 1px solid #dcc299; color: #76532d; background: #fff4dd; padding: 9px 12px; border-radius: 20px; font-size: 10px; font-weight: 700; white-space: nowrap; }
+.admin-review-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; margin-top: 20px; }
+.admin-review-grid label { display: block; font-size: 11px; font-weight: 650; margin-bottom: 9px; }
+.admin-review-grid input, .admin-review-grid textarea { max-width: 100%; width: 100%; padding: 12px; border: 1px solid var(--line); border-radius: 8px; background: #fffefa; font: inherit; font-size: 12px; }
+.admin-review-result { padding: 14px; border-radius: 9px; background: #fff5e3; border: 1px solid #ddcba9; color: #74532b; font-size: 12px; line-height: 1.7; }
+.admin-bundle-panel { margin-top: 24px; border-top: 1px solid var(--line); padding-top: 24px; }
+.admin-bundle-panel h3 { margin: 0 0 8px; }
+.admin-bundle-panel .secondary { margin-top: 10px; }
 @media (max-width: 650px) {
+  .admin-review-grid { grid-template-columns: 1fr; }
   .admin-counts { grid-template-columns: repeat(2, 1fr); }
   .admin-main .workspace { padding: 18px; }
   .brand { gap: 8px; font-size: 16px; letter-spacing: 1px; }

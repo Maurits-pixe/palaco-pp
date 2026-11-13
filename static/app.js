@@ -274,6 +274,12 @@ function renderAuth() {
   $("auth-panel").hidden = false;
   $("selection-panel").hidden = true;
   $("result-panel").hidden = true;
+  $("recovery-panel").hidden = true;
+  $("recovery-file").value = "";
+  $("recovery-inspection").textContent = "Nog geen bestand beoordeeld.";
+  $("handoff-status").textContent = "Alleen beschikbaar voor een lokaal gekozen of ingetrokken P.P.-nummer.";
+  $("handoff-file").value = "";
+  $("handoff-inspection").textContent = "Nog geen overdrachtsbestand geselecteerd.";
   $("history-panel").hidden = true;
   $("memory-panel").hidden = true;
   $("account-label").hidden = true;
@@ -313,6 +319,7 @@ async function load() {
     $("account-label").hidden = false;
     $("logout").hidden = false;
     current = await api("/api/pp/me");
+    renderRecovery();
     await loadMailStatus();
     if (current.status === "ACTIVE" || current.status === "REVOKED") {
       renderResult(current);
@@ -470,6 +477,7 @@ $("confirm-form").addEventListener("submit", async (event) => {
     $("confirm-dialog").close();
     $("retry").hidden = true;
     renderResult(current);
+    renderRecovery();
     await loadMailStatus();
     $("confirmation-email").value = "";
     $("result-title").setAttribute("tabindex", "-1");
@@ -494,6 +502,222 @@ $("copy").addEventListener("click", async () => {
   } catch (error) {
     console.error(error);
     notice("Kopieren is niet gelukt. Je kunt het nummer hierboven handmatig selecteren.", true);
+  }
+});
+function renderRecovery() {
+  if (!sessionState?.authenticated || !current) return;
+  $("recovery-account").textContent = sessionState.username;
+  $("recovery-status").textContent = {
+    NEW: "NEW / nog geen nummeropties",
+    OFFERED: "OFFERED / nog geen nummer gekozen",
+    ACTIVE: "ACTIVE / lokaal gekozen, niet officieel geverifieerd",
+    REVOKED: "REVOKED / lokaal ingetrokken",
+  }[current.status] || "UNKNOWN / controle vereist";
+  $("handoff-export").disabled = !["ACTIVE", "REVOKED"].includes(current.status);
+  $("recovery-panel").hidden = false;
+}
+
+function downloadPrivateJSON(filename, data) {
+  const url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2) + "\n"],
+    { type: "application/json" }));
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = filename;
+  document.body.append(anchor);
+  anchor.click();
+  anchor.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+$("handoff-export").addEventListener("click", () => {
+  if (busy || !sessionState?.authenticated || !current ||
+      !["ACTIVE", "REVOKED"].includes(current.status) ||
+      typeof current.ppNumber !== "string" || !/^[1-9][0-9]{9}$/.test(current.ppNumber) ||
+      typeof current.ppNumberId !== "string" || !current.ppNumberId) return;
+  downloadPrivateJSON("palaco-phone-one-review-handoff.json", {
+    schema: "palaco.pp.one.review-handoff.v0",
+    reference: "PP-RECOVERY-002",
+    createdAt: new Date().toISOString(),
+    source: "LOCAL_PP_PROTOTYPE_USER_EXPORTED",
+    destination: "PALACO_ONE_MANUAL_REVIEW_ONLY",
+    subjectReference: { consumerId: current.consumerId },
+    registration: {
+      ppNumberId: current.ppNumberId,
+      ppNumberLast4: current.ppNumber.slice(-4),
+      status: current.status,
+      selectedAt: current.selectedAt || null,
+      revokedAt: current.revokedAt || null,
+    },
+    provenance: "UNSIGNED_USER_CONTROLLED_FILE",
+    identityVerification: "NOT_VERIFIED",
+    reviewDecision: "PENDING_HUMAN_REVIEW",
+    authorization: "HOLD",
+    accessDecision: "DENY",
+    issuance: "NOT_AUTHORIZED",
+    constraints: ["NO_AUTOMATIC_ACCOUNT_LINK", "NO_AUTHENTICATION", "NO_AUTO_ISSUANCE"],
+  });
+  $("handoff-status").textContent = "Beoordelingspakket aangeboden als download. Er is niets naar PALACO ONE verzonden; HOLD blijft actief.";
+});
+
+$("handoff-file").addEventListener("change", async () => {
+  const result = $("handoff-inspection");
+  const file = $("handoff-file").files?.[0];
+  result.classList.remove("recovery-inspection-good");
+  result.textContent = "Geen bestand geselecteerd.";
+  if (!file || busy || !sessionState?.authenticated || !current) return;
+  if (file.size === 0 || file.size > 16384) {
+    result.textContent = "GEWEIGERD / Het bestand moet tussen 1 en 16384 bytes bevatten.";
+    return;
+  }
+  const consumer = current.consumerId;
+  try {
+    const input = JSON.parse(await file.text());
+    if (!sessionState?.authenticated || current?.consumerId !== consumer) {
+      result.textContent = "SESSIE GEWIJZIGD / Beoordeel opnieuw na aanmelden.";
+      return;
+    }
+    const object = (value) => value && typeof value === "object" && !Array.isArray(value);
+    const sameKeys = (value, keys) => object(value) &&
+      Object.keys(value).length === keys.length && keys.every((key) => Object.hasOwn(value, key));
+    const required = {
+      schema: "palaco.pp.one.review-handoff.v0",
+      reference: "PP-RECOVERY-002",
+      source: "LOCAL_PP_PROTOTYPE_USER_EXPORTED",
+      destination: "PALACO_ONE_MANUAL_REVIEW_ONLY",
+      provenance: "UNSIGNED_USER_CONTROLLED_FILE",
+      identityVerification: "NOT_VERIFIED",
+      reviewDecision: "PENDING_HUMAN_REVIEW",
+      authorization: "HOLD",
+      accessDecision: "DENY",
+      issuance: "NOT_AUTHORIZED",
+    };
+    const keys = [...Object.keys(required), "createdAt", "subjectReference", "registration", "constraints"];
+    const registrationKeys = ["ppNumberId", "ppNumberLast4", "status", "selectedAt", "revokedAt"];
+    const constraints = ["NO_AUTOMATIC_ACCOUNT_LINK", "NO_AUTHENTICATION", "NO_AUTO_ISSUANCE"];
+    const valid = sameKeys(input, keys) &&
+      Object.entries(required).every(([key, value]) => input[key] === value) &&
+      typeof input.createdAt === "string" && !Number.isNaN(Date.parse(input.createdAt)) &&
+      sameKeys(input.subjectReference, ["consumerId"]) &&
+      sameKeys(input.registration, registrationKeys) &&
+      typeof input.registration.ppNumberId === "string" &&
+      /^[0-9]{4}$/.test(input.registration.ppNumberLast4) &&
+      ["ACTIVE", "REVOKED"].includes(input.registration.status) &&
+      typeof input.registration.selectedAt === "string" &&
+      typeof input.subjectReference.consumerId === "string" &&
+      Array.isArray(input.constraints) && input.constraints.length === 3 &&
+      constraints.every((item) => input.constraints.includes(item));
+    if (!valid) {
+      result.textContent = "ONGELDIG / Dit is geen herkenbaar P.P. → PALACO ONE v0-beoordelingspakket.";
+      return;
+    }
+    const matches = ["ACTIVE", "REVOKED"].includes(current.status) &&
+      input.subjectReference.consumerId === current.consumerId &&
+      input.registration.ppNumberId === current.ppNumberId &&
+      input.registration.ppNumberLast4 === current.ppNumber?.slice(-4) &&
+      input.registration.status === current.status &&
+      input.registration.selectedAt === current.selectedAt &&
+      (input.registration.revokedAt || null) === (current.revokedAt || null);
+    if (!matches) {
+      result.textContent = "AFWIJKING / Bestand is structureel herkenbaar, maar komt niet overeen met de actuele registratie. Geen import; HOLD / DENY.";
+      return;
+    }
+    result.classList.add("recovery-inspection-good");
+    result.textContent = "LOKALE VERGELIJKING GESLAAGD / Referenties komen overeen. Het bestand is ongetekend en blijft ONVERTROUWD; geen identiteitsbewijs of toestemming. HOLD / DENY.";
+  } catch (error) {
+    result.textContent = "ONGELDIG / JSON kon niet worden verwerkt.";
+  } finally {
+    $("handoff-file").value = "";
+  }
+});
+
+$("recovery-export").addEventListener("click", () => {
+  if (busy || !sessionState?.authenticated || !current ||
+      !["NEW", "OFFERED", "ACTIVE", "REVOKED"].includes(current.status)) return;
+  const dossier = {
+    schema: "palaco.phone.recovery.v1",
+    reference: "PP-RECOVERY-002",
+    generatedAt: new Date().toISOString(),
+    source: "LOCAL_PP_PROTOTYPE",
+    evidenceClass: "LOCAL_RECORD_SELF_EXPORTED_NOT_INDEPENDENTLY_VERIFIED",
+    account: { username: sessionState.username, consumerId: current.consumerId },
+    registration: {
+      status: current.status,
+      ppNumberId: current.ppNumberId || null,
+      ppNumber: current.ppNumber || null,
+      selectedAt: current.selectedAt || null,
+      revokedAt: current.revokedAt || null,
+    },
+    identityVerification: "NOT_VERIFIED",
+    authorization: "HOLD",
+    accessDecision: "DENY",
+    issuance: "NOT_AUTHORIZED",
+    note: "Geen bewijs van persoon, telecomactivatie of PALACO ONE-toegang.",
+  };
+  downloadPrivateJSON("palaco-phone-hersteloverzicht.json", dossier);
+  notice("Hersteloverzicht aangeboden als download. Autorisatie blijft HOLD.");
+});
+$("recovery-file").addEventListener("change", async () => {
+  const result = $("recovery-inspection");
+  const file = $("recovery-file").files?.[0];
+  result.classList.remove("recovery-inspection-good");
+  result.textContent = "Geen bestand geselecteerd.";
+  if (!file || busy || !sessionState?.authenticated || !current) return;
+  if (file.size === 0 || file.size > 65536) {
+    result.textContent = "BESTAND GEWEIGERD / Alleen JSON van 1 t/m 65536 bytes.";
+    return;
+  }
+  const inspectedUsername = sessionState.username;
+  const inspectedConsumer = current.consumerId;
+  try {
+    const dossier = JSON.parse(await file.text());
+    if (!sessionState?.authenticated || sessionState.username !== inspectedUsername ||
+        current?.consumerId !== inspectedConsumer) {
+      result.textContent = "SESSIE GEWIJZIGD / Meld je opnieuw aan en beoordeel het bestand opnieuw.";
+      return;
+    }
+    const isObject = (value) => value !== null && typeof value === "object" &&
+      !Array.isArray(value);
+    const valid = isObject(dossier) && isObject(dossier.account) &&
+      isObject(dossier.registration) &&
+      dossier.schema === "palaco.phone.recovery.v1" &&
+      dossier.reference === "PP-RECOVERY-002" &&
+      dossier.source === "LOCAL_PP_PROTOTYPE" &&
+      dossier.evidenceClass === "LOCAL_RECORD_SELF_EXPORTED_NOT_INDEPENDENTLY_VERIFIED" &&
+      dossier.identityVerification === "NOT_VERIFIED" &&
+      dossier.authorization === "HOLD" &&
+      dossier.accessDecision === "DENY" &&
+      dossier.issuance === "NOT_AUTHORIZED" &&
+      typeof dossier.generatedAt === "string" &&
+      !Number.isNaN(Date.parse(dossier.generatedAt)) &&
+      ["NEW", "OFFERED", "ACTIVE", "REVOKED"].includes(dossier.registration.status) &&
+      (dossier.registration.ppNumber === null ||
+        (typeof dossier.registration.ppNumber === "string" &&
+         /^[1-9][0-9]{9}$/.test(dossier.registration.ppNumber)));
+    if (!valid) {
+      result.textContent = "ONGELDIG / Dit bestand voldoet niet aan het P.P.-hersteldossiercontract.";
+      return;
+    }
+    const accountMatches = dossier.account.username === sessionState.username &&
+      dossier.account.consumerId === current.consumerId;
+    if (!accountMatches) {
+      result.textContent = "AFWIJKING / De accountreferenties komen niet overeen met de huidige sessie. Geen herstel of import uitgevoerd.";
+      return;
+    }
+    const registrationMatches = dossier.registration.status === current.status &&
+      (dossier.registration.ppNumber || null) === (current.ppNumber || null) &&
+      (dossier.registration.ppNumberId || null) === (current.ppNumberId || null) &&
+      (dossier.registration.selectedAt || null) === (current.selectedAt || null) &&
+      (dossier.registration.revokedAt || null) === (current.revokedAt || null);
+    if (!registrationMatches) {
+      result.textContent = "HISTORISCH OF AFWIJKEND / Account komt overeen, maar de actuele registratie verschilt. Geen wijzigingen uitgevoerd; autorisatie HOLD.";
+      return;
+    }
+    result.classList.add("recovery-inspection-good");
+    result.textContent = "LOKALE REFERENTIES KOMEN OVEREEN / Dit is uitsluitend een vergelijking met de huidige prototypegegevens. Geen onafhankelijke verificatie, authenticatie of autorisatie. HOLD / DENY.";
+  } catch (error) {
+    result.textContent = "ONGELDIG / Het JSON-bestand kon niet worden gelezen.";
+  } finally {
+    $("recovery-file").value = "";
   }
 });
 $("retry").addEventListener("click", load);

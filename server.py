@@ -1400,7 +1400,9 @@ class Handler(BaseHTTPRequestHandler):
             if method == "POST" and self.headers.get("Origin") != f"http://{host}":
                 raise PPError("PP_ORIGIN_DENIED", 403)
             if method == "GET" and self.path in (
-                "/", "/app.js", "/style.css", "/admin", "/admin.js", "/admin.css"
+                "/", "/app.js", "/style.css", "/admin", "/admin.js", "/admin.css",
+                "/review044-inspection-import.js", "/review044-inspection-owner.js",
+                "/review044-inspection-binding.js", "/review044-evidence-view.js", "/review044-recovery-coordination.js", "/review044-recovery-decision.js", "/review044-human-review-queue.js", "/review044-review-intake.js", "/review044-intake-assessment.js", "/review044-verification-plan.js", "/review044-observation-register.js", "/review044-recovery-cockpit.js", "/review044-recovery-status.js", "/review044-release-readiness.js", "/review044-human-review-handoff.js", "/review044-review-protocol.js", "/review044-reviewer-auth-contract.js", "/review044-reviewer-service-blueprint.js", "/review044-reviewer-interface-contract.js", "/review044-trust-transition.js", "/review044-revocation-recovery.js", "/review044-security-assurance.js", "/review044-contract-compatibility.js", "/review044-change-impact.js", "/review044-release-integrity.js"
             ):
                 name, mime = {
                     "/": ("index.html", "text/html; charset=utf-8"),
@@ -1409,6 +1411,31 @@ class Handler(BaseHTTPRequestHandler):
                     "/admin": ("admin.html", "text/html; charset=utf-8"),
                     "/admin.js": ("admin.js", "text/javascript; charset=utf-8"),
                     "/admin.css": ("admin.css", "text/css; charset=utf-8"),
+                    "/review044-inspection-import.js": ("review044-inspection-import.js", "text/javascript; charset=utf-8"),
+                    "/review044-inspection-owner.js": ("review044-inspection-owner.js", "text/javascript; charset=utf-8"),
+                    "/review044-inspection-binding.js": ("review044-inspection-binding.js", "text/javascript; charset=utf-8"),
+                    "/review044-evidence-view.js": ("review044-evidence-view.js", "text/javascript; charset=utf-8"),
+                    "/review044-recovery-coordination.js": ("review044-recovery-coordination.js", "text/javascript; charset=utf-8"),
+                    "/review044-recovery-decision.js": ("review044-recovery-decision.js", "text/javascript; charset=utf-8"),
+                    "/review044-human-review-queue.js": ("review044-human-review-queue.js", "text/javascript; charset=utf-8"),
+                    "/review044-review-intake.js": ("review044-review-intake.js", "text/javascript; charset=utf-8"),
+                    "/review044-intake-assessment.js": ("review044-intake-assessment.js", "text/javascript; charset=utf-8"),
+                    "/review044-verification-plan.js": ("review044-verification-plan.js", "text/javascript; charset=utf-8"),
+                    "/review044-observation-register.js": ("review044-observation-register.js", "text/javascript; charset=utf-8"),
+                    "/review044-recovery-cockpit.js": ("review044-recovery-cockpit.js", "text/javascript; charset=utf-8"),
+                    "/review044-recovery-status.js": ("review044-recovery-status.js", "text/javascript; charset=utf-8"),
+                    "/review044-release-readiness.js": ("review044-release-readiness.js", "text/javascript; charset=utf-8"),
+                    "/review044-human-review-handoff.js": ("review044-human-review-handoff.js", "text/javascript; charset=utf-8"),
+                    "/review044-review-protocol.js": ("review044-review-protocol.js", "text/javascript; charset=utf-8"),
+                    "/review044-reviewer-auth-contract.js": ("review044-reviewer-auth-contract.js", "text/javascript; charset=utf-8"),
+                    "/review044-reviewer-service-blueprint.js": ("review044-reviewer-service-blueprint.js", "text/javascript; charset=utf-8"),
+                    "/review044-reviewer-interface-contract.js": ("review044-reviewer-interface-contract.js", "text/javascript; charset=utf-8"),
+                    "/review044-trust-transition.js": ("review044-trust-transition.js", "text/javascript; charset=utf-8"),
+                    "/review044-revocation-recovery.js": ("review044-revocation-recovery.js", "text/javascript; charset=utf-8"),
+                    "/review044-security-assurance.js": ("review044-security-assurance.js", "text/javascript; charset=utf-8"),
+                    "/review044-contract-compatibility.js": ("review044-contract-compatibility.js", "text/javascript; charset=utf-8"),
+                    "/review044-change-impact.js": ("review044-change-impact.js", "text/javascript; charset=utf-8"),
+                    "/review044-release-integrity.js": ("review044-release-integrity.js", "text/javascript; charset=utf-8"),
                 }[self.path]
                 self.respond(200, (ROOT / "static" / name).read_bytes(), mime)
                 return

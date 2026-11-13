@@ -7,6 +7,31 @@
   <link rel="stylesheet" href="/style.css">
   <link rel="stylesheet" href="/admin.css">
   <script src="/admin.js" defer></script>
+  <script src="/review044-inspection-import.js" defer></script>
+  <script src="/review044-inspection-owner.js" defer></script>
+  <script src="/review044-inspection-binding.js" defer></script>
+  <script src="/review044-evidence-view.js" defer></script>
+  <script src="/review044-recovery-coordination.js" defer></script>
+  <script src="/review044-recovery-decision.js" defer></script>
+  <script src="/review044-human-review-queue.js" defer></script>
+  <script src="/review044-review-intake.js" defer></script>
+  <script src="/review044-intake-assessment.js" defer></script>
+  <script src="/review044-verification-plan.js" defer></script>
+  <script src="/review044-observation-register.js" defer></script>
+  <script src="/review044-recovery-cockpit.js" defer></script>
+  <script src="/review044-recovery-status.js" defer></script>
+  <script src="/review044-release-readiness.js" defer></script>
+  <script src="/review044-human-review-handoff.js" defer></script>
+  <script src="/review044-review-protocol.js" defer></script>
+  <script src="/review044-reviewer-auth-contract.js" defer></script>
+  <script src="/review044-reviewer-service-blueprint.js" defer></script>
+  <script src="/review044-reviewer-interface-contract.js" defer></script>
+  <script src="/review044-trust-transition.js" defer></script>
+  <script src="/review044-revocation-recovery.js" defer></script>
+  <script src="/review044-security-assurance.js" defer></script>
+  <script src="/review044-contract-compatibility.js" defer></script>
+  <script src="/review044-change-impact.js" defer></script>
+  <script src="/review044-release-integrity.js" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -68,6 +93,583 @@
         <p id="audit-no-results" class="notice" hidden>Geen auditgebeurtenissen gevonden met deze filters.</p>
         <div class="admin-table-wrap"><table><thead><tr><th>Nr. / tijd</th><th>Gebeurtenis / status</th><th>Account / consumer-ID</th><th>Beheerder</th><th>Intrekkingsreden</th></tr></thead><tbody id="admin-audit"></tbody></table></div>
         <div class="admin-pagination"><button id="audit-prev" class="secondary">Vorige</button><span id="audit-page"></span><button id="audit-next" class="secondary">Volgende</button></div>
+      </section>
+      <section class="workspace" aria-labelledby="admin-review-title">
+        <div class="section-heading"><div><p class="eyebrow">PP-RECOVERY-002 / MENSELIJKE BEOORDELING</p><h2 id="admin-review-title">Overdrachtsdossier</h2></div><span class="admin-review-badge">HOLD / GEEN UITGIFTE</span></div>
+        <p class="auth-note">Inspecteer een lokaal P.P. → PALACO ONE v0-bestand. Alleen de bestandsstructuur wordt bekeken; geen import, serverupload of wijziging van account-/nummergegevens. De beoordeling is geen verificatie van identiteit.</p>
+        <div class="admin-review-grid">
+          <div><label for="admin-review-file">Overdrachtsbestand (.json, maximaal 16 KB)</label><input id="admin-review-file" type="file" accept=".json,application/json"></div>
+          <div><label for="admin-review-note">Beoordelingsnotitie (optioneel, maximaal 240 tekens; geen persoonsgegevens)</label><textarea id="admin-review-note" rows="3" maxlength="240" placeholder="Bijvoorbeeld: menselijke broncontrole nog noodzakelijk"></textarea></div>
+        </div>
+        <p id="admin-review-result" class="admin-review-result" role="status" aria-live="polite">Nog geen bestand beoordeeld.</p>
+        <button id="admin-review-download" type="button" class="secondary" disabled>Download HOLD-beoordelingsrapport (.json)</button>
+        <p class="auth-note">Het rapport bevat alleen een bestandsvingerafdruk, structuuruitkomst, notitie en HOLD/DENY. Geen P.P.-nummer, wachtwoord of consumer-ID. SHA-256 is geen digitale handtekening en bewijst de herkomst niet.</p>
+        <div class="admin-bundle-panel" aria-labelledby="admin-bundle-title">
+          <h3 id="admin-bundle-title">Bewijsindex / twee bestanden koppelen</h3>
+          <p class="auth-note">Kies het oorspronkelijke overdrachtsbestand én het eerder gedownloade HOLD-rapport. De browser koppelt ze via de exacte bestandsvingerafdruk. Er wordt niets naar de server verzonden.</p>
+          <div class="admin-review-grid">
+            <div><label for="admin-bundle-handoff">P.P.-overdracht (.json)</label><input id="admin-bundle-handoff" type="file" accept=".json,application/json"></div>
+            <div><label for="admin-bundle-report">HOLD-beoordelingsrapport (.json)</label><input id="admin-bundle-report" type="file" accept=".json,application/json"></div>
+          </div>
+          <button id="admin-bundle-check" type="button" class="secondary">Controleer bewijsbinding</button>
+          <p id="admin-bundle-result" class="admin-review-result" role="status" aria-live="polite">Nog geen bewijsbinding beoordeeld.</p>
+          <button id="admin-bundle-export" type="button" class="secondary" disabled>Download bewijsindex (.json)</button>
+        </div>
+        <div class="admin-bundle-panel" aria-labelledby="admin-chain-title">
+          <h3 id="admin-chain-title">Offline reviewpaneel / drie bewijsbestanden</h3>
+          <p class="auth-note">Selecteer de originele overdracht, het HOLD-rapport en de bewijsindex. De drie bestanden worden uitsluitend in deze browser gelezen. Een overeenkomende hash bewijst geen herkomst, identiteit of bevoegdheid.</p>
+          <div class="admin-review-grid">
+            <div><label for="admin-chain-handoff">1. P.P.-overdracht (.json)</label><input id="admin-chain-handoff" type="file" accept=".json,application/json"></div>
+            <div><label for="admin-chain-report">2. HOLD-beoordelingsrapport (.json)</label><input id="admin-chain-report" type="file" accept=".json,application/json"></div>
+            <div><label for="admin-chain-index">3. Bewijsindex (.json)</label><input id="admin-chain-index" type="file" accept=".json,application/json"></div>
+          </div>
+          <button id="admin-chain-check" type="button" class="secondary">Controleer drie-bestandenketen</button>
+          <p id="admin-chain-result" class="admin-review-result" role="status" aria-live="polite">Geen ketencontrole uitgevoerd. HOLD / DENY.</p>
+          <button id="admin-chain-export" type="button" class="secondary" disabled>Download lokaal ketenrapport (.json)</button>
+          <p class="auth-note">Deze browsercontrole is een lokale indicatie. De afzonderlijke Python-validator <code>review_index.py</code> blijft het strengere controlecontract. Geen upload, automatische beslissing of accountwijziging.</p>
+        </div>
+        <div class="admin-bundle-panel" aria-labelledby="admin-review044-title">
+          <h3 id="admin-review044-title">Review 044 / mijn eigen waarneming</h3>
+          <p class="auth-note">Leg later per synthetisch scenario je eigen waarneming vast. Dit formulier voert geen controles uit. Alle registratie is tijdelijk in deze browsersessie en blijft SELF_REPORTED, NOT_VERIFIED en HOLD / DENY.</p>
+          <div class="admin-review-grid">
+            <div><label for="admin-review044-scenario">Controlescenario</label><select id="admin-review044-scenario"></select></div>
+            <div><label for="admin-review044-observed">Mijn waargenomen resultaat</label><select id="admin-review044-observed">
+              <option value="NOT_OBSERVED">Niet waargenomen</option>
+              <option value="FOUR_FILE_HASH_MATCH_UNTRUSTED">Vier bestanden consistent, onvertrouwd</option>
+              <option value="PP_CHAIN_INVALID">Keten geweigerd</option>
+              <option value="UNEXPECTED_ERROR">Onverwachte fout</option>
+            </select></div>
+          </div>
+          <button id="admin-review044-record" type="button" class="secondary">Registreer mijn waarneming</button>
+          <p id="admin-review044-result" class="admin-review-result" role="status" aria-live="polite">Nog geen eigen waarnemingen vastgelegd. HOLD / DENY.</p>
+          <button id="admin-review044-export" type="button" class="secondary" disabled>Download mijn Review 044-zelfrapport (.json)</button>
+          <p class="auth-note">Geen persoonsnamen, P.P.-nummers of vrije notities opnemen. Een overeenkomst met de verwachting is slechts MATCH_CLAIMED, nooit een onafhankelijke PASS.</p>
+        </div>
+        <div class="admin-bundle-panel" aria-labelledby="admin-review044-owner-title">
+          <h3 id="admin-review044-owner-title">Review 044 / eigenaarwerkblad technische preview</h3>
+          <p class="auth-note">Selecteer lokaal een reeds bestaand synthetisch technisch rapport. Dit paneel start geen runner, voert geen tests uit en verstuurt geen bestanden. De browser controleert alleen indicatief de structuur; de striktere Python-beoordelaar blijft leidend, onder meer voor dubbele JSON-sleutels.</p>
+          <div class="admin-review-grid">
+            <div><label for="admin-review044-tech-file">Technisch rapport (.json, maximaal 32 KB)</label><input id="admin-review044-tech-file" type="file" accept=".json,application/json"></div>
+            <div><label for="admin-review044-owner-scenario">Technisch scenario (13)</label><select id="admin-review044-owner-scenario"></select></div>
+            <div><label for="admin-review044-owner-mark">Mijn markering</label><select id="admin-review044-owner-mark">
+              <option value="NOT_REVIEWED">Nog niet beoordeeld</option>
+              <option value="OBSERVED_AS_REPORTED">Waargenomen zoals gerapporteerd</option>
+              <option value="DISCREPANCY_REPORTED">Afwijking door mij gerapporteerd</option>
+            </select></div>
+          </div>
+          <p id="admin-review044-tech-status" class="admin-review-result" role="status" aria-live="polite">Geen lokaal technisch rapport geladen. HOLD / DENY.</p>
+          <button id="admin-review044-owner-record" type="button" class="secondary" disabled>Leg eigenaarsmarkering vast</button>
+          <button id="admin-review044-owner-export" type="button" class="secondary" disabled>Download eigenaarwerkblad (.json)</button>
+          <p class="auth-note">Een SHA-256-vingerafdruk bindt het werkblad aan bestandsbytes, niet aan een betrouwbare herkomst. Geen onafhankelijke verificatie, identiteitsbinding, autorisatie of uitgifte: HOLD / DENY.</p>
+        </div>
+        <div class="admin-bundle-panel" aria-labelledby="admin-review044-index-title">
+          <h3 id="admin-review044-index-title">Review 044 / twee-bestandenbewijsindex</h3>
+          <p class="auth-note">Kies het oorspronkelijke synthetische rapport en je eerder opgeslagen eigenaarwerkblad. Een lokale browserindicatie controleert hun inhoudelijke en SHA-256-binding. De Python-module <code>review_044_owner_index.py</code> blijft de striktere beoordelaar.</p>
+          <div class="admin-review-grid">
+            <div><label for="admin-review044-index-tech">1. Technisch rapport (.json, maximaal 32 KB)</label><input id="admin-review044-index-tech" type="file" accept=".json,application/json"></div>
+            <div><label for="admin-review044-index-owner">2. Eigenaarwerkblad (.json, maximaal 32 KB)</label><input id="admin-review044-index-owner" type="file" accept=".json,application/json"></div>
+          </div>
+          <button id="admin-review044-index-check" type="button" class="secondary">Beoordeel bestandsbinding lokaal</button>
+          <p id="admin-review044-index-result" class="admin-review-result" role="status" aria-live="polite">Geen bestandsbinding beoordeeld. HOLD / DENY.</p>
+          <button id="admin-review044-index-export" type="button" class="secondary" disabled>Download bewijsindex (.json)</button>
+          <p class="auth-note">De browser kan dubbele JSON-sleutels niet betrouwbaar afwijzen. Ook een overeenkomende index is géén herkomst-, identiteits- of bevoegdheidsbewijs. Geen upload, testuitvoering of uitgifte.</p>
+        </div>
+        <div class="admin-bundle-panel" aria-labelledby="admin-review044-dossier-title">
+          <h3 id="admin-review044-dossier-title">Review 044 / lokaal drie-bestandendossier</h3>
+          <p class="auth-note">Kies afzonderlijk de drie originele JSON-bestanden. Dit scherm vergelijkt alleen structuur, inhoud en hashes. De striktere Python-beoordeling <code>review_044_owner_dossier.py</code> blijft leidend, onder meer voor dubbele JSON-sleutels.</p>
+          <div class="admin-review-grid">
+            <div><label for="admin-review044-dossier-tech">1. Technisch rapport (maximaal 32 KB)</label><input id="admin-review044-dossier-tech" type="file" accept=".json,application/json"></div>
+            <div><label for="admin-review044-dossier-owner">2. Eigenaarwerkblad (maximaal 32 KB)</label><input id="admin-review044-dossier-owner" type="file" accept=".json,application/json"></div>
+            <div><label for="admin-review044-dossier-index">3. Bewijsindex (maximaal 16 KB)</label><input id="admin-review044-dossier-index" type="file" accept=".json,application/json"></div>
+          </div>
+          <button id="admin-review044-dossier-check" type="button" class="secondary">Beoordeel drie bestanden lokaal</button>
+          <p id="admin-review044-dossier-result" class="admin-review-result" role="status" aria-live="polite">Nog geen dossierbeoordeling. HOLD / DENY.</p>
+          <button id="admin-review044-dossier-export" type="button" class="secondary" disabled>Download dossierbeoordeling (.json)</button>
+          <p class="auth-note">Geen serverupload, runner of wijziging van accountgegevens. Zelfs bij consistente bestanden blijft de betekenis uitsluitend UNTRUSTED / NOT_VERIFIED / HOLD / DENY.</p>
+        </div>
+        <div class="admin-bundle-panel" aria-labelledby="admin-review044-registry-title">
+          <h3 id="admin-review044-registry-title">Review 044 / lokaal bewijsregister</h3>
+          <p class="auth-note">Beoordeel eerst hierboven de drie dossierbestanden. Kies daarna eventueel het eerder opgeslagen registersnapshot. Laat dit veld leeg om een nieuw register te beginnen. De browser wijzigt geen bestaand bestand: iedere uitbreiding moet opnieuw worden gedownload.</p>
+          <div class="admin-review-grid">
+            <div><label for="admin-review044-registry-file">Bestaand register (.json, optioneel, maximaal 256 KB)</label><input id="admin-review044-registry-file" type="file" accept=".json,application/json"></div>
+          </div>
+          <button id="admin-review044-registry-add" type="button" class="secondary" disabled>Bereid nieuwe registerversie voor</button>
+          <p id="admin-review044-registry-result" class="admin-review-result" role="status" aria-live="polite">Geen registerversie voorbereid. HOLD / DENY.</p>
+          <div id="admin-review044-registry-overview" hidden>
+            <h4>Lokale dossierverwijzingen — concept</h4>
+            <p class="auth-note">Deze rijen zijn alleen intern op hashconsistentie gecontroleerd, niet onafhankelijk geverifieerd. Verkorte hashes dienen uitsluitend ter herkenning.</p>
+            <div class="admin-table-wrap admin-registry-rows"><table>
+              <thead><tr><th>Volgnummer</th><th>Dossierhash</th><th>Ketenverwijzing</th><th>Herkomstcontrole</th><th>Besluit</th></tr></thead>
+              <tbody id="admin-review044-registry-rows"></tbody>
+            </table></div>
+            <section id="admin-review044-registry-inspector" class="admin-registry-inspector" aria-labelledby="admin-review044-registry-inspector-title" hidden>
+              <h4 id="admin-review044-registry-inspector-title">Geselecteerde dossierregel</h4>
+              <dl>
+                <dt>Volgnummer</dt><dd id="admin-review044-inspect-sequence"></dd>
+                <dt>Technisch rapport — SHA-256</dt><dd id="admin-review044-inspect-technical"></dd>
+                <dt>Eigenaarwerkblad — SHA-256</dt><dd id="admin-review044-inspect-owner"></dd>
+                <dt>Bewijsindex — SHA-256</dt><dd id="admin-review044-inspect-index"></dd>
+                <dt>Eigen registerregel — SHA-256</dt><dd id="admin-review044-inspect-entry"></dd>
+                <dt>Voorganger — SHA-256</dt><dd id="admin-review044-inspect-previous"></dd>
+                <dt>Technische beoordeling</dt><dd>INTERN CONSISTENT BINNEN DIT SNAPSHOT (browserindicatie)</dd>
+                <dt>Onafhankelijke verificatie</dt><dd>NOT_VERIFIED — geen herkomst-, tijds- of identiteitsbewijs</dd>
+                <dt>Autorisatie / toegang / uitgifte</dt><dd>HOLD / DENY / NOT_AUTHORIZED</dd>
+              </dl>
+              <button id="admin-review044-inspect-export" type="button" class="secondary" disabled>Download inspectierapport (.json)</button>
+              <p id="admin-review044-inspect-result" class="auth-note" role="status" aria-live="polite">Geen inspectierapport geselecteerd.</p>
+            </section>
+          </div>
+          <section class="admin-bundle-panel" aria-labelledby="admin-review044-inspection-import-title">
+            <h3 id="admin-review044-inspection-import-title">Review 044 / inspectierapport importeren (lokaal)</h3>
+            <p class="auth-note">Selecteer het oorspronkelijke registersnapshot en een eerder gedownload regelinspectierapport. Deze browser geeft slechts een indicatie van de geselecteerde regelvelden; hij voert GEEN strikte Python-controle uit, en detecteert geen dubbele JSON-sleutels of volledige ketenafwijkingen. Beide bestanden blijven lokaal.</p>
+            <div class="admin-review-grid">
+              <div><label for="admin-review044-inspection-import-registry">Registersnapshot (.json, max. 256 KiB)</label><input id="admin-review044-inspection-import-registry" type="file" accept=".json,application/json"></div>
+              <div><label for="admin-review044-inspection-import-report">Regelinspectierapport (.json, max. 16 KiB)</label><input id="admin-review044-inspection-import-report" type="file" accept=".json,application/json"></div>
+            </div>
+            <button id="admin-review044-inspection-import-check" type="button" class="secondary">Vergelijk geselecteerde regel lokaal (indicatief)</button>
+            <p id="admin-review044-inspection-import-result" class="admin-review-result" role="status" aria-live="polite">NOT EXECUTED / HOLD / DENY.</p>
+            <p class="auth-note">Strikte offline controle gebeurt uitsluitend via <code>python review_044_inspection_cli.py --run --registry "register.json" --inspection "inspectie.json"</code> in je eigen terminal. De browser uploadt niets en start geen Python.</p>
+          </section>
+          <section class="admin-bundle-panel" aria-labelledby="admin-review044-inspection-owner-title">
+            <h3 id="admin-review044-inspection-owner-title">Review 044 / eigenaarwerkblad inspectieregressies (24 scenario's)</h3>
+            <p class="auth-note">Kies een reeds bestaand technisch runner-JSON (maximaal 64 KiB). Dit paneel start geen runner, voert geen tests uit en uploadt geen bestanden. De 24 scenario's blijven uitsluitend een lokale browserindicatie; Python is normatief, onder andere voor dubbele JSON-sleutels.</p>
+            <div class="admin-review-grid">
+              <div><label for="admin-review044-inspection-owner-file">Technisch inspectierapport (.json, maximaal 64 KiB)</label><input id="admin-review044-inspection-owner-file" type="file" accept=".json,application/json"></div>
+            </div>
+            <button id="admin-review044-inspection-owner-load" type="button" class="secondary">Laad technisch rapport lokaal</button>
+            <p id="admin-review044-inspection-owner-status" class="admin-review-result" role="status" aria-live="polite">Geen technisch rapport geladen. HOLD / DENY.</p>
+            <div class="admin-table-wrap admin-registry-rows"><table aria-label="24 inspectiescenario's en eigenaarsmarkeringen">
+              <thead><tr><th>Nr.</th><th>Scenario</th><th>Technisch geclaimd</th><th>Mijn eigen waarneming</th></tr></thead>
+              <tbody id="admin-review044-inspection-owner-rows"></tbody>
+            </table></div>
+            <button id="admin-review044-inspection-owner-export" type="button" class="secondary" disabled>Download mijn 24-scenario-eigenaarwerkblad (.json)</button>
+            <p class="auth-note">Niet gekozen = NO_OBSERVATION / NOT_REVIEWED. Alleen een handmatig gekozen markering krijgt SELF_REPORTED. Het resultaat is ongetekend; het bewijst geen daadwerkelijke uitvoering of onafhankelijk beoordeelde identiteit. Geen autorisatie, geen uitgifte: HOLD / DENY.</p>
+          </section>
+          <section class="admin-bundle-panel" aria-labelledby="admin-review044-inspection-binding-title">
+            <h3 id="admin-review044-inspection-binding-title">Review 044 / technische rapportbinding met eigenaarwerkblad</h3>
+            <p class="auth-note">Selecteer twee originele JSON-bestanden: het synthetische technische inspectierapport en het eerder lokaal gedownloade 24-scenario-eigenaarwerkblad. De browser vergelijkt vaste velden, alle scenario's, markeringen, aantallen en SHA-256. Geen upload, runner, accountwijziging of autorisatie.</p>
+            <div class="admin-review-grid">
+              <div><label for="admin-review044-inspection-binding-technical">1. Technisch rapport (.json, maximaal 64 KiB)</label><input id="admin-review044-inspection-binding-technical" type="file" accept=".json,application/json"></div>
+              <div><label for="admin-review044-inspection-binding-owner">2. Eigenaarwerkblad (.json, maximaal 48 KiB)</label><input id="admin-review044-inspection-binding-owner" type="file" accept=".json,application/json"></div>
+            </div>
+            <button id="admin-review044-inspection-binding-check" type="button" class="secondary">Vergelijk twee bestanden lokaal (indicatief)</button>
+            <p id="admin-review044-inspection-binding-status" class="admin-review-result" role="status" aria-live="polite">Nog geen bewijsbinding beoordeeld. HOLD / DENY.</p>
+            <dl id="admin-review044-inspection-binding-detail" class="admin-registry-inspector"></dl>
+            <button id="admin-review044-inspection-binding-export" type="button" class="secondary" disabled>Download browserindicatie bewijsbinding (.json)</button>
+            <p class="auth-note">Het JSON-resultaat is <code>CLIENT_TWO_FILE_HASH_MATCH_UNTRUSTED</code>, niet de normatieve Python-beoordeling. De browser kan dubbele JSON-sleutels niet uitsluiten. Beoordeel beide oorspronkelijke bestanden later afzonderlijk met <code>validate_inspection_owner_worksheet()</code> in Python. NOT_VERIFIED / HOLD / DENY / NOT_AUTHORIZED.</p>
+          </section>
+          <section class="admin-bundle-panel" aria-labelledby="admin-review044-evidence-view-title">
+            <h3 id="admin-review044-evidence-view-title">Review 044 / Python-bewijsrapport — alleen-lezen overzicht</h3>
+            <p class="auth-note">Lees een eerder lokaal geëxporteerd, ongetekend Python-rapport. De browser controleert uitsluitend de herkenbare bestandsstructuur en interne statussen; het is GEEN heruitvoering van de strikte Python-validator, geen originele broncontrole en geen attestatie.</p>
+            <div class="admin-review-grid">
+              <div><label for="admin-review044-evidence-view-file">Geëxporteerd Python-bewijsrapport (.json, maximaal 16 KiB)</label><input id="admin-review044-evidence-view-file" type="file" accept=".json,application/json"></div>
+            </div>
+            <button id="admin-review044-evidence-view-load" type="button" class="secondary">Toon ingelezen bewijsrapport lokaal</button>
+            <p id="admin-review044-evidence-view-status" class="admin-review-result" role="status" aria-live="polite">Nog geen bewijsrapport geïnspecteerd. HOLD / DENY.</p>
+            <div id="admin-review044-evidence-view-details" hidden></div>
+            <p class="auth-note">Drie strikt gescheiden rubrieken: technische consistentieclaim, niet-ondertekende eigenaarswaarnemingen, en onafhankelijke verificatie. Een JSON-rapport kan aangepast of nagemaakt zijn; controleer de originele bestanden met de opt-in Python-route. Geen upload, opslag, accountkoppeling of autorisatie. NOT_VERIFIED / HOLD / DENY / NOT_AUTHORIZED.</p>
+          </section>
+          <section class="admin-bundle-panel" aria-labelledby="admin-pp-recovery002-title">
+            <h3 id="admin-pp-recovery002-title">PP-RECOVERY-002 / herstelcoördinatie — alleen lezen</h3>
+            <p class="auth-note">Lees een vooraf lokaal geëxporteerd herstelcoördinatierapport. Het combineert een ongetekende P.P.-overdracht met Review 044-bewijsreferenties. De browser toont claims uit een JSON-bestand en voert geen Python-validator of identiteitscontrole uit. Geen upload, databasewijziging of PALACO ONE-aanmelding.</p>
+            <div class="admin-review-grid">
+              <div><label for="admin-pp-recovery002-file">Herstelcoördinatierapport (.json, maximaal 16 KiB)</label><input id="admin-pp-recovery002-file" type="file" accept=".json,application/json"></div>
+            </div>
+            <button id="admin-pp-recovery002-view" type="button" class="secondary">Toon herstelstatus lokaal (indicatief)</button>
+            <p id="admin-pp-recovery002-status" class="admin-review-result" role="status" aria-live="polite">Geen hersteloverzicht geladen. HOLD / DENY.</p>
+            <div id="admin-pp-recovery002-details" hidden></div>
+            <p class="auth-note">De drie rubrieken zijn gescheiden: lokale registratie, technische bewijsclaim en geblokkeerde identiteitsrechten. Ook bij consistente bronbestanden blijft crossSourceSubjectBinding = NOT_ESTABLISHED. De oorspronkelijke bestanden moeten later streng in Python worden beoordeeld. HOLD / DENY / NOT_AUTHORIZED.</p>
+          </section>
+          <section class="admin-bundle-panel" aria-labelledby="admin-pp-decision-title">
+            <h3 id="admin-pp-decision-title">PP-RECOVERY-002 / beslisdossier — vijf bewijsvereisten</h3>
+            <p class="auth-note">Toon een reeds lokaal opgesteld beslisdossier. Alle vijf vereisten blijven geblokkeerd, ook bij onderling consistente technische bewijsbestanden. Dit paneel voert geen tests of Python uit, verleent geen rechten en uploadt niets.</p>
+            <div class="admin-review-grid"><div>
+              <label for="admin-pp-decision-file">Beslisdossier (.json, maximaal 16 KiB)</label>
+              <input id="admin-pp-decision-file" type="file" accept=".json,application/json">
+            </div></div>
+            <button id="admin-pp-decision-load" type="button" class="secondary">Toon mijn beslisdossier lokaal</button>
+            <p id="admin-pp-decision-status" class="admin-review-result" role="status" aria-live="polite">Geen beslisdossier geladen. HOLD / DENY.</p>
+            <div class="admin-table-wrap admin-registry-rows"><table aria-label="Vijf open bewijsvereisten">
+              <thead><tr><th>Vereiste</th><th>Bewijsstatus</th><th>Eigenaarsmarkering</th><th>Poort</th></tr></thead>
+              <tbody id="admin-pp-decision-rows"></tbody>
+            </table></div>
+            <dl id="admin-pp-decision-details" class="admin-registry-inspector"></dl>
+            <p class="auth-note">De browser toont claims uit een ongetekend JSON-bestand. Een echte beoordeling vereist de oorspronkelijke bestanden, onafhankelijke bewijsbronnen en een bevoegde menselijke reviewer. PALACO ONE-overdracht = BLOCKED; identiteit = NOT_ESTABLISHED; NOT_VERIFIED / HOLD / DENY / NOT_AUTHORIZED.</p>
+          </section>
+          <section class="admin-bundle-panel" aria-labelledby="admin-reviewqueue-title">
+            <h3 id="admin-reviewqueue-title">PP-RECOVERY-002 / human-review queue — alleen lezen</h3>
+            <p class="auth-note">Dit paneel toont uitsluitend ongetekende verzoeken voor de vijf geblokkeerde bewijsvereisten. Het is geen beoordeling door een geauthenticeerde reviewer. Geen automatische PASS, accountbinding, PALACO ONE-sessie of uitgifte.</p>
+            <div class="admin-review-grid">
+              <div><label for="admin-reviewqueue-dossier">Oorspronkelijk beslisdossier (.json, maximaal 16 KiB)</label><input id="admin-reviewqueue-dossier" type="file" accept=".json,application/json"></div>
+              <div><label for="admin-reviewqueue-file">Queue-snapshot (.json, maximaal 128 KiB)</label><input id="admin-reviewqueue-file" type="file" accept=".json,application/json"></div>
+            </div>
+            <button id="admin-reviewqueue-view" type="button" class="secondary">Toon reviewverzoeken lokaal (indicatief)</button>
+            <p id="admin-reviewqueue-status" class="admin-review-result" role="status" aria-live="polite">Geen queue geladen. HOLD / DENY.</p>
+            <div class="admin-table-wrap admin-registry-rows"><table aria-label="Human-review verzoeken — ongetekend">
+              <thead><tr><th>Volgnummer</th><th>Bewijsvereiste</th><th>Verzoek</th><th>Entry-hash (verkort)</th><th>Besluit</th></tr></thead>
+              <tbody id="admin-reviewqueue-rows"></tbody>
+            </table></div>
+            <p class="auth-note">Een browservergelijking bevestigt geen volledige hashketen, canonieke dossierbinding, provenance of daadwerkelijke menselijke verificatie. Strikte offline controle volgt uitsluitend via de Python-module in een latere testsessie. Vijf poorten BLOCKED / NOT_VERIFIED / HOLD / DENY.</p>
+          </section>
+          <section class="admin-bundle-panel" aria-labelledby="admin-intake-title">
+            <h3 id="admin-intake-title">PP-RECOVERY-002 / bewijs-intake en reviewerclaims — alleen lezen</h3>
+            <p class="auth-note">Kies drie lokaal opgeslagen JSON-bestanden: het beslisdossier, de bijbehorende review-queue en het intake-snapshot. Dit paneel toont uitsluitend onbevestigde bewijs- en rolclaims. Geen uploads, geen opslag, geen authenticatie en geen bevoegdheidsverlening.</p>
+            <div class="admin-review-grid">
+              <div><label for="admin-intake-dossier">Beslisdossier (.json, max. 16 KiB)</label><input id="admin-intake-dossier" type="file" accept=".json,application/json"></div>
+              <div><label for="admin-intake-queue">Review-queue (.json, max. 128 KiB)</label><input id="admin-intake-queue" type="file" accept=".json,application/json"></div>
+              <div><label for="admin-intake-file">Intake-snapshot (.json, max. 16 KiB)</label><input id="admin-intake-file" type="file" accept=".json,application/json"></div>
+            </div>
+            <button id="admin-intake-view" type="button" class="secondary">Toon intakeclaims lokaal (indicatief)</button>
+            <p id="admin-intake-status" class="admin-review-result" role="status" aria-live="polite">Geen review-intake geladen. HOLD / DENY.</p>
+            <h4>Bewijsstukken en reviewerclaims — onbevestigd</h4>
+            <div class="admin-table-wrap admin-registry-rows"><table aria-label="Bewijsverwijzingen en rolclaims">
+              <thead><tr><th>Volgnummer</th><th>Reviewverzoek</th><th>Vereiste</th><th>Bewijstype</th><th>SHA-256 (verkort)</th><th>Rolclaim</th><th>Beoordeling</th></tr></thead>
+              <tbody id="admin-intake-rows"></tbody>
+            </table></div>
+            <h4>Vijf niet-vrijgegeven bewijsvereisten</h4>
+            <div class="admin-table-wrap admin-registry-rows"><table aria-label="Open bewijsvereisten">
+              <thead><tr><th>Bewijsvereiste</th><th>Bewijsstatus</th><th>Poort</th></tr></thead>
+              <tbody id="admin-intake-gates"></tbody>
+            </table></div>
+            <dl id="admin-intake-summary" class="admin-registry-inspector"></dl>
+            <p class="auth-note">De browser controleert alleen herkenbare velden, lokale rijverwijzingen en statusclaims. Hij verifieert geen canonieke dossierhash, volledige keten, dubbele JSON-sleutels of identiteit van de reviewer. Python blijft normatief. NOT_VERIFIED / HOLD / DENY / NOT_AUTHORIZED.</p>
+          </section>
+          <section class="admin-bundle-panel" aria-labelledby="admin-intake-assessment-title">
+            <h3 id="admin-intake-assessment-title">PP-RECOVERY-002 / intakebeoordeling — ontbrekende controles</h3>
+            <p class="auth-note">Lees een eerder lokaal geëxporteerd Python-beoordelingsrapport. Het rapport beschrijft zes nog ontbrekende controles per intake-item en vijf geblokkeerde beslisvereisten. Een browserimport bewijst geen Python-uitvoering of reviewerbevoegdheid.</p>
+            <div class="admin-review-grid"><div><label for="admin-intake-assessment-file">Intakebeoordelingsrapport (.json, maximaal 64 KiB)</label><input id="admin-intake-assessment-file" type="file" accept=".json,application/json"></div></div>
+            <button id="admin-intake-assessment-load" type="button" class="secondary">Toon ontbrekende controles lokaal</button>
+            <p id="admin-intake-assessment-status" class="admin-review-result" role="status" aria-live="polite">Geen intakebeoordeling geladen. HOLD / DENY.</p>
+            <h4>Intake-items — elk zes ontbrekende controles</h4>
+            <div class="admin-table-wrap admin-registry-rows"><table aria-label="Ontbrekende bewijscontroles per intake">
+              <thead><tr><th>Nr.</th><th>Vereiste</th><th>Bewijstype</th><th>Ingediende rolclaim</th><th>Open controles</th><th>Status</th></tr></thead>
+              <tbody id="admin-intake-assessment-rows"></tbody></table></div>
+            <h4>Bewijsvereisten — geen vrijgave</h4>
+            <div class="admin-table-wrap admin-registry-rows"><table aria-label="Geblokkeerde beslispoorten">
+              <thead><tr><th>Vereiste</th><th>Gekoppelde bewijsclaims</th><th>Bewijsstatus</th><th>Poort</th></tr></thead>
+              <tbody id="admin-intake-assessment-gates"></tbody></table></div>
+            <p class="auth-note">De open controles zijn: originele bewijsbytes hercontroleren, bronprovenance attesteren, indiener authenticeren, reviewerbevoegdheid vaststellen, subjectbinding verifiëren en onafhankelijke review uitvoeren. Dit blijft een ongetekende bestandsclaim. NOT_VERIFIED / HOLD / DENY / NOT_AUTHORIZED.</p>
+          </section>
+          <section class="admin-bundle-panel" aria-labelledby="admin-verification-plan-title">
+            <h3 id="admin-verification-plan-title">PP-RECOVERY-002 / verificatieplan — zes afhankelijke stappen</h3>
+            <p class="auth-note">Open een eerder lokaal geëxporteerd verificatieplan. De zes stappen per intake-item en de afhankelijkheden van vijf beslispoorten worden alleen weergegeven, niet uitgevoerd. De JSON-import is geen onafhankelijke Python-hercontrole, identiteitsbewijs of bronattestatie.</p>
+            <div class="admin-review-grid"><div>
+              <label for="admin-verification-plan-file">Offline verificatieplan (.json, maximaal 128 KiB)</label>
+              <input id="admin-verification-plan-file" type="file" accept=".json,application/json">
+            </div></div>
+            <button id="admin-verification-plan-load" type="button" class="secondary">Toon verificatievolgorde lokaal (indicatief)</button>
+            <p id="admin-verification-plan-status" class="admin-review-result" role="status" aria-live="polite">Geen verificatieplan geladen. HOLD / DENY.</p>
+            <dl id="admin-verification-plan-summary" class="admin-registry-inspector"></dl>
+            <h4>Voorbereide handmatige stappen per bewijsstuk</h4>
+            <div class="admin-table-wrap admin-registry-rows"><table aria-label="Handmatige controles per intake-item">
+              <thead><tr><th>Intake</th><th>Bewijsvereiste</th><th>Stap</th><th>Controle</th><th>Eerst vereist</th><th>Uitvoering</th></tr></thead>
+              <tbody id="admin-verification-plan-rows"></tbody>
+            </table></div>
+            <h4>Beslisdrempels — geen vrijgave</h4>
+            <div class="admin-table-wrap admin-registry-rows"><table aria-label="Geblokkeerde verificatiepoorten">
+              <thead><tr><th>Vereiste</th><th>Afhankelijke stappen</th><th>Bewijsstatus</th><th>Poort</th></tr></thead>
+              <tbody id="admin-verification-plan-gates"></tbody>
+            </table></div>
+            <p class="auth-note">Alle stappen blijven NOT_STARTED en alle poorten BLOCKED. De browser kan dubbele JSON-sleutels of de volledige cryptografische bronbinding niet normatief beoordelen; alleen de originele drie bestanden kunnen later strikt in Python worden gecontroleerd. Geen upload, uitvoering, accountmutatie, PALACO ONE-sessie of uitgifte. NOT_VERIFIED / HOLD / DENY / NOT_AUTHORIZED.</p>
+          </section>
+          <section class="admin-bundle-panel" aria-labelledby="admin-observations-title">
+            <h3 id="admin-observations-title">PP-RECOVERY-002 / voortgangsregister — ongetekende waarnemingen</h3>
+            <p class="auth-note">Open een bestaand verificatieplan en een reeds opgeslagen observatiesnapshot. De browser toont alleen zelfgerapporteerde gebeurtenissen bij de zes controles per bewijsstuk. Niets wordt uitgevoerd, afgevinkt of aan PALACO ONE gekoppeld.</p>
+            <div class="admin-review-grid">
+              <div><label for="admin-observations-plan-file">Origineel verificatieplan (.json, maximaal 128 KiB)</label><input id="admin-observations-plan-file" type="file" accept=".json,application/json"></div>
+              <div><label for="admin-observations-register-file">Observatiesnapshot (.json, maximaal 128 KiB)</label><input id="admin-observations-register-file" type="file" accept=".json,application/json"></div>
+            </div>
+            <button id="admin-observations-load" type="button" class="secondary">Toon mijn observatiegeschiedenis lokaal</button>
+            <p id="admin-observations-status" class="admin-review-result" role="status" aria-live="polite">Geen voortgangsregister geladen. HOLD / DENY.</p>
+            <dl id="admin-observations-summary" class="admin-registry-inspector"></dl>
+            <h4>Waarnemingshistorie per intake en verificatiestap</h4>
+            <div class="admin-table-wrap admin-registry-rows"><table aria-label="Zelfgerapporteerde controlewaarnemingen">
+              <thead><tr><th>Volgnummer</th><th>Intake</th><th>Stap</th><th>Controle</th><th>Eigen markering</th><th>Eventhash (verkort)</th><th>Verificatiestatus</th></tr></thead>
+              <tbody id="admin-observations-rows"></tbody>
+            </table></div>
+            <p class="auth-note">De browser vergelijkt de SHA-256 van de originele planbytes maar verifieert niet de volledige eventhashketen, dubbele JSON-sleutels, identiteit of reviewerbevoegdheid. Een waarneming is nooit onafhankelijke verificatie. Alle controles blijven NOT_STARTED en alle vijf poorten BLOCKED. Geen upload, serveropslag, accountactie of uitgifte. NOT_VERIFIED / HOLD / DENY / NOT_AUTHORIZED.</p>
+          </section>
+          <section class="admin-bundle-panel" aria-labelledby="admin-recovery-cockpit-title">
+            <h3 id="admin-recovery-cockpit-title">PP-RECOVERY-002 / herstelcockpit — alle vijf bewijsstromen</h3>
+            <p class="auth-note">Eén lokaal, alleen-lezen overzicht voor het beslisdossier, de human-review queue, de bewijs-intake, het verificatieplan en de observatiegeschiedenis. Kies daarnaast een eerder offline geëxporteerd Python-cockpitrapport. Het rapport is ongetekend: een overeenkomstige bestandsvingerafdruk bewijst geen onafhankelijk uitgevoerde Python-validator.</p>
+            <div class="admin-review-grid">
+              <div><label for="admin-recovery-cockpit-dossier">1. Beslisdossier (.json, maximaal 16 KiB)</label><input id="admin-recovery-cockpit-dossier" type="file" accept=".json,application/json"></div>
+              <div><label for="admin-recovery-cockpit-queue">2. Review-queue (.json, maximaal 128 KiB)</label><input id="admin-recovery-cockpit-queue" type="file" accept=".json,application/json"></div>
+              <div><label for="admin-recovery-cockpit-intake">3. Bewijs-intake (.json, maximaal 16 KiB)</label><input id="admin-recovery-cockpit-intake" type="file" accept=".json,application/json"></div>
+              <div><label for="admin-recovery-cockpit-plan">4. Verificatieplan (.json, maximaal 128 KiB)</label><input id="admin-recovery-cockpit-plan" type="file" accept=".json,application/json"></div>
+              <div><label for="admin-recovery-cockpit-observations">5. Observatieregister (.json, maximaal 128 KiB)</label><input id="admin-recovery-cockpit-observations" type="file" accept=".json,application/json"></div>
+              <div><label for="admin-recovery-cockpit-report">6. Offline cockpitrapport (.json, maximaal 16 KiB)</label><input id="admin-recovery-cockpit-report" type="file" accept=".json,application/json"></div>
+            </div>
+            <button id="admin-recovery-cockpit-load" type="button" class="secondary">Toon herstelcockpit lokaal (indicatief)</button>
+            <p id="admin-recovery-cockpit-status" class="admin-review-result" role="status" aria-live="polite">Geen herstelcockpit geladen. HOLD / DENY.</p>
+            <dl id="admin-recovery-cockpit-overview" class="admin-registry-inspector"></dl>
+            <h4>Vijf bronbestanden — lokale byteverwijzingen</h4>
+            <div class="admin-table-wrap admin-registry-rows"><table aria-label="Bronbestanden en lokale SHA-256 vergelijkingen">
+              <thead><tr><th>Bewijsstroom</th><th>SHA-256 (verkort)</th><th>Controlebereik</th></tr></thead>
+              <tbody id="admin-recovery-cockpit-sources"></tbody>
+            </table></div>
+            <h4>Beslisdrempels — volledig geblokkeerd</h4>
+            <div class="admin-table-wrap admin-registry-rows"><table aria-label="Vijf geblokkeerde bewijsvereisten">
+              <thead><tr><th>Vereiste</th><th>Verificatie</th><th>Poort</th></tr></thead>
+              <tbody id="admin-recovery-cockpit-gates"></tbody>
+            </table></div>
+            <p class="auth-note">De browser berekent alleen de SHA-256 van de geselecteerde bronbytes en toetst herkenbare vormen en statussen. Dit is geen normatieve controle van alle JSON-contracten, dubbele sleutels of gebeurtenisketens. Het Python-cockpitrapport kan nagemaakt zijn. Geen upload, automatische toetsing, accountbinding of PALACO ONE-toegang. NOT_VERIFIED / HOLD / DENY / NOT_AUTHORIZED.</p>
+          </section>
+          <section class="admin-bundle-panel" aria-labelledby="admin-status-report-title">
+            <h3 id="admin-status-report-title">PP-RECOVERY-002 / centraal herstelstatusrapport — alleen lezen</h3>
+            <p class="auth-note">Dit rapport brengt vijf geblokkeerde bewijsvereisten, zes niet-uitgevoerde controlefasen en acht toegestane toekomstige handmatige stappen samen. Het is een ongetekende statusclaim, geen uitgifte-, bevoegdheids- of identiteitsbesluit.</p>
+            <div class="admin-review-grid"><div>
+              <label for="admin-status-report-file">Offline herstelstatusrapport (.json, maximaal 32 KiB)</label>
+              <input id="admin-status-report-file" type="file" accept=".json,application/json">
+            </div></div>
+            <button id="admin-status-report-load" type="button" class="secondary">Toon herstelstatus lokaal (indicatief)</button>
+            <p id="admin-status-report-status" class="admin-review-result" role="status" aria-live="polite">Geen herstelstatusrapport geladen. HOLD / DENY.</p>
+            <dl id="admin-status-report-summary" class="admin-registry-inspector"></dl>
+            <h4>Vijf beslisblokkades</h4>
+            <div class="admin-table-wrap admin-registry-rows"><table aria-label="Vijf geblokkeerde herstelpoorten">
+              <thead><tr><th>Vereiste</th><th>Controlevolgorde</th><th>Status</th></tr></thead>
+              <tbody id="admin-status-report-gates"></tbody>
+            </table></div>
+            <h4>Zes nog niet uitgevoerde controlefasen</h4>
+            <div class="admin-table-wrap admin-registry-rows"><table aria-label="Open verificatiefasen">
+              <thead><tr><th>Stap</th><th>Controle</th><th>Afhankelijkheden</th><th>Status</th></tr></thead>
+              <tbody id="admin-status-report-checks"></tbody>
+            </table></div>
+            <h4>Toegestane vervolgstappen — handmatig, zonder automatische vrijgave</h4>
+            <div class="admin-table-wrap admin-registry-rows"><table aria-label="Handmatige herstelacties">
+              <thead><tr><th>Prioriteit</th><th>Actie</th><th>Beschrijving</th></tr></thead>
+              <tbody id="admin-status-report-next"></tbody>
+            </table></div>
+            <p class="auth-note">Dit paneel leest alleen lokale JSON en bewijst niet dat de Python-validator is uitgevoerd. Het voert geen controles, handelingen of accountmutaties uit. Alle bewijsstatussen blijven NOT_VERIFIED, HOLD / DENY en NOT_AUTHORIZED. PALACO ONE blijft geblokkeerd.</p>
+          </section>
+          <section class="admin-bundle-panel" aria-labelledby="admin-readiness-title">
+            <h3 id="admin-readiness-title">PP-RECOVERY-002 / vrijgavegereedheid — ontbrekende voorwaarden</h3>
+            <p class="auth-note">Een rapport van ontbrekende voorwaarden is geen besluit tot vrijgave. Dit alleen-lezen paneel toont zes globale blokkades, vijf niet-gereedstaande poorten en per poort een afzonderlijke handmatige vervolgrichting. Geen automatisch PASS, identiteitsbinding, PALACO ONE-sessie of uitgifte.</p>
+            <div class="admin-review-grid"><div>
+              <label for="admin-readiness-file">Offline gereedheidsanalyse (.json, maximaal 32 KiB)</label>
+              <input id="admin-readiness-file" type="file" accept=".json,application/json">
+            </div></div>
+            <button id="admin-readiness-load" type="button" class="secondary">Toon ontbrekende vrijgavevoorwaarden lokaal</button>
+            <p id="admin-readiness-status" class="admin-review-result" role="status" aria-live="polite">Geen vrijgavegereedheidsrapport geladen. HOLD / DENY.</p>
+            <h4>Globale blokkades — niet zelfstandig ophefbaar</h4>
+            <ul id="admin-readiness-blockers"></ul>
+            <h4>Vijf niet-gereedstaande beslispoorten</h4>
+            <div class="admin-table-wrap admin-registry-rows"><table aria-label="Ontbrekende vrijgavevereisten">
+              <thead><tr><th>Poort</th><th>Ontbrekende controles</th><th>Handmatige vervolgstap</th><th>Gereedheid</th></tr></thead>
+              <tbody id="admin-readiness-gates"></tbody>
+            </table></div>
+            <p class="auth-note">De browser toont uitsluitend de structuur van een ongetekend JSON-rapport; de oorspronkelijke vijf bestanden en Python-validatie worden hier niet herhaald. Iedere poort blijft NOT_READY / BLOCKED; NOT_VERIFIED / HOLD / DENY / NOT_AUTHORIZED.</p>
+          </section>
+          <section class="admin-bundle-panel" aria-labelledby="admin-handoff-manifest-title">
+            <h3 id="admin-handoff-manifest-title">PP-RECOVERY-002 / overdrachtsmanifest menselijke review — alleen lezen</h3>
+            <p class="auth-note">Dit ongetekende manifest verwijst naar vijf bestanden, zes globale blokkades en vijf open poorten. Het is uitsluitend voorbereiding: geen reviewer is toegewezen, geen bestand verzonden en geen ontvangst bevestigd.</p>
+            <div class="admin-review-grid"><div>
+              <label for="admin-handoff-manifest-file">Offline review-handoffmanifest (.json, maximaal 32 KiB)</label>
+              <input id="admin-handoff-manifest-file" type="file" accept=".json,application/json">
+            </div></div>
+            <button id="admin-handoff-manifest-load" type="button" class="secondary">Toon ongetekend overdrachtsmanifest lokaal</button>
+            <p id="admin-handoff-manifest-status" class="admin-review-result" role="status" aria-live="polite">Geen handoffmanifest geladen. HOLD / DENY.</p>
+            <h4>Vijf bronverwijzingen — niet geleverd</h4>
+            <div class="admin-table-wrap admin-registry-rows"><table aria-label="Ongetekende bronmanifestverwijzingen">
+              <thead><tr><th>Bron</th><th>SHA-256 (verkort)</th><th>Overdracht</th></tr></thead>
+              <tbody id="admin-handoff-manifest-sources"></tbody>
+            </table></div>
+            <h4>Ontbrekende globale bewijsvoorwaarden</h4>
+            <ul id="admin-handoff-manifest-blockers"></ul>
+            <h4>Open poorten — geen reviewerbesluit</h4>
+            <div class="admin-table-wrap admin-registry-rows"><table aria-label="Handoffvereisten zonder reviewerbesluit">
+              <thead><tr><th>Vereiste</th><th>Open controles</th><th>Status</th></tr></thead>
+              <tbody id="admin-handoff-manifest-gates"></tbody>
+            </table></div>
+            <p class="auth-note">De bron-SHA-256 zijn ongetekende claims; de browser herberekent de vijf originele bronhashes niet. Dit paneel authenticeert geen ontvanger, verstuurt geen bestanden en activeert geen PALACO ONE-sessie. NOT_DELIVERED / NOT_ACKNOWLEDGED / NOT_VERIFIED / NOT_READY / HOLD / DENY.</p>
+          </section>
+          <section class="admin-bundle-panel" aria-labelledby="admin-review-protocol-title">
+            <h3 id="admin-review-protocol-title">PP-RECOVERY-002 / ontvangst- en beoordelingsprotocol — alleen lezen</h3>
+            <p class="auth-note">Dit paneel registreert geen ontvangst of bevoegdheid. Het toont eerder lokaal vastgelegde, ongetekende claims over ontvangst, reviewverzoeken, ontbrekende authenticatie en bewijsblokkades. Voor een daadwerkelijke bevoegde beoordeling moet revieweridentiteit eerst onafhankelijk buiten deze module worden vastgesteld.</p>
+            <div class="admin-review-grid">
+              <div><label for="admin-review-protocol-manifest">Oorspronkelijk handoffmanifest (.json, maximaal 32 KiB)</label><input id="admin-review-protocol-manifest" type="file" accept=".json,application/json"></div>
+              <div><label for="admin-review-protocol-snapshot">Ontvangstprotocol-snapshot (.json, maximaal 64 KiB)</label><input id="admin-review-protocol-snapshot" type="file" accept=".json,application/json"></div>
+            </div>
+            <button id="admin-review-protocol-load" type="button" class="secondary">Toon ongetekende ontvangst- en reviewerclaims</button>
+            <p id="admin-review-protocol-status" class="admin-review-result" role="status" aria-live="polite">Geen ontvangstprotocol geladen. HOLD / DENY.</p>
+            <dl id="admin-review-protocol-details" class="admin-registry-inspector"></dl>
+            <h4>Lokale claims — nooit onafhankelijke reviewerbeoordelingen</h4>
+            <div class="admin-table-wrap admin-registry-rows"><table aria-label="Ongetekende ontvangst- en reviewerclaims">
+              <thead><tr><th>Nr.</th><th>Claim</th><th>Opgegeven rol</th><th>Bewijsvereiste</th><th>Validatiestatus</th></tr></thead>
+              <tbody id="admin-review-protocol-rows"></tbody>
+            </table></div>
+            <p class="auth-note">Een overeenkomende manifestbytehash bewijst geen levering of ontvangst. De browser valideert geen volledige eventhashketen, revieweridentiteit of autoriteit. Elke claim blijft SELF_REPORTED_UNAUTHENTICATED; ontvangst NOT_VERIFIED, reviewerAuthority NOT_ESTABLISHED en humanReview NOT_COMPLETED. Geen login, bewijsuitgifte of automatische beslissing.</p>
+          </section>
+          <section class="admin-bundle-panel" aria-labelledby="admin-reviewer-auth-title">
+            <h3 id="admin-reviewer-auth-title">PP-RECOVERY-002 / onafhankelijke reviewer-authenticatie — eisencontract</h3>
+            <p class="auth-note">Dit is geen identiteitsprovider of reviewerlogin. Het overzicht benoemt acht externe veiligheidscontroles die later onafhankelijk moeten worden uitgevoerd. Een onbevestigde rolclaim kan geen reviewerbevoegdheid, ontvangstbewijs of PALACO ONE-toegang creëren.</p>
+            <div class="admin-review-grid"><div>
+              <label for="admin-reviewer-auth-file">Lokaal eisencontract (.json, maximaal 32 KiB)</label>
+              <input id="admin-reviewer-auth-file" type="file" accept=".json,application/json">
+            </div></div>
+            <button id="admin-reviewer-auth-load" type="button" class="secondary">Toon ontbrekende authenticatiecontroles</button>
+            <p id="admin-reviewer-auth-status" class="admin-review-result" role="status" aria-live="polite">Geen reviewerbeveiligingscontract geladen. HOLD / DENY.</p>
+            <h4>Acht niet-vervulde externe authenticatievoorwaarden</h4>
+            <div class="admin-table-wrap admin-registry-rows"><table aria-label="Externe reviewer-identiteitscontroles">
+              <thead><tr><th>Nr.</th><th>Beveiligingscontrole</th><th>Vereiste</th><th>Status</th></tr></thead>
+              <tbody id="admin-reviewer-auth-rows"></tbody>
+            </table></div>
+            <h4>Vijf geblokkeerde beslispoorten</h4>
+            <div class="admin-table-wrap admin-registry-rows"><table aria-label="Reviewer-authenticatie en geblokkeerde poorten">
+              <thead><tr><th>Bewijsvereiste</th><th>Verificatie</th><th>Poort</th></tr></thead>
+              <tbody id="admin-reviewer-auth-gates"></tbody>
+            </table></div>
+            <p class="auth-note">Deze browser leest alleen ongetekende JSON. Er wordt geen identity provider, cryptografische challenge, rolattestatie, handtekening of onafhankelijke audit gevalideerd. Reviewerbevoegdheid NOT_ESTABLISHED, menselijke review NOT_COMPLETED, PALACO ONE BLOCKED, NOT_READY / HOLD / DENY / NOT_AUTHORIZED.</p>
+          </section>
+          <section class="admin-bundle-panel" aria-labelledby="admin-reviewer-service-title">
+            <h3 id="admin-reviewer-service-title">PP-RECOVERY-002 / reviewer-identiteitsdienst — drie gescheiden beveiligingslagen</h3>
+            <p class="auth-note">Dit is een architectuurcontract, geen werkende identity provider, authenticatie, autorisatie of auditdienst. De beveiligingsgrenzen zijn gescheiden en geen ongetekende rolclaim mag bevoegdheid opleveren.</p>
+            <div class="admin-review-grid"><div>
+              <label for="admin-reviewer-service-file">Offline architectuurrapport (.json, maximaal 32 KiB)</label>
+              <input id="admin-reviewer-service-file" type="file" accept=".json,application/json">
+            </div></div>
+            <button id="admin-reviewer-service-load" type="button" class="secondary">Toon architectuurcontract lokaal</button>
+            <p id="admin-reviewer-service-status" class="admin-review-result" role="status" aria-live="polite">Geen identiteitsarchitectuur geladen. HOLD / DENY.</p>
+            <h4>Authenticatie / autorisatie / audit — nog niet geïmplementeerd</h4>
+            <div class="admin-table-wrap admin-registry-rows"><table aria-label="Drie gescheiden reviewer-veiligheidsdiensten">
+              <thead><tr><th>Trust boundary</th><th>Toekomstige output</th><th>Vereisten</th><th>Status</th></tr></thead>
+              <tbody id="admin-reviewer-service-services"></tbody>
+            </table></div>
+            <h4>Acht niet-vastgestelde externe voorwaarden</h4>
+            <ul id="admin-reviewer-service-requirements"></ul>
+            <p class="auth-note">Geen netwerkcontact, identity provider, crypto-challenge, beleidsbesluit, ondertekende ontvangst of externe audit. Alle vijf poorten BLOCKED; PALACO ONE BLOCKED; NOT_VERIFIED / NOT_READY / HOLD / DENY / NOT_AUTHORIZED. De browser leest alleen ongetekende JSON en verifieert niet de oorspronkelijke acht documenten.</p>
+          </section>
+          <section class="admin-bundle-panel" aria-labelledby="admin-reviewer-interface-title">
+            <h3 id="admin-reviewer-interface-title">PP-RECOVERY-002 / interfacecontracten — authenticatie, autorisatie en audit</h3>
+            <p class="auth-note">Drie toekomstige, intern gescheiden API-contracten. De routes zijn niet geïmplementeerd en niet beschikbaar. Fouten, intrekkingen en ontbrekende vertrouwensbronnen leiden uitsluitend tot DENY. Geen opgegeven reviewerrol kan een grens passeren.</p>
+            <div class="admin-review-grid"><div>
+              <label for="admin-reviewer-interface-file">Offline interfacecontract (.json, maximaal 32 KiB)</label>
+              <input id="admin-reviewer-interface-file" type="file" accept=".json,application/json">
+            </div></div>
+            <button id="admin-reviewer-interface-load" type="button" class="secondary">Toon uitgeschakelde interfacecontracten</button>
+            <p id="admin-reviewer-interface-status" class="admin-review-result" role="status" aria-live="polite">Geen interfacecontract geladen. HOLD / DENY.</p>
+            <h4>Toekomstige interne API-grenzen — alle uitgeschakeld</h4>
+            <div class="admin-table-wrap admin-registry-rows"><table aria-label="Uitgeschakelde reviewer-authenticatie API-contracten">
+              <thead><tr><th>Dienst</th><th>Voorgestelde route</th><th>Beschikbaarheid</th><th>Standaardantwoord</th></tr></thead>
+              <tbody id="admin-reviewer-interface-rows"></tbody>
+            </table></div>
+            <h4>Foutafhandeling — altijd DENY</h4>
+            <ul id="admin-reviewer-interface-errors"></ul>
+            <p class="auth-note">Intrekkingen van credentials, reviewerrollen, ondertekeningssleutels en auditverankeringen krijgen standaard DENY. De browser leest alleen een ongetekend contract en controleert niet de oorspronkelijke negen bestanden. Geen netwerkverzoeken, identiteitstoekenning, PALACO ONE-sessie, reviewerbevoegdheid of uitgifte. NOT_IMPLEMENTED / NOT_VERIFIED / HOLD / DENY / NOT_AUTHORIZED.</p>
+          </section>
+          <section class="admin-bundle-panel" aria-labelledby="admin-trust-transition-title">
+            <h3 id="admin-trust-transition-title">PP-RECOVERY-002 / trust-transition protocol — drie geblokkeerde grenzen</h3>
+            <p class="auth-note">Een toekomstige reviewer mag uitsluitend via apart gecontroleerde grenzen van authenticatie naar autorisatie, van autorisatie naar audit en van audit naar menselijke beoordeling gaan. Dit paneel toont een ongetekend ontwerp; het voert geen controles of overgangen uit.</p>
+            <div class="admin-review-grid"><div>
+              <label for="admin-trust-transition-file">Offline overgangscontract (.json, maximaal 32 KiB)</label>
+              <input id="admin-trust-transition-file" type="file" accept=".json,application/json">
+            </div></div>
+            <button id="admin-trust-transition-load" type="button" class="secondary">Toon geblokkeerde trust transitions lokaal</button>
+            <p id="admin-trust-transition-status" class="admin-review-result" role="status" aria-live="polite">Geen overgangscontract geladen. HOLD / DENY.</p>
+            <h4>Drie grenzen — geen enkele overgang geautoriseerd</h4>
+            <div class="admin-table-wrap admin-registry-rows"><table aria-label="Geblokkeerde vertrouwensovergangen">
+              <thead><tr><th>Volgorde</th><th>Grens</th><th>Externe bewijsvoorwaarden</th><th>Uitkomst</th></tr></thead>
+              <tbody id="admin-trust-transition-rows"></tbody>
+            </table></div>
+            <h4>Foutvoorwaarden — iedere fout DENY</h4>
+            <ul id="admin-trust-transition-errors"></ul>
+            <p class="auth-note">Geen cryptografische sleutelcontrole, vertrouwde tijd, credentialintrekking of externe audit uitgevoerd. De browser controleert alleen een beperkte JSON-structuur, niet de volledige tien originele bestanden. Geen endpoint, aanvraag, PALACO ONE-sessie of uitgifte. NOT_IMPLEMENTED / NOT_VERIFIED / NOT_READY / HOLD / DENY / NOT_AUTHORIZED.</p>
+          </section>
+          <section class="admin-bundle-panel" aria-labelledby="admin-revocation-title">
+            <h3 id="admin-revocation-title">PP-RECOVERY-002 / revocation &amp; recovery — alles standaard geblokkeerd</h3>
+            <p class="auth-note">Dit paneel toont een ongetekend ontwerpcontract voor de toekomstige intrekking van reviewercredentials, reviewerrollen, ondertekeningssleutels en auditvertrouwen. De vier scenario's beschrijven gevolgen; de backoffice voert geen echte intrekking of herstelhandeling uit.</p>
+            <div class="admin-review-grid"><div>
+              <label for="admin-revocation-file">Offline intrekkings- en herstelcontract (.json, maximaal 32 KiB)</label>
+              <input id="admin-revocation-file" type="file" accept=".json,application/json">
+            </div></div>
+            <button id="admin-revocation-load" type="button" class="secondary">Toon revocation &amp; recovery contract</button>
+            <p id="admin-revocation-status" class="admin-review-result" role="status" aria-live="polite">Geen intrekkingscontract geladen. HOLD / DENY.</p>
+            <h4>Vier toekomstige intrekkingsscenario's — niet uitgevoerd</h4>
+            <div class="admin-table-wrap admin-registry-rows"><table aria-label="Intrekkingsscenario's en afgeleide afhankelijkheden">
+              <thead><tr><th>Scenario</th><th>Eigenaar</th><th>Afhankelijke bewijssoorten</th><th>Status</th></tr></thead>
+              <tbody id="admin-revocation-scenarios"></tbody>
+            </table></div>
+            <h4>Acht vereiste herstelcontroles — allemaal open</h4>
+            <div class="admin-table-wrap admin-registry-rows"><table aria-label="Herstelcontroles zonder vrijgavebevoegdheid">
+              <thead><tr><th>Nr.</th><th>Externe herstelvoorwaarde</th><th>Status</th></tr></thead>
+              <tbody id="admin-revocation-recovery"></tbody>
+            </table></div>
+            <p class="auth-note">Geen revocation feed, vertrouwde klok, credentialscontrole, actieve audit of bevoegd herstelbesluit aangesloten. De browser leest slechts een ongetekend JSON-contract en controleert niet de elf originele bronbestanden. Geen intrekking, accountmutatie, reviewerautorisatie, PALACO ONE-sessie of uitgifte. NOT_EXECUTED / NOT_VERIFIED / NOT_READY / HOLD / DENY / NOT_AUTHORIZED.</p>
+          </section>
+          <section class="admin-bundle-panel" aria-labelledby="admin-assurance-title">
+            <h3 id="admin-assurance-title">PP-RECOVERY-002 / Security Assurance Dossier — centrale bewijsgrenzen</h3>
+            <p class="auth-note">Het dossier koppelt twaalf originele documenten, reviewer-authenticatievoorwaarden, trust transitions, intrekkingen en herstelchecks. Een ongetekend rapport is geen externe attestatie en mag nooit een reviewer, PP-nummer of PALACO ONE-sessie vrijgeven.</p>
+            <div class="admin-review-grid"><div>
+              <label for="admin-assurance-file">Offline assurance-dossier (.json, maximaal 64 KiB)</label>
+              <input id="admin-assurance-file" type="file" accept=".json,application/json">
+            </div></div>
+            <button id="admin-assurance-load" type="button" class="secondary">Toon assurance-dossier lokaal</button>
+            <p id="admin-assurance-status" class="admin-review-result" role="status" aria-live="polite">Geen assurance-dossier geladen. HOLD / DENY.</p>
+            <h4>Twaalf bronverwijzingen — extern onbevestigd</h4>
+            <div class="admin-table-wrap admin-registry-rows"><table aria-label="Bronvingerafdrukken Security Assurance Dossier">
+              <thead><tr><th>Nr.</th><th>Bron</th><th>SHA-256 (verkort)</th><th>Authenticiteit</th></tr></thead>
+              <tbody id="admin-assurance-sources"></tbody>
+            </table></div>
+            <h4>Elf onafhankelijke assurance-gaps — allemaal open</h4>
+            <ul id="admin-assurance-gaps"></ul>
+            <p class="auth-note">Alle vijf beslispoorten blijven BLOCKED. Acht reviewercontroles en acht herstelstappen zijn niet voltooid; vier intrekkingen zijn niet uitgevoerd; drie trust transitions blijven DENY. De browser leest uitsluitend een ongetekend JSON-rapport en herberekent niet de oorspronkelijke twaalf bronbestanden. NOT_VERIFIED / NOT_READY / HOLD / DENY / NOT_AUTHORIZED.</p>
+          </section>
+          <section class="admin-bundle-panel" aria-labelledby="admin-compat-title">
+            <h3 id="admin-compat-title">PP-RECOVERY-002 / versie- en compatibiliteitsregister — twaalf broncontracten</h3>
+            <p class="auth-note">Dit register koppelt de twaalf originele v0-schema's aan hun lokale SHA-256-vingerafdrukken en de samenhang met het Security Assurance Dossier. Onbekende of gemengde versies worden geweigerd. Dit is geen automatische migratie, authenticatie of vrijgave.</p>
+            <div class="admin-review-grid"><div>
+              <label for="admin-compat-file">Lokaal compatibiliteitsregister (.json, maximaal 64 KiB)</label>
+              <input id="admin-compat-file" type="file" accept=".json,application/json">
+            </div></div>
+            <button id="admin-compat-load" type="button" class="secondary">Toon versie- en compatibiliteitsregister</button>
+            <p id="admin-compat-status" class="admin-review-result" role="status" aria-live="polite">Geen compatibiliteitsregister geladen. HOLD / DENY.</p>
+            <h4>Twaalf schema's — alleen versie v0</h4>
+            <div class="admin-table-wrap admin-registry-rows"><table aria-label="Compatibiliteitsstatus van twaalf PP broncontracten">
+              <thead><tr><th>Nr.</th><th>Broncontract</th><th>Versie</th><th>SHA-256 (verkort)</th><th>Externe verificatie</th></tr></thead>
+              <tbody id="admin-compat-rows"></tbody>
+            </table></div>
+            <h4>Compatibiliteits- en migratiebeperkingen</h4>
+            <ul id="admin-compat-rules"></ul>
+            <p class="auth-note">Deze browser leest alleen een ongetekend JSON-rapport; hij valideert niet opnieuw de dertien originele bestanden of externe bewijsherkomst. Alle vijf beslispoorten BLOCKED, PALACO ONE BLOCKED, NOT_VERIFIED / NOT_READY / HOLD / DENY / NOT_AUTHORIZED. Geen migratie of rechtenwijziging.</p>
+          </section>
+          <section class="admin-bundle-panel" aria-labelledby="admin-impact-title">
+            <h3 id="admin-impact-title">PP-RECOVERY-002 / Change Impact Register — hypothetische contractwijzigingen</h3>
+            <p class="auth-note">Dit register toont welke afhankelijke broncontracten en centrale dossiers opnieuw beoordeeld moeten worden zodra een wijziging wordt voorgesteld. Een impactrapport past niets aan en bewijst geen migratie, compatibiliteit na wijziging of reviewerbevoegdheid.</p>
+            <div class="admin-review-grid"><div>
+              <label for="admin-impact-file">Offline change-impactrapport (.json, maximaal 64 KiB)</label>
+              <input id="admin-impact-file" type="file" accept=".json,application/json">
+            </div></div>
+            <button id="admin-impact-load" type="button" class="secondary">Toon hypothetische impact lokaal</button>
+            <p id="admin-impact-status" class="admin-review-result" role="status" aria-live="polite">Geen change-impactrapport geladen. HOLD / DENY.</p>
+            <dl id="admin-impact-summary" class="admin-registry-inspector"></dl>
+            <h4>Afhankelijke broncontracten — opnieuw valideren</h4>
+            <div class="admin-table-wrap admin-registry-rows"><table aria-label="Contractafhankelijkheden bij wijziging">
+              <thead><tr><th>Nr.</th><th>Bronrol</th><th>Impact</th><th>Verificatie</th></tr></thead>
+              <tbody id="admin-impact-rows"></tbody>
+            </table></div>
+            <p class="auth-note">Het Security Assurance Dossier en het compatibiliteitsregister moeten na iedere bronwijziging opnieuw worden opgebouwd. Alle vijf beslispoorten vereisen nieuwe beoordeling en blijven BLOCKED / NOT_VERIFIED. Dit paneel leest alleen een ongetekend JSON-rapport; geen originele veertien documenten worden herberekend. NOT_READY / HOLD / DENY / NOT_AUTHORIZED.</p>
+          </section>
+          <section class="admin-bundle-panel" aria-labelledby="admin-integrity-title">
+            <h3 id="admin-integrity-title">PP-RECOVERY-002 / Release Integrity Manifest — geen vrijgave</h3>
+            <p class="auth-note">Centraal ongetekend overzicht van vijftien originele byteartefacten, versies, hashverwijzingen, veertien afhankelijkheidsrelaties en negen open releaseblokkades. Interne consistentie is geen bronattestatie, softwarepakket, reviewbesluit of vrijgave.</p>
+            <div class="admin-review-grid"><div>
+              <label for="admin-integrity-file">Offline release-integriteitsmanifest (.json, maximaal 64 KiB)</label>
+              <input id="admin-integrity-file" type="file" accept=".json,application/json">
+            </div></div>
+            <button id="admin-integrity-load" type="button" class="secondary">Toon geblokkeerd release-integriteitsmanifest</button>
+            <p id="admin-integrity-status" class="admin-review-result" role="status" aria-live="polite">Geen release-integriteitsmanifest geladen. HOLD / DENY.</p>
+            <h4>Vijftien artefacten — alleen v0, extern onbevestigd</h4>
+            <div class="admin-table-wrap admin-registry-rows"><table aria-label="Release-integriteit per bronartefact">
+              <thead><tr><th>Nr.</th><th>Bronrol</th><th>Versie</th><th>SHA-256 (verkort)</th><th>Externe verificatie</th></tr></thead>
+              <tbody id="admin-integrity-artifacts"></tbody>
+            </table></div>
+            <h4>Negen releaseblokkades — allemaal OPEN</h4>
+            <ul id="admin-integrity-blockers"></ul>
+            <p class="auth-note">Zes releasepoorten en vijf herstelbeslispoorten blijven BLOCKED / NOT_VERIFIED. Geen softwarepakket, SBOM, ondertekening, externe herkomstattestatie, tests, implementatie of PALACO ONE-sessie. Browserimport herberekent niet de vijftien oorspronkelijke bytes. NOT_READY / HOLD / DENY / NOT_AUTHORIZED.</p>
+          </section>
+          <button id="admin-review044-registry-export" type="button" class="secondary" disabled>Download nieuw registersnapshot (.json)</button>
+          <p class="auth-note">Controleer vóór gebruik altijd het originele dossier met de striktere Python-module. Deze browserregistratie is indicatief en bevat geen tijds- of identiteitsbewijs. Geen serveropslag of autorisatie.</p>
+        </div>
       </section>
     </div>
     <p class="auth-note">Lokale beheerdersdemo. Geen productiebeveiliging, MFA of wachtwoordherstel. Bescherm de onversleutelde database.</p>
