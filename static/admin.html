@@ -31,6 +31,7 @@
   <script src="/review044-security-assurance.js" defer></script>
   <script src="/review044-contract-compatibility.js" defer></script>
   <script src="/review044-change-impact.js" defer></script>
+  <script src="/review044-release-integrity.js" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -647,6 +648,24 @@
               <tbody id="admin-impact-rows"></tbody>
             </table></div>
             <p class="auth-note">Het Security Assurance Dossier en het compatibiliteitsregister moeten na iedere bronwijziging opnieuw worden opgebouwd. Alle vijf beslispoorten vereisen nieuwe beoordeling en blijven BLOCKED / NOT_VERIFIED. Dit paneel leest alleen een ongetekend JSON-rapport; geen originele veertien documenten worden herberekend. NOT_READY / HOLD / DENY / NOT_AUTHORIZED.</p>
+          </section>
+          <section class="admin-bundle-panel" aria-labelledby="admin-integrity-title">
+            <h3 id="admin-integrity-title">PP-RECOVERY-002 / Release Integrity Manifest — geen vrijgave</h3>
+            <p class="auth-note">Centraal ongetekend overzicht van vijftien originele byteartefacten, versies, hashverwijzingen, veertien afhankelijkheidsrelaties en negen open releaseblokkades. Interne consistentie is geen bronattestatie, softwarepakket, reviewbesluit of vrijgave.</p>
+            <div class="admin-review-grid"><div>
+              <label for="admin-integrity-file">Offline release-integriteitsmanifest (.json, maximaal 64 KiB)</label>
+              <input id="admin-integrity-file" type="file" accept=".json,application/json">
+            </div></div>
+            <button id="admin-integrity-load" type="button" class="secondary">Toon geblokkeerd release-integriteitsmanifest</button>
+            <p id="admin-integrity-status" class="admin-review-result" role="status" aria-live="polite">Geen release-integriteitsmanifest geladen. HOLD / DENY.</p>
+            <h4>Vijftien artefacten — alleen v0, extern onbevestigd</h4>
+            <div class="admin-table-wrap admin-registry-rows"><table aria-label="Release-integriteit per bronartefact">
+              <thead><tr><th>Nr.</th><th>Bronrol</th><th>Versie</th><th>SHA-256 (verkort)</th><th>Externe verificatie</th></tr></thead>
+              <tbody id="admin-integrity-artifacts"></tbody>
+            </table></div>
+            <h4>Negen releaseblokkades — allemaal OPEN</h4>
+            <ul id="admin-integrity-blockers"></ul>
+            <p class="auth-note">Zes releasepoorten en vijf herstelbeslispoorten blijven BLOCKED / NOT_VERIFIED. Geen softwarepakket, SBOM, ondertekening, externe herkomstattestatie, tests, implementatie of PALACO ONE-sessie. Browserimport herberekent niet de vijftien oorspronkelijke bytes. NOT_READY / HOLD / DENY / NOT_AUTHORIZED.</p>
           </section>
           <button id="admin-review044-registry-export" type="button" class="secondary" disabled>Download nieuw registersnapshot (.json)</button>
           <p class="auth-note">Controleer vóór gebruik altijd het originele dossier met de striktere Python-module. Deze browserregistratie is indicatief en bevat geen tijds- of identiteitsbewijs. Geen serveropslag of autorisatie.</p>
