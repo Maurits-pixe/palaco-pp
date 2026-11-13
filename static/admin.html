@@ -32,6 +32,7 @@
   <script src="/review044-contract-compatibility.js" defer></script>
   <script src="/review044-change-impact.js" defer></script>
   <script src="/review044-release-integrity.js" defer></script>
+  <script src="/review044-release-evidence-matrix.js" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -666,6 +667,22 @@
             <h4>Negen releaseblokkades — allemaal OPEN</h4>
             <ul id="admin-integrity-blockers"></ul>
             <p class="auth-note">Zes releasepoorten en vijf herstelbeslispoorten blijven BLOCKED / NOT_VERIFIED. Geen softwarepakket, SBOM, ondertekening, externe herkomstattestatie, tests, implementatie of PALACO ONE-sessie. Browserimport herberekent niet de vijftien oorspronkelijke bytes. NOT_READY / HOLD / DENY / NOT_AUTHORIZED.</p>
+          </section>
+          <section class="admin-bundle-panel" aria-labelledby="admin-evidence-matrix-title">
+            <h3 id="admin-evidence-matrix-title">PP-RECOVERY-002 / Release Evidence Matrix — zes geblokkeerde releasepoorten</h3>
+            <p class="auth-note">Per releasepoort worden drie nog ontbrekende bewijsstukken en een noodzakelijke onafhankelijke reviewerrol getoond. Dit is uitsluitend een ongetekend eisenoverzicht. Het accepteert geen bewijs en kan geen vrijgave, identiteit of PALACO ONE-sessie verlenen.</p>
+            <div class="admin-review-grid"><div>
+              <label for="admin-evidence-matrix-file">Offline bewijsvereistenmatrix (.json, maximaal 32 KiB)</label>
+              <input id="admin-evidence-matrix-file" type="file" accept=".json,application/json">
+            </div></div>
+            <button id="admin-evidence-matrix-load" type="button" class="secondary">Toon ontbrekende releasebewijzen</button>
+            <p id="admin-evidence-matrix-status" class="admin-review-result" role="status" aria-live="polite">Geen Release Evidence Matrix geladen. HOLD / DENY.</p>
+            <h4>Zes releasepoorten — achttien bewijsstukken MISSING</h4>
+            <div class="admin-table-wrap admin-registry-rows"><table aria-label="Releasepoorten en verplichte onafhankelijke bewijzen">
+              <thead><tr><th>Nr.</th><th>Releasepoort</th><th>Onafhankelijke rol</th><th>Ontbrekende bewijzen</th><th>Besluit</th></tr></thead>
+              <tbody id="admin-evidence-matrix-rows"></tbody>
+            </table></div>
+            <p class="auth-note">Browserimport controleert alleen de vaste JSON-structuur; de zestien originele bytes en externe bewijsherkomst worden niet geverifieerd. Alle poorten BLOCKED / DENY, alle bewijsstukken MISSING. Geen SBOM, softwarepakket, signing, tests, merge of uitrol. NOT_READY / HOLD / DENY / NOT_AUTHORIZED.</p>
           </section>
           <button id="admin-review044-registry-export" type="button" class="secondary" disabled>Download nieuw registersnapshot (.json)</button>
           <p class="auth-note">Controleer vóór gebruik altijd het originele dossier met de striktere Python-module. Deze browserregistratie is indicatief en bevat geen tijds- of identiteitsbewijs. Geen serveropslag of autorisatie.</p>
