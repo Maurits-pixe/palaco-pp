@@ -1757,3 +1757,57 @@ of autonome vervolgstap uitgevoerd.
 
 **DRAFT / NOT EXECUTED / NOT_VERIFIED / NOT_READY /
 HOLD / DENY / NOT_AUTHORIZED.**
+
+### Release Evidence Matrix — zes geblokkeerde releasepoorten
+
+`review_044_release_evidence_matrix.py` bevat een pure, niet-
+autoriserende `prepare_release_evidence_matrix` die de vijftien
+oorspronkelijke bytes van de vorige release-integriteitsketen en
+het zestiende Release Integrity Manifest strikt controleert.
+De module herbouwt het integriteitsmanifest uit de eerdere
+bronnen en vereist een **type-exact** gelijke structuur.
+Foutieve koppelingen, versies of vrijgaveclaims worden
+geweigerd met `PP_RECOVERY_002_RELEASE_EVIDENCE_MATRIX_INVALID`.
+Een inhoudelijk correct intern contract is geen onafhankelijke
+herkomstattestatie of reviewerbevoegdheid.
+
+De zes releasepoorten krijgen elk drie ontbrekende externe
+bewijsstukken en één expliciete onafhankelijke rol:
+`SOURCE_PROVENANCE` (bronbeheerder),
+`VERSION_COMPATIBILITY` (onafhankelijk compatibiliteitsreviewer),
+`INDEPENDENT_VERIFICATION` (technisch verificateur),
+`AUTHORIZED_HUMAN_REVIEW` (bevoegd onafhankelijk reviewer),
+`CRYPTOGRAPHIC_RELEASE_ATTESTATION` (release-attestor) en
+`DEPLOYMENT_APPROVAL` (bevoegd releaseoperator).
+Alle **achttien** items blijven `MISSING /
+NOT_PERFORMED`. Reviewer-authenticatie en bevoegdheid blijven
+`NOT_ESTABLISHED`; menselijke beoordeling `NOT_COMPLETED`;
+alle zes poorten `BLOCKED / DENY`.
+
+Het verslag bevat geen originele externe bewijzen, ondertekende
+ontvangst, actieve softwarebundel, SBOM of releasehandtekening.
+De status blijft `NOT_VERIFIED / NOT_READY / HOLD / DENY /
+NOT_AUTHORIZED`, met `palacoOneHandoff=BLOCKED` en
+`palacoOneSession=NOT_CREATED`.
+
+`review_044_release_evidence_matrix_cli.py` leest niets zonder
+expliciet `--run` en schrijft uitsluitend een nieuw JSON-bestand
+via verplicht `--export` (create-only `xb`).
+Voor een latere handmatige eigenaarssessie:
+
+```powershell
+python .\review_044_release_evidence_matrix_cli.py --run --dossier "PP_RECOVERY_DECISION_HOLD.json" --queue "PP_REVIEW_QUEUE_001.json" --intake "PP_REVIEW_INTAKE_001.json" --plan "PP_VERIFICATION_PLAN_HOLD.json" --observations "PP_OBSERVATION_001.json" --manifest "PP_HUMAN_REVIEW_HANDOFF_HOLD.json" --protocol "PP_REVIEW_PROTOCOL_001.json" --contract "PP_REVIEWER_AUTH_REQUIREMENTS_HOLD.json" --blueprint "PP_REVIEWER_SERVICE_BLUEPRINT_HOLD.json" --interfaces "PP_REVIEWER_INTERFACE_CONTRACT_HOLD.json" --transitions "PP_TRUST_TRANSITIONS_HOLD.json" --revocation "PP_REVOCATION_RECOVERY_HOLD.json" --assurance "PP_SECURITY_ASSURANCE_HOLD.json" --registry "PP_CONTRACT_COMPATIBILITY_HOLD.json" --impact "PP_CHANGE_IMPACT_HOLD.json" --integrity "PP_RELEASE_INTEGRITY_HOLD.json" --export "PP_RELEASE_EVIDENCE_MATRIX_HOLD.json"
+```
+
+Het nieuwe backofficepaneel **PP-RECOVERY-002 / Release Evidence
+Matrix — zes geblokkeerde releasepoorten** leest een lokaal
+ongetekend JSON-bestand van maximaal 32 KiB. De browser
+controleert alleen een herkenbare vaste schema- en blokkadestructuur
+en herberekent niet de zestien bronbestanden of externe
+reviewerattestatie. De JavaScriptviewer staat op de expliciete
+statische server-allowlist; er is geen nieuwe uitvoerende API-route
+aangemaakt. Geen tests, merge, deploy, vrijgave, ondertekening,
+autorisatie of PALACO ONE-sessie.
+
+**DRAFT / NOT EXECUTED / NOT_VERIFIED / NOT_READY /
+HOLD / DENY / NOT_AUTHORIZED.**
