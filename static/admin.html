@@ -30,6 +30,7 @@
   <script src="/review044-revocation-recovery.js" defer></script>
   <script src="/review044-security-assurance.js" defer></script>
   <script src="/review044-contract-compatibility.js" defer></script>
+  <script src="/review044-change-impact.js" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -629,6 +630,23 @@
             <h4>Compatibiliteits- en migratiebeperkingen</h4>
             <ul id="admin-compat-rules"></ul>
             <p class="auth-note">Deze browser leest alleen een ongetekend JSON-rapport; hij valideert niet opnieuw de dertien originele bestanden of externe bewijsherkomst. Alle vijf beslispoorten BLOCKED, PALACO ONE BLOCKED, NOT_VERIFIED / NOT_READY / HOLD / DENY / NOT_AUTHORIZED. Geen migratie of rechtenwijziging.</p>
+          </section>
+          <section class="admin-bundle-panel" aria-labelledby="admin-impact-title">
+            <h3 id="admin-impact-title">PP-RECOVERY-002 / Change Impact Register — hypothetische contractwijzigingen</h3>
+            <p class="auth-note">Dit register toont welke afhankelijke broncontracten en centrale dossiers opnieuw beoordeeld moeten worden zodra een wijziging wordt voorgesteld. Een impactrapport past niets aan en bewijst geen migratie, compatibiliteit na wijziging of reviewerbevoegdheid.</p>
+            <div class="admin-review-grid"><div>
+              <label for="admin-impact-file">Offline change-impactrapport (.json, maximaal 64 KiB)</label>
+              <input id="admin-impact-file" type="file" accept=".json,application/json">
+            </div></div>
+            <button id="admin-impact-load" type="button" class="secondary">Toon hypothetische impact lokaal</button>
+            <p id="admin-impact-status" class="admin-review-result" role="status" aria-live="polite">Geen change-impactrapport geladen. HOLD / DENY.</p>
+            <dl id="admin-impact-summary" class="admin-registry-inspector"></dl>
+            <h4>Afhankelijke broncontracten — opnieuw valideren</h4>
+            <div class="admin-table-wrap admin-registry-rows"><table aria-label="Contractafhankelijkheden bij wijziging">
+              <thead><tr><th>Nr.</th><th>Bronrol</th><th>Impact</th><th>Verificatie</th></tr></thead>
+              <tbody id="admin-impact-rows"></tbody>
+            </table></div>
+            <p class="auth-note">Het Security Assurance Dossier en het compatibiliteitsregister moeten na iedere bronwijziging opnieuw worden opgebouwd. Alle vijf beslispoorten vereisen nieuwe beoordeling en blijven BLOCKED / NOT_VERIFIED. Dit paneel leest alleen een ongetekend JSON-rapport; geen originele veertien documenten worden herberekend. NOT_READY / HOLD / DENY / NOT_AUTHORIZED.</p>
           </section>
           <button id="admin-review044-registry-export" type="button" class="secondary" disabled>Download nieuw registersnapshot (.json)</button>
           <p class="auth-note">Controleer vóór gebruik altijd het originele dossier met de striktere Python-module. Deze browserregistratie is indicatief en bevat geen tijds- of identiteitsbewijs. Geen serveropslag of autorisatie.</p>
