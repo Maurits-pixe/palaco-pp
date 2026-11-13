@@ -1695,3 +1695,65 @@ echte wijziging of PALACO ONE-sessie uitgevoerd.
 
 **DRAFT / HYPOTHETICAL_NOT_APPLIED / NOT_EXECUTED /
 NOT_VERIFIED / NOT_READY / HOLD / DENY / NOT_AUTHORIZED.**
+
+### PP-RECOVERY-002 — Release Integrity Manifest (ongetekend; niet vrijgeefbaar)
+
+`review_044_release_integrity.py` consolideert de **originele
+bytebestanden** van de twaalf broncontracten, het Security Assurance
+Dossier, het compatibiliteitsregister én een Change Impact Register
+(totaal **vijftien**). Het compatibiliteits- en impactrapport wordt
+via de bestaande Pythonketen opnieuw opgebouwd en type-exact
+vergeleken met de aangeleverde originele bytes; onbekende schema's,
+onverwachte bestandsgrootten en afwijkende referenties worden
+geweigerd met `PP_RECOVERY_002_RELEASE_INTEGRITY_INVALID`.
+De functie `prepare_release_integrity_manifest` berekent voor elk
+van de vijftien artefacten de SHA-256 van de originele bytes,
+de vaste v0-schemaversie, de bronrol en de toegestane grootte.
+De veertien afhankelijkheidsrelaties leggen vast dat een wijziging
+herbouw en hercontrole van latere contracten vereist.
+
+De module vereist een **bestaand** hypothetisch Change Impact Register
+waarvan de opgegeven bronrol en wijzigingscategorie al intern
+consistent zijn. De analyse past geen voorgestelde nieuwe bytes toe,
+voert geen migration uit en bewijst geen externe compatibiliteit.
+De release is **niet** klaar: negen open blockers, zes
+`BLOCKED / NOT_VERIFIED` releasepoorten en de vijf oorspronkelijke
+`BLOCKED / NOT_VERIFIED` beslispoorten. Een hash zonder
+vertrouwde handtekening en externe herkomstattestatie vormt nooit
+voldoende releasebewijs.
+
+Het outputcontract
+`palaco.pp.recovery-002-release-integrity.v0` heeft vaste velden
+`softwareBundle=NOT_CREATED`, `sbom=NOT_GENERATED`,
+`provenanceAttestation=NOT_ESTABLISHED`,
+`signing=NOT_PERFORMED`, `runtimeTests=NOT_EXECUTED`,
+`deployment=NOT_EXECUTED`, `releaseReadiness=NOT_READY`,
+`palacoOneHandoff=BLOCKED`, `palacoOneSession=NOT_CREATED`,
+`authorization=HOLD`, `accessDecision=DENY`,
+`issuance=NOT_AUTHORIZED`.
+
+De opt-in `review_044_release_integrity_cli.py` opent geen
+bronbestanden zonder `--run` en schrijft uitsluitend naar een
+**nieuw** JSON-bestand via `--export` (create-only `xb`).
+Voor een latere handmatige eigenaarssessie:
+
+```powershell
+python .\review_044_release_integrity_cli.py --run --dossier "PP_RECOVERY_DECISION_HOLD.json" --queue "PP_REVIEW_QUEUE_001.json" --intake "PP_REVIEW_INTAKE_001.json" --plan "PP_VERIFICATION_PLAN_HOLD.json" --observations "PP_OBSERVATION_001.json" --manifest "PP_HUMAN_REVIEW_HANDOFF_HOLD.json" --protocol "PP_REVIEW_PROTOCOL_001.json" --contract "PP_REVIEWER_AUTH_REQUIREMENTS_HOLD.json" --blueprint "PP_REVIEWER_SERVICE_BLUEPRINT_HOLD.json" --interfaces "PP_REVIEWER_INTERFACE_CONTRACT_HOLD.json" --transitions "PP_TRUST_TRANSITIONS_HOLD.json" --revocation "PP_REVOCATION_RECOVERY_HOLD.json" --assurance "PP_SECURITY_ASSURANCE_HOLD.json" --registry "PP_CONTRACT_COMPATIBILITY_HOLD.json" --impact "PP_CHANGE_IMPACT_HOLD.json" --export "PP_RELEASE_INTEGRITY_HOLD.json"
+```
+
+Het nieuwe alleen-lezen backofficepaneel
+**PP-RECOVERY-002 / Release Integrity Manifest — geen vrijgave**
+toont een bestaand lokaal JSON-rapport van maximaal 64 KiB,
+vijftien artefactverwijzingen en negen open releaseblokkades.
+De browser controleert een beperkte vaste structuur en voert
+geen herberekening van de originele vijftien bronbestanden,
+cryptografische attestatie, onafhankelijke reviewerbeoordeling,
+echt softwarepackaging of deploy uit. De viewer is uitsluitend
+opgenomen in de expliciete lokale server-allowlist;
+**er is geen nieuwe API-route** toegevoegd.
+
+Geen tests, merge, deploy, software-uitgave, sessie, rechtenwijziging
+of autonome vervolgstap uitgevoerd.
+
+**DRAFT / NOT EXECUTED / NOT_VERIFIED / NOT_READY /
+HOLD / DENY / NOT_AUTHORIZED.**
