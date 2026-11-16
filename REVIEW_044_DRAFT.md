@@ -1811,3 +1811,55 @@ autorisatie of PALACO ONE-sessie.
 
 **DRAFT / NOT EXECUTED / NOT_VERIFIED / NOT_READY /
 HOLD / DENY / NOT_AUTHORIZED.**
+
+### PP-RECOVERY-002 — Release Readiness Cockpit (offline, geen vrijgave)
+
+`review_044_release_readiness_cockpit.py` bevat
+`prepare_release_readiness_cockpit`. De pure functie
+controleert zeventien lokale byte-inputs: de vijftien eerdere
+originele contracten, het Release Integrity Manifest en de
+Release Evidence Matrix. Zij herberekent de matrix vanuit
+de zestien voorafgaande originele bytebestanden en vereist een
+**type-exacte** overeenkomst, inclusief de `HOLD / DENY`
+veiligheidsgrenzen. Inconsistente bronnen worden afgewezen met
+`PP_RECOVERY_002_READINESS_COCKPIT_INVALID`.
+Dit is een **interne consistentiecontrole**, geen onafhankelijke
+bewijsverificatie of extern afgegeven releasebesluit.
+
+De output `palaco.pp.recovery-002-release-readiness-cockpit.v0`
+omvat de originele byte-SHA-256 van de matrix en de daarin
+gerefereerde release-integriteitsmanifesthash, een compacte
+weergave van **15 bronartefacten**, **6 geblokkeerde releasepoorten**,
+**18 ontbrekende bewijsstukken**, **9 open blockers**,
+**5 geblokkeerde herstelbeslispoorten** en **0 vrijgegeven poorten**.
+Per releasepoort zijn de vereiste externe reviewerrol en
+drie ontbrekende bewijs-ID's opgenomen. Daarnaast bevat het
+rapport vijf niet-uitgevoerde handoffstappen. Alle statussen
+blijven `NOT_STARTED`, `NOT_ESTABLISHED`,
+`NOT_PERFORMED`, `BLOCKED`, `NOT_VERIFIED`,
+`NOT_READY`, `HOLD` en `DENY`.
+`interactiveApproval=PROHIBITED`,
+`palacoOneHandoff=BLOCKED` en
+`palacoOneSession=NOT_CREATED` zijn verplicht.
+
+De opt-in `review_044_release_readiness_cockpit_cli.py`
+opent zonder `--run` geen bestanden. Met `--export`
+schrijft hij uitsluitend een nieuw JSON-rapport via `xb`.
+Voor een latere handmatige eigenaartestsessie:
+
+```powershell
+python .\review_044_release_readiness_cockpit_cli.py --run --dossier "PP_RECOVERY_DECISION_HOLD.json" --queue "PP_REVIEW_QUEUE_001.json" --intake "PP_REVIEW_INTAKE_001.json" --plan "PP_VERIFICATION_PLAN_HOLD.json" --observations "PP_OBSERVATION_001.json" --manifest "PP_HUMAN_REVIEW_HANDOFF_HOLD.json" --protocol "PP_REVIEW_PROTOCOL_001.json" --contract "PP_REVIEWER_AUTH_REQUIREMENTS_HOLD.json" --blueprint "PP_REVIEWER_SERVICE_BLUEPRINT_HOLD.json" --interfaces "PP_REVIEWER_INTERFACE_CONTRACT_HOLD.json" --transitions "PP_TRUST_TRANSITIONS_HOLD.json" --revocation "PP_REVOCATION_RECOVERY_HOLD.json" --assurance "PP_SECURITY_ASSURANCE_HOLD.json" --registry "PP_CONTRACT_COMPATIBILITY_HOLD.json" --impact "PP_CHANGE_IMPACT_HOLD.json" --integrity "PP_RELEASE_INTEGRITY_HOLD.json" --matrix "PP_RELEASE_EVIDENCE_MATRIX_HOLD.json" --export "PP_RELEASE_READINESS_COCKPIT_HOLD.json"
+```
+
+Het alleen-lezen backofficepaneel
+**PP-RECOVERY-002 / Release Readiness Cockpit — alleen lezen**
+toont een bestaand lokaal rapport van maximaal 32 KiB en de
+vaste, niet-vrijgevende status. Browserimport verifieert
+geen externe ondertekening, revieweridentiteit, originele
+zeventien bronbestanden of releasebewijs. De statische
+viewer is opgenomen in de beperkte lokale server-allowlist;
+er zijn geen nieuwe uitvoerende HTTP-endpoints toegevoegd.
+
+**DRAFT / NOT EXECUTED / NOT_VERIFIED / NOT_READY /
+HOLD / DENY / NOT_AUTHORIZED.** Geen tests, merge,
+uitrol, autorisatie of PALACO ONE-sessie uitgevoerd.
