@@ -35,6 +35,7 @@
   <script src="/review044-release-evidence-matrix.js" defer></script>
   <script src="/review044-release-readiness-cockpit.js" defer></script>
   <script src="/review044-release-execution-plan.js" defer></script>
+  <script src="/review044-release-observation-register.js" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -722,6 +723,22 @@
               <tbody id="admin-execution-plan-rows"></tbody>
             </table></div>
             <p class="auth-note">De browser valideert slechts de ongetekende JSON-structuur, niet de achttien oorspronkelijke bronbestanden of externe handtekeningen. Alle checks NOT_STARTED / NOT_PERFORMED. Geen run, registratie van bewezen bevoegdheden, vrijgave, PALACO ONE-sessie, uitgifte of deploy. NOT_READY / HOLD / DENY / NOT_AUTHORIZED.</p>
+          </section>
+          <section class="admin-bundle-panel" aria-labelledby="admin-release-observation-title">
+            <h3 id="admin-release-observation-title">PP-RECOVERY-002 / Release Observation Register — onbevestigde lokale waarnemingen</h3>
+            <p class="auth-note">Append-only observaties kunnen later door de eigenaar worden vastgelegd bij een van de achttien verificatiechecks. Dit scherm kan uitsluitend een bestaande lokale JSON-snapshot tonen. Een SHA-256-hashketen is geen ondertekening of extern verificatiebewijs.</p>
+            <div class="admin-review-grid"><div>
+              <label for="admin-release-observation-file">Lokaal release-observatieregister (.json, maximaal 128 KiB)</label>
+              <input id="admin-release-observation-file" type="file" accept=".json,application/json">
+            </div></div>
+            <button id="admin-release-observation-load" type="button" class="secondary">Toon onbevestigde observaties</button>
+            <p id="admin-release-observation-status" class="admin-review-result" role="status" aria-live="polite">Geen lokaal release-observatieregister geladen. HOLD / DENY.</p>
+            <h4>Append-only claims — nooit automatisch PASS</h4>
+            <div class="admin-table-wrap admin-registry-rows"><table aria-label="Onbevestigde PP release-observaties">
+              <thead><tr><th>Volgorde</th><th>Check-ID</th><th>Waarneming</th><th>Opgegeven rol</th><th>Bewijshash</th><th>Status</th></tr></thead>
+              <tbody id="admin-release-observation-rows"></tbody>
+            </table></div>
+            <p class="auth-note">De browser verifieert geen originele bronbestanden, digestberekening, hashketen, handtekening of reviewerbevoegdheid. Een toekomstig nieuw rapport vereist de opt-in offline CLI; geen opslag of goedkeuring via deze viewer. NOT_VERIFIED / NOT_READY / HOLD / DENY / NOT_AUTHORIZED.</p>
           </section>
           <button id="admin-review044-registry-export" type="button" class="secondary" disabled>Download nieuw registersnapshot (.json)</button>
           <p class="auth-note">Controleer vóór gebruik altijd het originele dossier met de striktere Python-module. Deze browserregistratie is indicatief en bevat geen tijds- of identiteitsbewijs. Geen serveropslag of autorisatie.</p>
