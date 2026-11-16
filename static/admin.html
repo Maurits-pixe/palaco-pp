@@ -45,6 +45,7 @@
   <script src="/review044-trust-change-review-dossier.js" defer></script>
   <script src="/review044-trust-change-decision-protocol.js" defer></script>
   <script src="/review044-trust-decision-audit-contract.js" defer></script>
+  <script src="/review044-audit-evidence-readiness-matrix.js" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -899,6 +900,24 @@
             <h4>Acht reconstructiestappen — BLOCKED</h4>
             <ol id="admin-trust-audit-steps"></ol>
             <p class="auth-note">Deze browser verifieert alleen het vaste JSON-schema en de weigeringstoestand, niet de originele bewijsbytes, externe logsignatures, timestamp, revieweridentiteit of hashketen. Auditlog NOT_CONFIGURED, signedAuditReceipt NOT_AVAILABLE. NOT_VERIFIED / NOT_READY / HOLD / DENY / NOT_AUTHORIZED.</p>
+          </section>
+          <section class="admin-bundle-panel" aria-labelledby="admin-audit-matrix-title">
+            <h3 id="admin-audit-matrix-title">PP-RECOVERY-002 / Audit Evidence Readiness Matrix — 0 van 8 geverifieerd</h3>
+            <p class="auth-note">Per auditvereiste toont deze ongetekende offline matrix welk extern bewijs ontbreekt, welke onafhankelijke rol nodig is en welke verificatiestap nog uitgevoerd moet worden. De matrix accepteert geen bewijzen en kan geen beleid of identiteit autoriseren.</p>
+            <div class="admin-review-grid"><div>
+              <label for="admin-audit-matrix-file">Lokale audit readiness matrix (.json, maximaal 64 KiB)</label>
+              <input id="admin-audit-matrix-file" type="file" accept=".json,application/json">
+            </div></div>
+            <button id="admin-audit-matrix-load" type="button" class="secondary">Toon acht ontbrekende auditbewijzen</button>
+            <p id="admin-audit-matrix-status" class="admin-review-result" role="status" aria-live="polite">Geen Audit Evidence Readiness Matrix geladen. HOLD / DENY.</p>
+            <h4>Acht auditrijen — alle BLOCKED / DENY</h4>
+            <div class="admin-table-wrap admin-registry-rows"><table aria-label="Auditbewijs-gereedheidsmatrix">
+              <thead><tr><th>ID</th><th>Bewijsvereiste</th><th>Onafhankelijke rol</th><th>Ontbrekende voorwaarde</th><th>Poort</th></tr></thead>
+              <tbody id="admin-audit-matrix-rows"></tbody>
+            </table></div>
+            <h4>Toekomstig extern reviewpad — zeven stappen NOT_STARTED</h4>
+            <ol id="admin-audit-matrix-steps"></ol>
+            <p class="auth-note">De browser controleert uitsluitend de ongetekende JSON-structuur en vaste DENY-velden, niet de originele bewijsbytes, auditlog, handtekeningen, timestamps of reviewers. Extern verificatietotaal: 0/8. Alle poorten BLOCKED; NOT_VERIFIED / NOT_READY / HOLD / DENY / NOT_AUTHORIZED.</p>
           </section>
           <button id="admin-review044-registry-export" type="button" class="secondary" disabled>Download nieuw registersnapshot (.json)</button>
           <p class="auth-note">Controleer vóór gebruik altijd het originele dossier met de striktere Python-module. Deze browserregistratie is indicatief en bevat geen tijds- of identiteitsbewijs. Geen serveropslag of autorisatie.</p>
