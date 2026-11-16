@@ -3304,3 +3304,117 @@ disputenintake, nieuwe API of echte bewijsmutatie.
 NOT_READY / HOLD / DENY / NOT_AUTHORIZED.**
 Geen tests, merge, deployment, bewijsontvangst,
 conflictbeslechting, autorisatie of PALACO ONE-sessie uitgevoerd.
+
+### PP-RECOVERY-002 — Conflict Resolution Evidence Dossier (0 waargenomen conflicten)
+
+De module `review_044_conflict_resolution_evidence_dossier.py`
+bevat `prepare_conflict_resolution_evidence_dossier`.
+Zij reconstrueert de oorspronkelijke achttien bronbyteartefacten
+en de zestien aanvullende contracten: Execution Plan,
+Observation Register, Evidence Intake, Review Handoff,
+Independent Receipt Protocol, Verifier Blueprint,
+Trust Policy, Change Control, Review Dossier,
+Decision Protocol, Audit Contract, Readiness Matrix,
+Collection Plan, Custody Contract, Transfer Protocol
+en Transfer Receipt Reconciliation. Het aangeleverde
+Receipt Conflict Resolution Protocol moet type-exact
+overeenkomen met het opnieuw uit deze byteketen
+gereconstrueerde protocol (maximaal 64 KiB).
+Afwijkingen en ongeoorloofde goedkeuringsclaims worden
+geweigerd met `PP_RECOVERY_002_CONFLICT_EVIDENCE_DOSSIER_INVALID`.
+Een lokale contractvergelijking is geen onafhankelijke
+bewijsverificatie.
+
+Het schema
+`palaco.pp.recovery-002-conflict-resolution-evidence-dossier.v0`
+bindt via SHA-256 aan exacte conflictprotocol-, reconciliation-
+en transferprotocolbytes. Acht hypothetische case-IDs
+`CR-E01` tot en met `CR-E08` zijn elk gekoppeld aan
+een mogelijke conflictklasse en een specifieke
+ontbrekende externe bewijssoort: originele getekende
+verzendreceipt, getekende ontvangersbevestiging,
+canonieke envelope- en bewijsbytehashes, identiteit-
+en scopeattestaties, signed nonce/replay/tijd-bewijs,
+key-epoch/revocationattestatie, extern append-only
+auditbewijs en afzonderlijk getekend menselijk besluit.
+
+**Geen van de acht conflicten is werkelijk waargenomen of
+extern aangemeld.** De klasse is altijd
+`POTENTIAL_CONFLICT_NOT_OBSERVED`. Per case zijn
+`originalEvidence=NOT_RECEIVED`,
+`sourceAuthenticity=NOT_VERIFIED`,
+`independentReviewerAuthority=NOT_ESTABLISHED`,
+`externalAuditProof=NOT_AVAILABLE`,
+`review=NOT_STARTED`,
+`decision=DENY`, met slechts
+`PREPARE_REQUEST_FOR_EXTERNAL_REVIEW_ONLY` als
+toegestane voorbereidingsactie.
+
+Acht checkpoints vereisen controle van oorspronkelijke
+byteketens, signing keys, revieweridentiteit,
+replay/nonce/tijd, auditlogs, bevoegd menselijk
+conflictbesluit en aparte releaseauthorisatie. De
+vier noodzakelijke reviewerrollen hebben geen
+geauthenticeerde identiteit of bevoegd scopebewijs.
+De acht onafhankelijke reviewstappen blijven
+`NOT_STARTED / BLOCKED` en zes
+niet-omzeilbare regels behouden `DENY_ONLY`.
+Geen lokale rolclaim is een extern attest.
+
+Vaste top-level velden:
+`potentialConflictCount=8`,
+`observedConflictCount=0`,
+`externalEvidenceReceivedCount=0`,
+`independentlyReviewedCount=0`,
+`externalRequestDelivery=NOT_SENT`,
+`evidenceIntake=NOT_IMPLEMENTED`,
+`conflictAdjudication=NOT_PERFORMED`,
+`independentConflictDecision=NOT_AVAILABLE`,
+`trustedAuditService=NOT_CONFIGURED`,
+`independentVerification=NOT_VERIFIED`,
+`humanDecision=NOT_COMPLETED`,
+`evidenceAcceptance=PROHIBITED`,
+`evidenceTransfer=NOT_INITIATED`,
+`evidenceStorage=NONE`,
+`trustedIssuerCount=0`, `allowedAlgorithms=[]`,
+`releaseReadiness=NOT_READY`,
+`palacoOneHandoff=BLOCKED`,
+`palacoOneSession=NOT_CREATED`,
+`authorization=HOLD`, `accessDecision=DENY`
+en `issuance=NOT_AUTHORIZED`.
+
+De opt-in CLI
+`review_044_conflict_resolution_evidence_dossier_cli.py`
+leest zonder `--run` geen bronnen. Een latere
+handmatige export verlangt de achttien oorspronkelijke
+bronargumenten, `--execution-plan`,
+`--observation-register`, `--evidence-intake`,
+`--review-handoff`, `--receipt-protocol`,
+`--verifier-blueprint`, `--trust-policy`,
+`--change-control`, `--review-dossier`,
+`--decision-protocol`, `--audit-contract`,
+`--readiness-matrix`, `--collection-plan`,
+`--custody-contract`, `--transfer-protocol`,
+`--reconciliation`, `--conflict-protocol`
+en `--export`. Met expliciete `--run` wordt
+uitsluitend een **nieuw ongetekend JSON-bestand**
+via create-only `xb` aangemaakt. Geen echte
+conflicten of bewijzen worden geüpload of verwerkt.
+
+Het alleen-lezen backofficepaneel
+**PP-RECOVERY-002 / Conflict Resolution Evidence Dossier —
+0 waargenomen conflicten** kan lokaal JSON tot 64 KiB
+indicatief tonen: acht hypothetische conflictvereisten en
+acht geblokkeerde checkpoints. De browser controleert
+uitsluitend de JSON-vorm en vaste DENY-waarden, niet
+de originele hashketen, externe digitale handtekeningen,
+reviewerbevoegdheden of auditankers.
+De statische JavaScriptviewer is aan de bestaande
+server-allowlist toegevoegd; geen nieuwe uitvoerende
+endpoint of mutatie is gemaakt.
+
+**DRAFT / NOT_SENT / NOT_EXECUTED / NOT_VERIFIED /
+NOT_READY / HOLD / DENY / NOT_AUTHORIZED.**
+Geen tests, merge, release, deployment,
+bewijsoverdracht, conflictbeslechting, ondertekening,
+autorisatie of PALACO ONE-sessie uitgevoerd.
