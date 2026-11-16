@@ -39,6 +39,7 @@
   <script src="/review044-release-evidence-intake.js" defer></script>
   <script src="/review044-release-evidence-review-handoff.js" defer></script>
   <script src="/review044-independent-receipt-protocol.js" defer></script>
+  <script src="/review044-independent-receipt-verifier-blueprint.js" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -791,6 +792,21 @@
             <h4>Acht externe verificatievoorwaarden — allemaal NOT_PERFORMED</h4>
             <ol id="admin-independent-receipt-steps"></ol>
             <p class="auth-note">De browser controleert slechts een ongetekende JSON-structuur. Geen oorspronkelijke bronbytes, externe handtekeningen, certificaten, nonce, intrekkingen of auditanker worden geverifieerd. Delivery NOT_SENT; signedReceipt NOT_AVAILABLE; reviewerAuthority NOT_ESTABLISHED. NOT_VERIFIED / NOT_READY / HOLD / DENY / NOT_AUTHORIZED.</p>
+          </section>
+          <section class="admin-bundle-panel" aria-labelledby="admin-receipt-verifier-title">
+            <h3 id="admin-receipt-verifier-title">PP-RECOVERY-002 / Independent Receipt Verification Blueprint — ontwerp, geen verifier</h3>
+            <p class="auth-note">Niet-uitvoerend architectuurcontract voor negen verificatiecomponenten, zeven eisen voor sleutelrotatie en intrekking, zes voor nonce/replay en zes voor onafhankelijke audit. Geen vertrouwde sleutel of externe dienst is aangesloten.</p>
+            <div class="admin-review-grid"><div>
+              <label for="admin-receipt-verifier-file">Offline verifier blueprint (.json, maximaal 64 KiB)</label>
+              <input id="admin-receipt-verifier-file" type="file" accept=".json,application/json">
+            </div></div>
+            <button id="admin-receipt-verifier-load" type="button" class="secondary">Toon geblokkeerd verifierontwerp</button>
+            <p id="admin-receipt-verifier-status" class="admin-review-result" role="status" aria-live="polite">Geen Receipt Verifier Blueprint geladen. HOLD / DENY.</p>
+            <h4>Negen verificatiecomponenten — NOT_IMPLEMENTED</h4>
+            <ol id="admin-receipt-verifier-components"></ol>
+            <h4>Negentien vereiste sleutel-, replay- en auditcontroles — NOT_CONFIGURED</h4>
+            <ul id="admin-receipt-verifier-controls"></ul>
+            <p class="auth-note">De browser presenteert alleen een lokaal ongetekend JSON-contract. Geen cryptografische handtekening, externe sleutelregistratie, trusted clock, atomische nonce-ledger, auditanker of menselijke reviewerbevoegdheid wordt gevalideerd. Alle trust boundaries DENY; onafhankelijke verificatie NOT_VERIFIED; release NOT_READY; HOLD / DENY / NOT_AUTHORIZED.</p>
           </section>
           <button id="admin-review044-registry-export" type="button" class="secondary" disabled>Download nieuw registersnapshot (.json)</button>
           <p class="auth-note">Controleer vóór gebruik altijd het originele dossier met de striktere Python-module. Deze browserregistratie is indicatief en bevat geen tijds- of identiteitsbewijs. Geen serveropslag of autorisatie.</p>
