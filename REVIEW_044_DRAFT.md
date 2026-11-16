@@ -2760,3 +2760,105 @@ Er zijn geen nieuwe uitvoerende API-routes toegevoegd.
 HOLD / DENY / NOT_AUTHORIZED.** Geen tests, merge,
 deploy, sleutelimport, bewijsattestatie, autorisatie
 of PALACO ONE-sessie uitgevoerd.
+
+### PP-RECOVERY-002 — Audit Evidence Collection Plan (0/8 verzameld; geen verzending)
+
+De pure module `review_044_audit_evidence_collection_plan.py`
+biedt `prepare_audit_evidence_collection_plan`. Voor een
+toekomstige expliciete offline eigenaarssessie reconstrueert
+zij de eerdere bronketen uit de achttien originele
+byteartefacten en elf aanvullende contractbestanden:
+Execution Plan, Observation Register, Evidence Intake,
+Review Handoff, Independent Receipt Protocol, Verifier
+Blueprint, Trust Policy, Change Control, Review Dossier,
+Decision Protocol en Audit Contract. De meegeleverde
+Audit Evidence Readiness Matrix wordt uit deze bestanden
+herbouwd en vervolgens **type-exact** vergeleken met de
+werkelijke matrixbytes (maximaal 64 KiB). Bij mismatch
+wordt `PP_RECOVERY_002_AUDIT_EVIDENCE_COLLECTION_PLAN_INVALID`
+gemeld. De vergelijking geeft uitsluitend interne
+consistentie, geen extern vertrouwen of authentieke bron.
+
+Het schema
+`palaco.pp.recovery-002-audit-evidence-collection-plan.v0`
+is via SHA-256 aan de **exacte** readinessmatrix en het
+Audit Contract gebonden. De acht vaste rijen
+`AUD-E01` tot en met `AUD-E08` specificeren per
+ontbrekend auditbewijs een externe onafhankelijke
+custodianrol, de vereiste bewijsvoorwaarde, de
+bijbehorende verificatiestap, een gerichte
+toekomstige aanvraag en de enige toegestane actie:
+`PREPARE_EXTERNAL_REQUEST_ONLY`. Alle rijen behouden
+`evidenceBytes=NOT_COLLECTED`,
+`externalEvidenceReceipt=NOT_AVAILABLE`,
+`reviewerAuthentication=NOT_ESTABLISHED`,
+`evidenceProvenance=NOT_VERIFIED`,
+`requestState=NOT_SENT`, `gate=BLOCKED`
+en `decision=DENY`.
+
+Acht bewaarregels scheiden originele bewijsbytes van de
+lokale snapshot en verbieden private keys of secrets in
+exporten. Ze vereisen exacte hashbinding, cryptografisch
+ondertekend extern bewijs, een onafhankelijk geauthenticeerde
+reviewer met passende en niet-ingetrokken rol, trusted time,
+single-use nonce en replaycontrole, een controleerbaar extern
+auditanker en een afzonderlijke menselijke en
+deploymentautorisatie. **Geen van deze controles is in deze
+module geïmplementeerd of geverifieerd**.
+De bestaande zeven externe reviewstappen blijven
+`NOT_STARTED`.
+
+De top-level tellers blijven permanent
+`requiredCollectionCount=8`,
+`evidenceCollectedCount=0`,
+`externallyVerifiedEvidenceCount=0`,
+`blockedCollectionCount=8`.
+Verder gelden
+`collectionProvenance=UNSIGNED_LOCAL_REQUEST_PLAN_ONLY`,
+`evidenceCollection=NOT_EXECUTED`,
+`externalRequestDelivery=NOT_SENT`,
+`evidenceAcceptance=PROHIBITED`,
+`trustedAuditService=NOT_CONFIGURED`,
+`reviewerAuthority=NOT_ESTABLISHED`,
+`independentVerification=NOT_VERIFIED`,
+`humanDecision=NOT_COMPLETED`,
+`deploymentDecision=NOT_AUTHORIZED`,
+`changeApplied=false`, `trustedIssuerCount=0`,
+`allowedAlgorithms=[]`, `keyMaterial=NOT_PRESENT`,
+`releaseReadiness=NOT_READY`,
+`palacoOneHandoff=BLOCKED`,
+`palacoOneSession=NOT_CREATED`,
+`authorization=HOLD`, `accessDecision=DENY`
+en `issuance=NOT_AUTHORIZED`.
+
+De opt-in `review_044_audit_evidence_collection_plan_cli.py`
+opent zonder expliciet `--run` geen bestanden.
+Voor latere handmatige export zijn de achttien originele
+bronargumenten plus `--execution-plan`,
+`--observation-register`, `--evidence-intake`,
+`--review-handoff`, `--receipt-protocol`,
+`--verifier-blueprint`, `--trust-policy`,
+`--change-control`, `--review-dossier`,
+`--decision-protocol`, `--audit-contract`,
+`--readiness-matrix` en `--export` vereist.
+Een expliciete uitvoering creëert alleen een
+**nieuw ongetekend** JSON-bestand via `xb`.
+Er wordt geen bewijs ingezameld, request verzonden,
+cryptografische controle gestart of bevoegdheid toegekend.
+
+Het alleen-lezen backofficepaneel
+**PP-RECOVERY-002 / Audit Evidence Collection Plan —
+0 van 8 verzameld** toont maximaal 64 KiB lokaal JSON
+met acht voorbereidende aanvraagregels en acht
+bewaarvoorwaarden. De viewer controleert slechts
+de vaste JSON-structuur en alle DENY-velden, **niet**
+de originele bronbyteketen, externe handtekeningen,
+identiteit, auditbewijs of een trusted clock.
+De statische script-URL is aan de bestaande
+lokale server-allowlist toegevoegd;
+geen nieuwe uitvoerende API-route of mutatie.
+
+**DRAFT / NOT_SENT / NOT_EXECUTED / NOT_VERIFIED /
+NOT_READY / HOLD / DENY / NOT_AUTHORIZED.**
+Geen tests, merge, release, deploy, sleutelimport,
+bewijsacceptatie of PALACO ONE-sessie uitgevoerd.
