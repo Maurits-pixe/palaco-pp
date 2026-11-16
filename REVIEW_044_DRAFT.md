@@ -1863,3 +1863,58 @@ er zijn geen nieuwe uitvoerende HTTP-endpoints toegevoegd.
 **DRAFT / NOT EXECUTED / NOT_VERIFIED / NOT_READY /
 HOLD / DENY / NOT_AUTHORIZED.** Geen tests, merge,
 uitrol, autorisatie of PALACO ONE-sessie uitgevoerd.
+
+### PP-RECOVERY-002 — Verification Execution Plan (handmatig, NIET uitgevoerd)
+
+De nieuwe pure module `review_044_release_execution_plan.py`
+bevat `prepare_release_verification_execution_plan`. Zij ontvangt
+**achttien oorspronkelijke bytebestanden**: de vijftien contracten,
+het Release Integrity Manifest, de Release Evidence Matrix en de
+Release Readiness Cockpit. De cockpit wordt vanuit de eerdere
+zeventien bronnen opnieuw opgebouwd en streng type-exact
+vergeleken met het achttiende bestand. Afwijkingen en
+ongeoorloofde vrijgaveclaims leveren
+`PP_RECOVERY_002_RELEASE_EXECUTION_PLAN_INVALID` op.
+
+Het plan bevat **achttien unieke check-ID's**,
+`RG01-E01` tot `RG06-E03`, drie per releasepoort.
+Per check zijn de vereist onafhankelijke reviewerrol,
+bewijs-ID en latere procedurestap vastgelegd. Alle velden
+`execution=NOT_STARTED`,
+`evidenceCapture=NOT_PROVIDED`,
+`independentVerification=NOT_PERFORMED`,
+`reviewerAuthentication=NOT_ESTABLISHED`,
+`reviewerAuthority=NOT_ESTABLISHED`,
+`gate=BLOCKED`, `decision=DENY` blijven onveranderd.
+De zeven procedurestappen beschrijven bronvingerafdrukken
+registreren, onafhankelijke bronattestatie opvragen,
+revieweridentiteit extern bevestigen, rolscope en intrekking
+controleren, externe bewijsverificatie, afzonderlijke
+lokale waarnemingen en menselijke review buiten dit systeem.
+
+Een later observatiecontract is alleen **gespecificeerd**:
+`recordType=SELF_REPORTED_LOCAL_OBSERVATION_ONLY`,
+`externalSignature=NOT_VERIFIED`, `roleClaims=UNAUTHENTICATED`,
+`allowedEffect=NONE`. Deze stap implementeert nog geen
+bewijssnapshot of registratie. Er zijn **geen tests uitgevoerd**.
+
+`review_044_release_execution_plan_cli.py` opent
+geen bronbestanden zonder expliciet `--run` en schrijft
+uitsluitend naar een nieuw bestand met `--export` via
+create-only `xb`. Voor een latere eigenaarssessie:
+
+```powershell
+python .\review_044_release_execution_plan_cli.py --run --dossier "PP_RECOVERY_DECISION_HOLD.json" --queue "PP_REVIEW_QUEUE_001.json" --intake "PP_REVIEW_INTAKE_001.json" --plan "PP_VERIFICATION_PLAN_HOLD.json" --observations "PP_OBSERVATION_001.json" --manifest "PP_HUMAN_REVIEW_HANDOFF_HOLD.json" --protocol "PP_REVIEW_PROTOCOL_001.json" --contract "PP_REVIEWER_AUTH_REQUIREMENTS_HOLD.json" --blueprint "PP_REVIEWER_SERVICE_BLUEPRINT_HOLD.json" --interfaces "PP_REVIEWER_INTERFACE_CONTRACT_HOLD.json" --transitions "PP_TRUST_TRANSITIONS_HOLD.json" --revocation "PP_REVOCATION_RECOVERY_HOLD.json" --assurance "PP_SECURITY_ASSURANCE_HOLD.json" --registry "PP_CONTRACT_COMPATIBILITY_HOLD.json" --impact "PP_CHANGE_IMPACT_HOLD.json" --integrity "PP_RELEASE_INTEGRITY_HOLD.json" --matrix "PP_RELEASE_EVIDENCE_MATRIX_HOLD.json" --cockpit "PP_RELEASE_READINESS_COCKPIT_HOLD.json" --export "PP_VERIFICATION_EXECUTION_PLAN_HOLD.json"
+```
+
+Het nieuwe paneel **PP-RECOVERY-002 / Verification Execution
+Plan — later handmatig uitvoeren** is uitsluitend leesbaar en
+kan een lokaal JSON-plan van maximaal 32 KiB indicatief
+presenteren. Browserimport controleert herkenbare vaste status-
+en check-ID's maar herberekent niet de achttien originele
+bronbestanden. De statische JavaScriptviewer is toegevoegd
+aan de expliciete lokale server-allowlist; er zijn geen
+nieuwe uitvoerende API-routes, authenticaties of reviews gebouwd.
+
+**DRAFT / NOT_EXECUTED / NOT_VERIFIED / NOT_READY /
+HOLD / DENY / NOT_AUTHORIZED.**
