@@ -46,6 +46,7 @@
   <script src="/review044-trust-change-decision-protocol.js" defer></script>
   <script src="/review044-trust-decision-audit-contract.js" defer></script>
   <script src="/review044-audit-evidence-readiness-matrix.js" defer></script>
+  <script src="/review044-audit-evidence-collection-plan.js" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -918,6 +919,24 @@
             <h4>Toekomstig extern reviewpad — zeven stappen NOT_STARTED</h4>
             <ol id="admin-audit-matrix-steps"></ol>
             <p class="auth-note">De browser controleert uitsluitend de ongetekende JSON-structuur en vaste DENY-velden, niet de originele bewijsbytes, auditlog, handtekeningen, timestamps of reviewers. Extern verificatietotaal: 0/8. Alle poorten BLOCKED; NOT_VERIFIED / NOT_READY / HOLD / DENY / NOT_AUTHORIZED.</p>
+          </section>
+          <section class="admin-bundle-panel" aria-labelledby="admin-audit-collection-title">
+            <h3 id="admin-audit-collection-title">PP-RECOVERY-002 / Audit Evidence Collection Plan — 0 van 8 verzameld</h3>
+            <p class="auth-note">Ongetekend offline verzoekplan voor acht ontbrekende auditbewijzen. Per rij: het bewijs-ID, de onafhankelijke bewaarder of reviewer, de voorbereide externe aanvraag en de blokkade. Geen bewijsupload, ontvangst, verificatie of goedkeuring.</p>
+            <div class="admin-review-grid"><div>
+              <label for="admin-audit-collection-file">Lokaal audit-verzamelplan (.json, maximaal 64 KiB)</label>
+              <input id="admin-audit-collection-file" type="file" accept=".json,application/json">
+            </div></div>
+            <button id="admin-audit-collection-load" type="button" class="secondary">Toon acht voorbereidende auditverzoeken</button>
+            <p id="admin-audit-collection-status" class="admin-review-result" role="status" aria-live="polite">Geen Audit Evidence Collection Plan geladen. HOLD / DENY.</p>
+            <h4>Acht bewijsaanvragen — NOT_SENT / BLOCKED</h4>
+            <div class="admin-table-wrap admin-registry-rows"><table aria-label="Auditbewijs verzamelplan">
+              <thead><tr><th>ID</th><th>Bewijsvereiste</th><th>Onafhankelijke rol</th><th>Externe aanvraag</th><th>Status</th></tr></thead>
+              <tbody id="admin-audit-collection-rows"></tbody>
+            </table></div>
+            <h4>Acht bewaar- en verificatievoorwaarden — NOT_ESTABLISHED</h4>
+            <ol id="admin-audit-collection-rules"></ol>
+            <p class="auth-note">De browser toont alleen een ongetekend JSON-plan; originele bronbytes, reviewers, handtekeningen, nonce, auditlogs en externe rollen worden niet gecontroleerd. 0/8 bewijsbestanden verzameld; 0/8 geverifieerd; geen aanvragen verstuurd. NOT_EXECUTED / NOT_VERIFIED / NOT_READY / HOLD / DENY / NOT_AUTHORIZED.</p>
           </section>
           <button id="admin-review044-registry-export" type="button" class="secondary" disabled>Download nieuw registersnapshot (.json)</button>
           <p class="auth-note">Controleer vóór gebruik altijd het originele dossier met de striktere Python-module. Deze browserregistratie is indicatief en bevat geen tijds- of identiteitsbewijs. Geen serveropslag of autorisatie.</p>
