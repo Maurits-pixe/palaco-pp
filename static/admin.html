@@ -44,6 +44,7 @@
   <script src="/review044-trust-policy-change-control.js" defer></script>
   <script src="/review044-trust-change-review-dossier.js" defer></script>
   <script src="/review044-trust-change-decision-protocol.js" defer></script>
+  <script src="/review044-trust-decision-audit-contract.js" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -880,6 +881,24 @@
             <h4>Acht niet-omzeilbare controles — NOT_SATISFIED</h4>
             <ul id="admin-trust-decision-guards"></ul>
             <p class="auth-note">Geen bewijsverificatie, vertrouwde identiteit, ondertekend besluit, automatische goedkeuring of sleutelpromotie. De browser presenteert alleen vaste JSON-structuur en verifieert geen externe handtekeningen of originele bronketen. NOT_VERIFIED / NOT_READY / HOLD / DENY / NOT_AUTHORIZED.</p>
+          </section>
+          <section class="admin-bundle-panel" aria-labelledby="admin-trust-audit-title">
+            <h3 id="admin-trust-audit-title">PP-RECOVERY-002 / Trust Decision Audit Contract — geen extern auditbewijs</h3>
+            <p class="auth-note">Ongetekend auditvereistencontract voor latere onafhankelijke reconstructie van een menselijk trustbeleidbesluit. Geen auditbewijs is ontvangen, geen reviewer geauthenticeerd en geen besluit of uitrol goedgekeurd.</p>
+            <div class="admin-review-grid"><div>
+              <label for="admin-trust-audit-file">Lokaal auditcontract (.json, maximaal 64 KiB)</label>
+              <input id="admin-trust-audit-file" type="file" accept=".json,application/json">
+            </div></div>
+            <button id="admin-trust-audit-load" type="button" class="secondary">Toon niet-vervulde auditvoorwaarden</button>
+            <p id="admin-trust-audit-status" class="admin-review-result" role="status" aria-live="polite">Geen Trust Decision Audit Contract geladen. HOLD / DENY.</p>
+            <h4>Acht onafhankelijke auditbewijsvereisten — NOT_PROVIDED</h4>
+            <div class="admin-table-wrap admin-registry-rows"><table aria-label="Auditbewijsvereisten voor trustbesluit">
+              <thead><tr><th>Nr.</th><th>Extern auditbewijs</th><th>Onafhankelijke rol</th><th>Status</th></tr></thead>
+              <tbody id="admin-trust-audit-evidence"></tbody>
+            </table></div>
+            <h4>Acht reconstructiestappen — BLOCKED</h4>
+            <ol id="admin-trust-audit-steps"></ol>
+            <p class="auth-note">Deze browser verifieert alleen het vaste JSON-schema en de weigeringstoestand, niet de originele bewijsbytes, externe logsignatures, timestamp, revieweridentiteit of hashketen. Auditlog NOT_CONFIGURED, signedAuditReceipt NOT_AVAILABLE. NOT_VERIFIED / NOT_READY / HOLD / DENY / NOT_AUTHORIZED.</p>
           </section>
           <button id="admin-review044-registry-export" type="button" class="secondary" disabled>Download nieuw registersnapshot (.json)</button>
           <p class="auth-note">Controleer vóór gebruik altijd het originele dossier met de striktere Python-module. Deze browserregistratie is indicatief en bevat geen tijds- of identiteitsbewijs. Geen serveropslag of autorisatie.</p>
