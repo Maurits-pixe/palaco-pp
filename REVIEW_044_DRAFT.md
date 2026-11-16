@@ -2576,3 +2576,91 @@ Er is geen uitvoerende API-route gecreëerd.
 NOT_VERIFIED / NOT_READY / HOLD / DENY / NOT_AUTHORIZED.**
 Geen tests, merge, release, deploy, trustpromotie,
 ondertekening of PALACO ONE-sessie uitgevoerd.
+
+### PP-RECOVERY-002 — Trust Decision Audit Contract (vereisten, geen audit)
+
+De pure module `review_044_trust_decision_audit_contract.py`
+bevat `prepare_trust_decision_audit_contract`. De bestaande
+volledige keten wordt opnieuw opgebouwd vanaf de achttien
+originele bytebronnen, Execution Plan, Observation Register,
+Evidence Intake, Review Handoff, Independent Receipt Protocol,
+Verifier Blueprint, Trust Policy, Change Control en Review Dossier.
+Het originele **Trust Change Decision Protocol** wordt uit
+deze inputs gereconstrueerd en vervolgens type-exact
+vergeleken met de aangeboden protocolbytes (maximaal 64 KiB).
+Bij mismatch geldt
+`PP_RECOVERY_002_TRUST_DECISION_AUDIT_CONTRACT_INVALID`.
+Het betreft uitsluitend **lokale contractconsistentie**;
+geen extern bewijsoordeel of cryptografische verificatie.
+
+Het contract
+`palaco.pp.recovery-002-trust-decision-audit-contract.v0`
+is exact via SHA-256 gebonden aan het Decision Protocol,
+Review Dossier, Change Control en Trust Policy.
+Het documenteert acht **nog ontbrekende** onafhankelijke
+auditbewijzen: exacte beslis- en wijzigingshashes; een getekend
+extern bewijsontvangstbewijs; revieweridentiteit, rol en
+intrekking; een canoniek getekend menselijk besluit; trusted
+time en single-use nonce-log; externe append-only
+inclusion/consistency proofs; sleutelrotatie-/revocationbewijs;
+en een afzonderlijk deployment-/rollbackbesluit.
+
+Acht reconstructiestappen zijn `NOT_PERFORMED / BLOCKED`.
+Drie scheidingen tussen lokaal claimniveau, onafhankelijke
+bewijscontrole, menselijke beslissing en uiteindelijke
+activering blijven zonder extern trustbewijs
+`crossing=PROHIBITED`. Acht mogelijke fouten (onder meer
+ontbrekende externe ontvangst, ongeldige handtekening,
+onbetrouwbare timestamp, replay, intrekking, auditlogfork,
+ontbrekende menselijke/deploymentbeslissing) blijven
+`decision=DENY`, `authorityEffect=NONE`.
+
+De altijd geldende output is
+`auditScope=FUTURE_EXTERNAL_AUDIT_REQUIREMENTS_NOT_EVIDENCE`,
+`signedAuditReceipt=NOT_AVAILABLE`,
+`externalAuditLog=NOT_CONFIGURED`,
+`trustedClock=NOT_CONFIGURED`,
+`auditVerification=NOT_PERFORMED`,
+`independentReviewerAuthority=NOT_ESTABLISHED`,
+`humanDecision=NOT_COMPLETED`,
+`deploymentDecision=NOT_AUTHORIZED`,
+`changeApplied=false`, `issuerPromotion=PROHIBITED`,
+`algorithmPromotion=PROHIBITED`,
+`trustedIssuerCount=0`, `allowedAlgorithms=[]`,
+`keyMaterial=NOT_PRESENT`,
+`independentVerification=NOT_VERIFIED`,
+`releaseReadiness=NOT_READY`,
+`palacoOneHandoff=BLOCKED`,
+`palacoOneSession=NOT_CREATED`,
+`authorization=HOLD`, `accessDecision=DENY`
+en `issuance=NOT_AUTHORIZED`. Geen lokaal rapport
+kan een audit- of vrijgavebesluit creëren.
+
+De opt-in CLI
+`review_044_trust_decision_audit_contract_cli.py`
+leest zonder `--run` geen bestanden. De latere handmatige
+uitvoer vereist alle achttien eerdere bronargumenten en
+`--execution-plan`, `--observation-register`,
+`--evidence-intake`, `--review-handoff`,
+`--receipt-protocol`, `--verifier-blueprint`,
+`--trust-policy`, `--change-control`,
+`--review-dossier`, `--decision-protocol` en
+`--export`. Een expliciete uitvoering schrijft
+uitsluitend een **nieuw** JSON-contract met create-only
+`xb`; er worden geen bestaande snapshots overschreven.
+
+Het backofficepaneel
+**PP-RECOVERY-002 / Trust Decision Audit Contract —
+geen extern auditbewijs** toont maximaal 64 KiB
+ongetekende JSON: acht ontbrekende bewijzen en acht
+geblokkeerde reconstructiestappen. Browserimport
+verifieert geen oorspronkelijke bronbyteketen, echte
+signatures, revieweridentiteit, auditlog of trusted clock.
+Het statische JavaScriptbestand is toegevoegd aan de
+expliciete server-allowlist. Geen nieuwe API of mutation.
+
+**DRAFT / NOT_SENT / NOT_APPLIED / NOT_EXECUTED /
+NOT_VERIFIED / NOT_READY / HOLD / DENY / NOT_AUTHORIZED.**
+Er zijn geen tests, merge, deployment, release,
+auditactie, cryptografische verificatie, autorisatie
+of PALACO ONE-sessie uitgevoerd.
