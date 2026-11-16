@@ -41,6 +41,7 @@
   <script src="/review044-independent-receipt-protocol.js" defer></script>
   <script src="/review044-independent-receipt-verifier-blueprint.js" defer></script>
   <script src="/review044-verifier-trust-policy.js" defer></script>
+  <script src="/review044-trust-policy-change-control.js" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -826,6 +827,24 @@
             <h4>Twaalf afwijzingscondities — altijd DENY</h4>
             <ul id="admin-trust-policy-denials"></ul>
             <p class="auth-note">Deze viewer verifieert geen echte issuer root, keyset, signature, revocationfeed, revieweridentiteit of trusted clock. Het ontvangt geen sleutels, accepteert geen issuer en schakelt niets vrij. NOT_VERIFIED / NOT_READY / HOLD / DENY / NOT_AUTHORIZED.</p>
+          </section>
+          <section class="admin-bundle-panel" aria-labelledby="admin-trust-change-title">
+            <h3 id="admin-trust-change-title">PP-RECOVERY-002 / Trust Policy Change Control — niet toegepast</h3>
+            <p class="auth-note">Hypothetische wijzigingsanalyse van het deny-all-vertrouwensbeleid. Alle vier beleidscategorieën moeten opnieuw worden beoordeeld. Er worden geen vertrouwde uitgevers, algoritmen, sleutels of productiebevoegdheden toegevoegd.</p>
+            <div class="admin-review-grid"><div>
+              <label for="admin-trust-change-file">Lokaal wijzigingsvoorstel (.json, maximaal 64 KiB)</label>
+              <input id="admin-trust-change-file" type="file" accept=".json,application/json">
+            </div></div>
+            <button id="admin-trust-change-load" type="button" class="secondary">Toon hypothetische beleidsimpact</button>
+            <p id="admin-trust-change-status" class="admin-review-result" role="status" aria-live="polite">Geen Trust Policy Change Control geladen. HOLD / DENY.</p>
+            <h4>Betrokken beleidsvereisten — herbeoordeling verplicht</h4>
+            <div class="admin-table-wrap admin-registry-rows"><table aria-label="Impact van hypothetische trustpolicywijziging">
+              <thead><tr><th>Nr.</th><th>Beleidsvereiste</th><th>Vereiste actie</th></tr></thead>
+              <tbody id="admin-trust-change-rows"></tbody>
+            </table></div>
+            <h4>Drie vereiste onafhankelijke bevoegdheden — niet vastgesteld</h4>
+            <ul id="admin-trust-change-reviewers"></ul>
+            <p class="auth-note">Negen releaseherbeoordelingen blijven BLOCKED en twaalf afwijzingsredenen DENY. De browser reconstrueert geen bronbestanden en voert geen echte review, sleutelrotatie, policy-update of uitrol uit. NOT_VERIFIED / NOT_READY / HOLD / DENY / NOT_AUTHORIZED.</p>
           </section>
           <button id="admin-review044-registry-export" type="button" class="secondary" disabled>Download nieuw registersnapshot (.json)</button>
           <p class="auth-note">Controleer vóór gebruik altijd het originele dossier met de striktere Python-module. Deze browserregistratie is indicatief en bevat geen tijds- of identiteitsbewijs. Geen serveropslag of autorisatie.</p>
