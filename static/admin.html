@@ -48,6 +48,7 @@
   <script src="/review044-audit-evidence-readiness-matrix.js" defer></script>
   <script src="/review044-audit-evidence-collection-plan.js" defer></script>
   <script src="/review044-audit-evidence-custody-contract.js" defer></script>
+  <script src="/review044-custody-transfer-verification-protocol.js" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -956,6 +957,24 @@
             <h4>Acht vereiste bewaarbeveiligingen — NOT_ESTABLISHED</h4>
             <ol id="admin-audit-custody-controls"></ol>
             <p class="auth-note">De browser valideert alleen ongetekende JSON-structuur en vaste DENY-statussen. Geen originele bewijsbytes, vertrouwensankers, bewaarderidentiteit, signatures, auditlog, toegangscontrole of externe overdracht worden geverifieerd. 0/8 ontvangen, 0/8 overgedragen, 0/8 geverifieerd. NOT_READY / HOLD / DENY / NOT_AUTHORIZED.</p>
+          </section>
+          <section class="admin-bundle-panel" aria-labelledby="admin-custody-transfer-title">
+            <h3 id="admin-custody-transfer-title">PP-RECOVERY-002 / Custody Transfer Verification Protocol — geen overdracht</h3>
+            <p class="auth-note">Een ongetekend eisencontract voor een toekomstige externe overdracht, met identificatie van verzender en ontvanger, exacte byte-integriteit, trusted nonce, intrekking, auditanker, getekende ontvangst en apart bevoegd besluit. Geen bewijs wordt ontvangen, verzonden of goedgekeurd.</p>
+            <div class="admin-review-grid"><div>
+              <label for="admin-custody-transfer-file">Offline overdrachtsprotocol (.json, maximaal 64 KiB)</label>
+              <input id="admin-custody-transfer-file" type="file" accept=".json,application/json">
+            </div></div>
+            <button id="admin-custody-transfer-load" type="button" class="secondary">Toon niet-uitgevoerde overdrachtsvoorwaarden</button>
+            <p id="admin-custody-transfer-status" class="admin-review-result" role="status" aria-live="polite">Geen Custody Transfer Verification Protocol geladen. HOLD / DENY.</p>
+            <h4>Acht bewijsposities — NOT_INITIATED / DENY</h4>
+            <div class="admin-table-wrap admin-registry-rows"><table aria-label="Niet-uitgevoerde custody transfer verificatie">
+              <thead><tr><th>ID</th><th>Bewijs</th><th>Onafhankelijke rol</th><th>Envelope</th><th>Overdracht</th><th>Besluit</th></tr></thead>
+              <tbody id="admin-custody-transfer-rows"></tbody>
+            </table></div>
+            <h4>Veertien ontbrekende ondertekende envelopevelden — MISSING</h4>
+            <ol id="admin-custody-transfer-fields"></ol>
+            <p class="auth-note">De browser valideert alleen de ongetekende JSON-structuur en DENY-waarden. Er zijn geen originele bytes, vertrouwde sleutels, handtekeningen, nonce-verificatie, reviewerrechten of auditontvangst verwerkt. Transfers 0/8; verifier NOT_CONFIGURED; HOLD / DENY / NOT_AUTHORIZED.</p>
           </section>
           <button id="admin-review044-registry-export" type="button" class="secondary" disabled>Download nieuw registersnapshot (.json)</button>
           <p class="auth-note">Controleer vóór gebruik altijd het originele dossier met de striktere Python-module. Deze browserregistratie is indicatief en bevat geen tijds- of identiteitsbewijs. Geen serveropslag of autorisatie.</p>
