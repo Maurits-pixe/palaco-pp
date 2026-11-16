@@ -2664,3 +2664,99 @@ NOT_VERIFIED / NOT_READY / HOLD / DENY / NOT_AUTHORIZED.**
 Er zijn geen tests, merge, deployment, release,
 auditactie, cryptografische verificatie, autorisatie
 of PALACO ONE-sessie uitgevoerd.
+
+### PP-RECOVERY-002 — Audit Evidence Readiness Matrix (0/8, DENY-only)
+
+De pure module `review_044_audit_evidence_readiness_matrix.py`
+introduceert `prepare_audit_evidence_readiness_matrix`.
+Zij reconstrueert vanuit de achttien originele bronbytes en
+tien eerdere aanvullende contractartefacten (Execution Plan,
+Observation Register, Evidence Intake, Review Handoff,
+Independent Receipt Protocol, Verifier Blueprint, Trust Policy,
+Change Control, Review Dossier en Decision Protocol) het
+Trust Decision Audit Contract. De aangeleverde originele
+auditcontractbytes (maximaal 64 KiB) moeten **type-exact**
+overeenkomen met het opnieuw berekende contract.
+Afwijkingen worden afgewezen met
+`PP_RECOVERY_002_AUDIT_EVIDENCE_READINESS_INVALID`.
+Een interne bytebinding is geen onafhankelijke externe
+attestatie.
+
+De readinessmatrix bevat acht onveranderlijk geblokkeerde
+rijen `AUD-E01` tot en met `AUD-E08`.
+Iedere rij bevat het exacte bewijs-ID, de vereiste onafhankelijke
+rol, de nog ontbrekende externe bewijsvoorwaarde, een
+gespecificeerde externe verificatiestap en de enige
+voorbereidende vervolghandeling
+`REQUEST_EVIDENCE_FOR_EXTERNAL_REVIEW_ONLY`.
+Alle rijstatussen zijn `evidenceStatus=NOT_PROVIDED`,
+`signerAuthentication=NOT_ESTABLISHED`,
+`independentVerification=NOT_PERFORMED`,
+`blocker=MISSING_EXTERNALLY_ATTESTED_EVIDENCE`,
+`gate=BLOCKED` en `decision=DENY`.
+
+De acht vereiste externe bewijzen betreffen:
+(1) oorspronkelijke beleid-/beslisbyteattestatie,
+(2) externe getekende ontvangst en issueridentiteit,
+(3) onafhankelijk revieweridentiteit-, scope- en revocationbewijs,
+(4) afzonderlijk ondertekend menselijk besluit,
+(5) betrouwbare nonce-ledger en tijdanker,
+(6) signed externe log inclusion/consistency-bewijzen,
+(7) key-epoch en intrekkingsgeschiedenis, en
+(8) onafhankelijk deployment-/rollbackbesluit.
+De module **verzamelt geen van deze bewijzen**.
+
+De acht reconstructiestappen blijven
+`NOT_PERFORMED / BLOCKED`.
+Zeven stappen voor een latere onafhankelijke reviewer zijn
+`NOT_STARTED`, en acht foutscenario's blijven
+`DENY / authorityEffect=NONE`.
+De top-level statussen blijven:
+`matrixProvenance=UNSIGNED_LOCAL_REQUIREMENTS_NOT_EVIDENCE`,
+`requiredEvidenceCount=8`,
+`externallyVerifiedEvidenceCount=0`,
+`blockedEvidenceCount=8`,
+`auditEvidenceAcceptance=PROHIBITED`,
+`trustedAuditService=NOT_CONFIGURED`,
+`reviewerAuthority=NOT_ESTABLISHED`,
+`humanDecision=NOT_COMPLETED`,
+`deploymentDecision=NOT_AUTHORIZED`,
+`changeApplied=false`,
+`trustedIssuerCount=0`, `allowedAlgorithms=[]`,
+`keyMaterial=NOT_PRESENT`,
+`independentVerification=NOT_VERIFIED`,
+`releaseReadiness=NOT_READY`,
+`palacoOneHandoff=BLOCKED`,
+`palacoOneSession=NOT_CREATED`,
+`authorization=HOLD`, `accessDecision=DENY`
+en `issuance=NOT_AUTHORIZED`.
+
+De opt-in CLI
+`review_044_audit_evidence_readiness_matrix_cli.py`
+opent zonder `--run` geen bestanden. Voor een toekomstige
+handmatige export zijn de achttien oorspronkelijke
+bronparameters plus `--execution-plan`,
+`--observation-register`, `--evidence-intake`,
+`--review-handoff`, `--receipt-protocol`,
+`--verifier-blueprint`, `--trust-policy`,
+`--change-control`, `--review-dossier`,
+`--decision-protocol`, `--audit-contract` en
+`--export` vereist. Een expliciete `--run` maakt
+uitsluitend een **nieuw** ongetekend lokaal JSON-rapport
+aan met create-only `xb`. Er wordt geen test, audit,
+reviewercontrole, autorisatie of uitrol uitgevoerd.
+
+Het backofficepaneel
+**PP-RECOVERY-002 / Audit Evidence Readiness Matrix —
+0 van 8 geverifieerd** leest maximaal 64 KiB ongetekend
+lokaal JSON. Het toont acht ontbrekende bewijzen en zeven
+toekomstige stappen. De browser verifieert alleen vaste
+schema- en DENY-waarden, **niet** de originele bronketen,
+cryptografische handtekeningen, externe audit of reviewerrollen.
+Het statische script is opgenomen in de lokale server-allowlist.
+Er zijn geen nieuwe uitvoerende API-routes toegevoegd.
+
+**DRAFT / NOT_EXECUTED / NOT_VERIFIED / NOT_READY /
+HOLD / DENY / NOT_AUTHORIZED.** Geen tests, merge,
+deploy, sleutelimport, bewijsattestatie, autorisatie
+of PALACO ONE-sessie uitgevoerd.
