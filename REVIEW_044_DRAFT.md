@@ -2488,3 +2488,91 @@ uitvoerende API-endpoints of live mutaties.
 NOT_VERIFIED / NOT_READY / HOLD / DENY / NOT_AUTHORIZED.**
 Geen tests, merge, deployment, ondertekening,
 reviewergoedkeuring, trustpromotie of PALACO ONE-sessie.
+
+### PP-RECOVERY-002 — Trust Change Decision Protocol (DENY-only)
+
+De pure module `review_044_trust_change_decision_protocol.py`
+bevat `prepare_trust_change_decision_protocol`. De functie
+herbouwt via de bestaande keten de originele achttien
+bytebronnen, Execution Plan, Observation Register, Evidence Intake,
+Review Handoff, Independent Receipt Protocol, Verifier Blueprint,
+Trust Policy, Change Control en het Trust Change Review Dossier.
+Het originele ongetekende reviewdossier moet **type-exact**
+overeenkomen met het nieuw gereconstrueerde dossier (max. 64 KiB).
+Een afwijking of een ongeldige vrijgaveclaim wordt afgewezen met
+`PP_RECOVERY_002_TRUST_CHANGE_DECISION_PROTOCOL_INVALID`.
+Dit is interne consistentie, **geen** onafhankelijke
+bewijsverificatie, echte ontvangst of menselijke autorisatie.
+
+Het nieuwe v0-contract modelleert drie strikt gescheiden fasen:
+`LOCAL_CLAIM_INTAKE` (uitsluitend ongeauthenticeerd lokaal
+verzoek), `EXTERNAL_EVIDENCE_VERIFICATION` (onafhankelijke
+vertrouwde verifier vereist), en `AUTHORIZED_HUMAN_DECISION`
+(afzonderlijke bevoegde, ondertekende beslissing vereist).
+De drie trust boundaries blijven `crossing=PROHIBITED`,
+`authorityEffect=NONE`: een lokaal verzoek kan geen bewijs
+attesteren, een externe technische controle kan geen beleid
+vrijgeven, en een menselijk besluit verleent op zichzelf
+geen bevoegdheid tot deploy.
+
+De negen externe bewijsvoorwaarden blijven
+`externalAuthenticity=NOT_VERIFIED`,
+`independentAssessment=NOT_PERFORMED` en
+`maySatisfyDecision=false`. De drie vereiste
+reviewerrollen blijven zonder authenticatie, autoriteit
+of onafhankelijkheidsattest. Zeven bestaande beslisvoorwaarden
+blijven `BLOCKED`. Acht niet-omzeilbare
+integriteit-, attestatie-, revocation-, reviewer-, replay-,
+audit-, besluit- en deploymentcontroles blijven
+`NOT_SATISFIED / approvalEffect=NONE`.
+Het contract kent **geen PASS-, APPROVED-, ACCEPTED- of
+ACTIVE-uitkomst**.
+
+Veiligheidsstatussen zijn permanent
+`decisionPolicy=DENY_ALL_UNTIL_SEPARATE_VERIFIED_AUTHORITIES`,
+`localClaimAuthority=NONE`,
+`externalVerificationService=NOT_CONFIGURED`,
+`humanDecisionService=NOT_CONFIGURED`,
+`signedDecision=NOT_AVAILABLE`,
+`decisionReceipt=NOT_AVAILABLE`,
+`reviewDossierDelivery=NOT_SENT`,
+`policyChangeExecution=PROHIBITED`,
+`issuerPromotion=PROHIBITED`,
+`algorithmPromotion=PROHIBITED`,
+`trustedIssuerCount=0`, `allowedAlgorithms=[]`,
+`keyMaterial=NOT_PRESENT`, `changeApplied=false`,
+`independentVerification=NOT_VERIFIED`,
+`releaseReadiness=NOT_READY`,
+`palacoOneHandoff=BLOCKED`,
+`palacoOneSession=NOT_CREATED`,
+`authorization=HOLD`, `accessDecision=DENY` en
+`issuance=NOT_AUTHORIZED`.
+
+De opt-in CLI `review_044_trust_change_decision_protocol_cli.py`
+vereist expliciet `--run` en opent anders geen bronbestanden.
+Zij verlangt de achttien oorspronkelijke bronparameters plus
+`--execution-plan`, `--observation-register`,
+`--evidence-intake`, `--review-handoff`,
+`--receipt-protocol`, `--verifier-blueprint`,
+`--trust-policy`, `--change-control`,
+`--review-dossier` en `--export`.
+Met `--run` wordt uitsluitend een **nieuw**
+ongetekend JSON-contract via create-only `xb` geschreven.
+Geen bestaande beleidsversie, sleutel of identiteit wordt
+gewijzigd.
+
+Het backofficepaneel **PP-RECOVERY-002 / Trust Change Decision
+Protocol — alles DENY** toont een lokaal JSON-contract van
+maximaal 64 KiB met de drie geblokkeerde fasen en acht
+niet-vervulde, niet-omzeilbare controles. De browser controleert
+alleen een herkenbare JSON-structuur en vaste DENY-statussen:
+geen oorspronkelijke bronbytes, echte reviewcredentials,
+cryptografische handtekeningen, trust-anchors of externe
+audit worden door de browser geverifieerd. Het statische
+script is toegevoegd aan de expliciete lokale server-allowlist.
+Er is geen uitvoerende API-route gecreëerd.
+
+**DRAFT / NOT_SENT / NOT_APPLIED / NOT_EXECUTED /
+NOT_VERIFIED / NOT_READY / HOLD / DENY / NOT_AUTHORIZED.**
+Geen tests, merge, release, deploy, trustpromotie,
+ondertekening of PALACO ONE-sessie uitgevoerd.
