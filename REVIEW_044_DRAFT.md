@@ -3085,3 +3085,115 @@ of uitvoerende overdrachtsmogelijkheden toegevoegd.
 NOT_READY / HOLD / DENY / NOT_AUTHORIZED.**
 Geen tests, merge, productieuitrol, bewijsacceptatie,
 bewijsoverdracht, sleutelimport of PALACO ONE-sessie uitgevoerd.
+
+### PP-RECOVERY-002 — Transfer Receipt Reconciliation Contract (0/8, geen echte receipts)
+
+De pure module `review_044_transfer_receipt_reconciliation.py`
+specificeert `prepare_transfer_receipt_reconciliation_contract` voor
+een **toekomstige externe** vergelijking van een getekend verzendbewijs
+met een onafhankelijk getekende ontvangstbevestiging.
+De functie reconstrueert eerst de volledige bestaande
+bronketen uit achttien originele bytebronnen en veertien
+aanvullend gebonden contractartefacten: Execution Plan,
+Observation Register, Evidence Intake, Review Handoff,
+Independent Receipt Protocol, Verifier Blueprint, Trust Policy,
+Change Control, Review Dossier, Decision Protocol, Audit Contract,
+Audit Evidence Readiness Matrix, Audit Evidence Collection Plan
+en Audit Evidence Custody Contract.
+Het aangeleverde originele Custody Transfer Verification Protocol
+wordt type-exact vergeleken met het opnieuw afgeleide protocol
+(maximaal 64 KiB). Afwijkende of vrijgaveclaimende bronbestanden
+worden geweigerd met
+`PP_RECOVERY_002_TRANSFER_RECEIPT_RECONCILIATION_INVALID`.
+Dit bewijst alleen **interne consistentie**: geen externe echtheid.
+
+Het nieuwe schema
+`palaco.pp.recovery-002-transfer-receipt-reconciliation.v0`
+bindt via SHA-256 aan exacte Transfer Protocol-, Custody Contract-
+en Audit Contract-verwijzingen. Acht bewijsposities
+`AUD-E01` t/m `AUD-E08` bevatten alleen
+de verwachte onafhankelijke bewaarrol en ontbreken bij
+alle acht:
+`senderSignedReceipt=NOT_AVAILABLE`,
+`recipientSignedAcknowledgement=NOT_AVAILABLE`,
+`senderSignatureVerification=NOT_PERFORMED`,
+`recipientSignatureVerification=NOT_PERFORMED`,
+`exactEnvelopeDigestMatch=NOT_PERFORMED`,
+`exactEvidenceDigestMatch=NOT_PERFORMED`,
+`identityScopeAndRevocation=NOT_VERIFIED`,
+`trustedNonceAndTime=NOT_VERIFIED`,
+`externalAuditProof=NOT_AVAILABLE`,
+`reconciliation=NOT_PERFORMED`,
+`transfer=NOT_INITIATED`,
+`gate=BLOCKED` en `decision=DENY`.
+Er zijn **geen originele getekende receipts of bewijsbytes**
+aanwezig of geaccepteerd.
+
+Negen toekomstige vergelijkingsvereisten omvatten
+canonieke verzend- en ontvangstbewijsbytes met vertrouwde
+handtekeningen, exacte envelope- en bewijsbytehashes,
+identiteit/rolscope van beide partijen, purpose/audience
+en single-use nonce, trusted time, signersleutelrotatie
+en intrekking, externe append-only auditlog-inclusie,
+en een afzonderlijk bevoegd menselijk acceptatiebesluit.
+Acht externe reviewpoorten zijn `NOT_STARTED / DENY`.
+Acht specifieke mismatch- en fraudecondities geven altijd
+`DENY / authorityEffect=NONE`; een lokaal JSON-bestand
+kan niet tot reconciliation, acceptatie of autorisatie leiden.
+
+De top-level invarianten:
+`requiredReceiptPairs=8`,
+`senderReceiptsReceived=0`,
+`recipientAcknowledgementsReceived=0`,
+`reconciledReceiptPairs=0`,
+`senderAuthority=NOT_ESTABLISHED`,
+`recipientAuthority=NOT_ESTABLISHED`,
+`signatureVerification=NOT_CONFIGURED`,
+`trustedReplayLedger=NOT_CONFIGURED`,
+`auditAnchoring=NOT_CONFIGURED`,
+`independentReconciliation=NOT_VERIFIED`,
+`humanAcceptance=NOT_COMPLETED`,
+`evidenceTransfer=NOT_INITIATED`,
+`evidenceAcceptance=PROHIBITED`,
+`evidenceStorage=NONE`,
+`trustedIssuerCount=0`, `allowedAlgorithms=[]`,
+`releaseReadiness=NOT_READY`,
+`palacoOneHandoff=BLOCKED`,
+`palacoOneSession=NOT_CREATED`,
+`authorization=HOLD`,
+`accessDecision=DENY` en
+`issuance=NOT_AUTHORIZED`.
+
+De CLI `review_044_transfer_receipt_reconciliation_cli.py`
+leest zonder `--run` geen input. Een opt-in lokale
+export vereist de achttien originele bronargumenten
+en `--execution-plan`, `--observation-register`,
+`--evidence-intake`, `--review-handoff`,
+`--receipt-protocol`, `--verifier-blueprint`,
+`--trust-policy`, `--change-control`,
+`--review-dossier`, `--decision-protocol`,
+`--audit-contract`, `--readiness-matrix`,
+`--collection-plan`, `--custody-contract`,
+`--transfer-protocol` en `--export`.
+Na expliciet `--run` wordt alleen een **nieuw
+ongetekend** JSON-bestand aangemaakt met create-only
+`xb` zonder bestaand bestand te overschrijven.
+Geen receipt, originele bewijsbyte, credential,
+handtekening of externe audit wordt verwerkt.
+
+Het alleen-lezen backofficepaneel
+**PP-RECOVERY-002 / Transfer Receipt Reconciliation —
+0/8 vergeleken** toont lokaal JSON tot 64 KiB
+met acht ontbrekende verzend-/ontvangstbewijsparen
+en negen onvervulde vergelijkingsregels. Het
+statische script staat in de expliciete server-allowlist;
+er is **geen** uitvoerende receipt-intake of nieuwe
+API-route toegevoegd. De browser valideert alleen
+vaste JSON-schema- en DENY-waarden, geen echte
+ontvangst of externe bewijsherkomst.
+
+**DRAFT / NOT_SENT / NOT_EXECUTED / NOT_VERIFIED /
+NOT_READY / HOLD / DENY / NOT_AUTHORIZED.**
+Geen tests, merge, release, deploy, bewijsacceptatie,
+bewijsoverdracht, reviewerautorisatie, signing
+of PALACO ONE-sessie uitgevoerd.
