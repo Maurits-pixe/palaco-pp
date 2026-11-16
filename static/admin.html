@@ -51,6 +51,7 @@
   <script src="/review044-custody-transfer-verification-protocol.js" defer></script>
   <script src="/review044-transfer-receipt-reconciliation.js" defer></script>
   <script src="/review044-receipt-conflict-resolution.js" defer></script>
+  <script src="/review044-conflict-resolution-evidence-dossier.js" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -1013,6 +1014,24 @@
             <h4>Acht onafhankelijke afhandelingsstappen — NOT_STARTED</h4>
             <ol id="admin-conflict-resolution-steps"></ol>
             <p class="auth-note">De viewer valideert uitsluitend een ongetekend JSON-contract met vaste DENY-statussen; geen bronbytes, signatures, identiteit, replay-ledger of externe audit worden gecontroleerd. Nul echte conflicten beoordeeld; alle mogelijke gevallen blijven geblokkeerd. NOT_VERIFIED / NOT_READY / HOLD / DENY / NOT_AUTHORIZED.</p>
+          </section>
+          <section class="admin-bundle-panel" aria-labelledby="admin-conflict-dossier-title">
+            <h3 id="admin-conflict-dossier-title">PP-RECOVERY-002 / Conflict Resolution Evidence Dossier — 0 waargenomen conflicten</h3>
+            <p class="auth-note">Ongetekend overzicht van acht mogelijke conflictklassen, het per geval ontbrekende externe bewijs en de noodzakelijke onafhankelijke reviewer. Het dossier maakt geen echte conflictzaak aan en verwerkt geen originele bewijsbestanden.</p>
+            <div class="admin-review-grid"><div>
+              <label for="admin-conflict-dossier-file">Lokaal conflict-evidencedossier (.json, maximaal 64 KiB)</label>
+              <input id="admin-conflict-dossier-file" type="file" accept=".json,application/json">
+            </div></div>
+            <button id="admin-conflict-dossier-load" type="button" class="secondary">Toon ontbrekende bewijsvereisten per conflictklasse</button>
+            <p id="admin-conflict-dossier-status" class="admin-review-result" role="status" aria-live="polite">Geen Conflict Resolution Evidence Dossier geladen. HOLD / DENY.</p>
+            <h4>Acht mogelijke conflictklassen — geen daarvan waargenomen</h4>
+            <div class="admin-table-wrap admin-registry-rows"><table aria-label="Conflictvereisten met onafhankelijke reviewers">
+              <thead><tr><th>ID</th><th>Mogelijke conflictklasse</th><th>Vereist extern bewijs</th><th>Onafhankelijke reviewerrol</th><th>Status</th></tr></thead>
+              <tbody id="admin-conflict-dossier-cases"></tbody>
+            </table></div>
+            <h4>Acht onafhankelijke reviewvoorwaarden — BLOCKED</h4>
+            <ol id="admin-conflict-dossier-checks"></ol>
+            <p class="auth-note">Dit paneel leest uitsluitend ongetekend JSON en controleert herkenbare DENY-structuren, geen originele receipts, digitale handtekeningen, nonce-ledgers, identiteit, intrekking of externe audit. Geen verzoek verstuurd; geen bewijs ontvangen; geen conflict vastgesteld. NOT_VERIFIED / NOT_READY / HOLD / DENY / NOT_AUTHORIZED.</p>
           </section>
           <button id="admin-review044-registry-export" type="button" class="secondary" disabled>Download nieuw registersnapshot (.json)</button>
           <p class="auth-note">Controleer vóór gebruik altijd het originele dossier met de striktere Python-module. Deze browserregistratie is indicatief en bevat geen tijds- of identiteitsbewijs. Geen serveropslag of autorisatie.</p>
