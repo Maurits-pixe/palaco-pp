@@ -49,6 +49,7 @@
   <script src="/review044-audit-evidence-collection-plan.js" defer></script>
   <script src="/review044-audit-evidence-custody-contract.js" defer></script>
   <script src="/review044-custody-transfer-verification-protocol.js" defer></script>
+  <script src="/review044-transfer-receipt-reconciliation.js" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -975,6 +976,24 @@
             <h4>Veertien ontbrekende ondertekende envelopevelden — MISSING</h4>
             <ol id="admin-custody-transfer-fields"></ol>
             <p class="auth-note">De browser valideert alleen de ongetekende JSON-structuur en DENY-waarden. Er zijn geen originele bytes, vertrouwde sleutels, handtekeningen, nonce-verificatie, reviewerrechten of auditontvangst verwerkt. Transfers 0/8; verifier NOT_CONFIGURED; HOLD / DENY / NOT_AUTHORIZED.</p>
+          </section>
+          <section class="admin-bundle-panel" aria-labelledby="admin-receipt-reconcile-title">
+            <h3 id="admin-receipt-reconcile-title">PP-RECOVERY-002 / Transfer Receipt Reconciliation — 0/8 vergeleken</h3>
+            <p class="auth-note">Een ongetekend eisencontract om toekomstige verzendbewijzen en getekende ontvangersbevestigingen exact en onafhankelijk te vergelijken. Geen receipts worden daadwerkelijk ontvangen, geverifieerd of geaccepteerd.</p>
+            <div class="admin-review-grid"><div>
+              <label for="admin-receipt-reconcile-file">Lokaal reconciliation-contract (.json, maximaal 64 KiB)</label>
+              <input id="admin-receipt-reconcile-file" type="file" accept=".json,application/json">
+            </div></div>
+            <button id="admin-receipt-reconcile-load" type="button" class="secondary">Toon ontbrekende receiptparen</button>
+            <p id="admin-receipt-reconcile-status" class="admin-review-result" role="status" aria-live="polite">Geen Transfer Receipt Reconciliation Contract geladen. HOLD / DENY.</p>
+            <h4>Acht bewijsparen — verzend- en ontvangstbewijs NOT_AVAILABLE</h4>
+            <div class="admin-table-wrap admin-registry-rows"><table aria-label="Verzend- en ontvangstbewijsreconciliatie">
+              <thead><tr><th>ID</th><th>Bewijs</th><th>Vereiste onafhankelijke rol</th><th>Verzendbewijs</th><th>Ontvangstbevestiging</th><th>Status</th></tr></thead>
+              <tbody id="admin-receipt-reconcile-rows"></tbody>
+            </table></div>
+            <h4>Negen externe vergelijkingsvereisten — NOT_PERFORMED</h4>
+            <ol id="admin-receipt-reconcile-checks"></ol>
+            <p class="auth-note">Dit scherm vergelijkt geen echte receipts, sleutelhandtekeningen, bytehashes, personen, nonce of auditlogs. De JSON-viewer toetst uitsluitend vaste DENY-waarden. 0 van 8 receiptparen gereconcilieerd; geen uitrol of autorisatie. NOT_VERIFIED / NOT_READY / HOLD / DENY / NOT_AUTHORIZED.</p>
           </section>
           <button id="admin-review044-registry-export" type="button" class="secondary" disabled>Download nieuw registersnapshot (.json)</button>
           <p class="auth-note">Controleer vóór gebruik altijd het originele dossier met de striktere Python-module. Deze browserregistratie is indicatief en bevat geen tijds- of identiteitsbewijs. Geen serveropslag of autorisatie.</p>
