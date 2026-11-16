@@ -38,6 +38,7 @@
   <script src="/review044-release-observation-register.js" defer></script>
   <script src="/review044-release-evidence-intake.js" defer></script>
   <script src="/review044-release-evidence-review-handoff.js" defer></script>
+  <script src="/review044-independent-receipt-protocol.js" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -775,6 +776,21 @@
             <h4>Zeven vereiste onafhankelijke reviewcontroles</h4>
             <ol id="admin-review-handoff-checks"></ol>
             <p class="auth-note">Deze browser controleert alleen de vaste JSON-structuur, niet originele bronbytes, revieweridentiteit, handtekening of externe audit. Delivery NOT_SENT, receipt NOT_AVAILABLE, human review NOT_COMPLETED. NOT_VERIFIED / NOT_READY / HOLD / DENY / NOT_AUTHORIZED.</p>
+          </section>
+          <section class="admin-bundle-panel" aria-labelledby="admin-independent-receipt-title">
+            <h3 id="admin-independent-receipt-title">PP-RECOVERY-002 / Independent Review Receipt Protocol — geen ontvangst</h3>
+            <p class="auth-note">Een uitsluitend ongetekend ontwerpcontract: twaalf verplichte velden voor een toekomstig onafhankelijk ondertekend ontvangstbewijs, acht externe verificatiestappen en tien afwijzingsgevallen. Geen werkelijke ondertekening, audit of reviewerbevoegdheid.</p>
+            <div class="admin-review-grid"><div>
+              <label for="admin-independent-receipt-file">Lokaal ontvangstprotocol (.json, maximaal 64 KiB)</label>
+              <input id="admin-independent-receipt-file" type="file" accept=".json,application/json">
+            </div></div>
+            <button id="admin-independent-receipt-load" type="button" class="secondary">Toon onvoltooide ontvangstvoorwaarden</button>
+            <p id="admin-independent-receipt-status" class="admin-review-result" role="status" aria-live="polite">Geen Independent Review Receipt Protocol geladen. HOLD / DENY.</p>
+            <h4>Twaalf ontvangstvelden — allemaal MISSING</h4>
+            <ol id="admin-independent-receipt-fields"></ol>
+            <h4>Acht externe verificatievoorwaarden — allemaal NOT_PERFORMED</h4>
+            <ol id="admin-independent-receipt-steps"></ol>
+            <p class="auth-note">De browser controleert slechts een ongetekende JSON-structuur. Geen oorspronkelijke bronbytes, externe handtekeningen, certificaten, nonce, intrekkingen of auditanker worden geverifieerd. Delivery NOT_SENT; signedReceipt NOT_AVAILABLE; reviewerAuthority NOT_ESTABLISHED. NOT_VERIFIED / NOT_READY / HOLD / DENY / NOT_AUTHORIZED.</p>
           </section>
           <button id="admin-review044-registry-export" type="button" class="secondary" disabled>Download nieuw registersnapshot (.json)</button>
           <p class="auth-note">Controleer vóór gebruik altijd het originele dossier met de striktere Python-module. Deze browserregistratie is indicatief en bevat geen tijds- of identiteitsbewijs. Geen serveropslag of autorisatie.</p>
