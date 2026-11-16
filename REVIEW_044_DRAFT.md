@@ -1,0 +1,3420 @@
+# P.P. Review 044 — offline vier-bestandenketen (DRAFT)
+
+**Object:** `PP-RECOVERY-002` · **Scope:** uitsluitend synthetische lokale bestanden.
+
+**Uitvoering:** NOT EXECUTED. Dit dossier bereidt controles voor; het voert ze
+niet uit en bevat geen waarneming van een echte reviewer. De eigenaar voert
+de tests op een later moment zelf uit. Geen merge, accountkoppeling of uitgifte.
+
+## Contract
+
+De controlefunctie `review_chain.link_hold_chain` ontvangt de oorspronkelijke
+bytes van de handoff, het HOLD-rapport, de bewijsindex en de client-observatie.
+Alle vier blijven onvertrouwd. Bij geldige bestandsconsistentie is de
+uitkomst `FOUR_FILE_HASH_MATCH_UNTRUSTED` met HOLD/DENY. Iedere ongeldige
+invoer moet `PP_CHAIN_INVALID` opleveren, zonder persoonsgegevens in de fout.
+
+## Voorbereide scenario's
+
+De pure fixturefunctie `review_fixtures.build_review_fixtures()` levert
+in-memory byte-tuples zonder bestanden te schrijven of validators aan te roepen.
+UUID's en P.P.-suffixen zijn expliciet synthetisch.
+
+## Bewust starten tijdens de testsessie
+
+De voorbereide, offline runner `review_044_runner.py` start **niet** bij
+importeren en voert pas controles uit met een expliciete `--run`-optie.
+Vanaf de projectmap kan de eigenaar later kiezen:
+
+```sh
+python review_044_runner.py --run
+```
+
+Voor een kopieerbaar technisch rapport naar de terminal:
+
+```sh
+python review_044_runner.py --run --json
+```
+
+Zonder `--run` worden geen scenario's gestart. De runner schrijft geen
+bestanden en legt geen externe verbindingen. Een technisch overeenkomende
+uitkomst is uitsluitend `SYNTHETIC_AUTOMATED_LOCAL_EXECUTION`, **niet**
+`SELF_REPORTED` en geen onafhankelijke identiteitstoets. De gebruiker kan
+de eigen schermwaarneming later apart als `SELF_REPORTED` registreren.
+
+## Eigen waarnemingen als afzonderlijk contract
+
+`review_044_observations.make_self_report(observations, recorded_at)` maakt
+uitsluitend op expliciete invoer van de eigenaar een in-memory
+`palaco.pp.review-044-self-report.v0`-object. Een invoerregel bevat exact
+`scenario_id`, `observed_result` en `observed_at`; het rapport bevat geen
+vrij tekstveld, nummers of consumer-ID's. Niet ingevulde scenario's blijven
+`NOT_OBSERVED` met `NO_OBSERVATION`. Een zelfgerapporteerde overeenkomst heet
+`MATCH_CLAIMED` en nooit `PASS` of `VERIFIED`.
+
+De functie vergelijkt alleen de ingevoerde waarden met de vooraf vastgelegde
+verwachting. Zij voert geen fixture, validator of test uit, schrijft geen
+bestanden, en kent geen autorisatie-uitkomst anders dan `HOLD`/`DENY`.
+
+## Voorbereid formulier in de lokale beheerpagina
+
+Onder **Review 044 / mijn eigen waarneming** kunnen later per scenario
+uitkomsten worden vastgelegd via een expliciete knop. De selectie heeft
+geen test- of validatorfunctie. Het JSON-bestand wordt uitsluitend na een
+aparte downloadactie lokaal aangeboden. Het formulier bewaart de invoer
+alleen in paginageheugen: herladen of afmelden wist de observaties.
+De export gebruikt hetzelfde `palaco.pp.review-044-self-report.v0`-contract
+als de pure Python-functie; ontbrekende scenario's blijven `NOT_OBSERVED`,
+de opgegeven resultaten zijn `SELF_REPORTED`, en de uitkomst blijft
+`NOT_VERIFIED` / `HOLD` / `DENY`. Er is geen serverupload of externe opslag.
+
+## PALACO ONE overdrachtsvoorbereiding (alleen-lezen)
+
+`review_044_identity_preview.preview_identity_handoff(raw_report)` accepteert
+uitsluitend een begrensd JSON-zelfrapport met de negen vaste scenario's,
+verwachtingen, bewijslabels en HOLD/DENY-velden. Dubbele JSON-sleutels,
+onbekende velden, afwijkende vergelijkingslabels en autorisatieverhoging
+worden geweigerd met `PP_REVIEW_044_PREVIEW_INVALID`. De functie produceert
+alleen een geminimaliseerde preview: geen persoonsgegevens, geen P.P.-nummer,
+geen login, geen accountbinding en geen bewijs van identiteit. Een lokale
+zelfrapportage kan deze grens niet zelfstandig opheffen.
+Tijdstempels moeten exacte UTC ISO-8601-milliseconden met `Z` zijn en geen
+waarneming mag na het rapporttijdstip liggen. Ook syntactisch geldige maar
+semantisch afwijkende datums worden geweigerd. Een timestamp is uitsluitend
+een door de client opgegeven tijd, geen onafhankelijke tijdsattestatie.
+
+Deze adapter is **DRAFT / NOT EXECUTED**. Er is nog geen echte PALACO ONE
+runtimekoppeling en geen toestemming voor activatie.
+
+### Voorbereide negatieve regressies (nog niet uitgevoerd)
+
+`review_044_preview_fixtures.build_preview_fixtures()` maakt uitsluitend
+synthetische byte-invoer en benoemde verwachtingen in geheugen. De functie
+roept de adapter **niet** aan. Twee positieve vormscenario's mogen hooguit
+een `HOLD_DENY_PREVIEW` opleveren; ongeldige invoer moet steeds
+`PP_REVIEW_044_PREVIEW_INVALID` geven. Voorbereid zijn:
+
+- geldig rapport zonder waarneming; geldig zelfrapport met één claim;
+- ontbrekende `Z`, andere tijdzone, onmogelijke kalenderdatum,
+  ontbrekende milliseconden, waarneming na rapporttijd;
+- autorisatie- of verificatie-escalatie, vervalst `PASS`-vergelijkingslabel;
+- ontbrekende provenance, dubbele JSON-sleutel en te grote invoer.
+
+Verwachte foutcodes zijn **SPECIFICATION**, geen geobserveerde uitslagen.
+De uitvoering blijft voorbehouden aan de latere expliciete testsessie.
+
+### Afzonderlijke opt-in previewrunner
+
+`review_044_preview_runner.py` is voorbereid voor deze **13** synthetische
+scenario's. Zonder expliciet `--run` voert hij geen controles uit. Later kan
+de eigenaar vanuit de projectmap kiezen voor:
+
+```sh
+python review_044_preview_runner.py --run --json
+```
+
+De uitvoer gaat uitsluitend naar de terminal, niet naar een bestand of
+netwerk. Ook een technisch overeenkomend resultaat blijft
+`SYNTHETIC_AUTOMATED_LOCAL_EXECUTION` met `HOLD`/`DENY`, zonder
+PALACO ONE-sessie, accountbinding of uitgifte. **Tot uitvoering door de
+eigenaar: NOT EXECUTED; geen PASS-claims.**
+
+### Beoordelingsvoorbereiding voor een later rapport
+
+`review_044_preview_assessment.assess_preview_report(raw)` accepteert
+uitsluitend het vaste technische rapportcontract met 13 scenario's in
+de voorgeschreven volgorde. De parser weigert dubbele sleutels,
+onbekende velden, ongeldige codes, inconsistenties tussen geclaimde
+resultaten en vergelijkingslabels en pogingen tot autorisatie-escalatie.
+Hij geeft alleen een minimale **claimed**-samenvatting terug; het importeren
+van een JSON-rapport bewijst niet dat een lokale runner werkelijk is uitgevoerd.
+De eigenaarreview blijft `PENDING` en identiteit/uitgifte blijven geblokkeerd.
+Deze functie is eveneens **DRAFT / NOT EXECUTED**.
+
+### Werkblad voor de latere eigenaarreview
+
+`review_044_owner_review.make_owner_review_draft(technical_report, owner_marks)`
+maakt een niet-ondertekend werkblad bij de oorspronkelijke rapportbytes.
+De SHA-256-waarde bindt het werkblad aan die bytes maar bewijst **niet**
+wie ze heeft gemaakt of of de runner daadwerkelijk heeft gedraaid.
+Per scenario accepteert het werkblad alleen `NOT_REVIEWED`,
+`OBSERVED_AS_REPORTED` of `DISCREPANCY_REPORTED`. Niet ingevulde scenario's
+blijven `NOT_REVIEWED` en `NO_OBSERVATION`; expliciete eigenaarinvoer is
+uitsluitend `SELF_REPORTED`. Het werkblad verwerkt geen namen,
+P.P.-nummers, vrije tekst of inloggegevens. De uitvoer blijft altijd
+`NOT_VERIFIED`/`HOLD`/`DENY` en start geen test of PALACO ONE-sessie.
+
+De bestaande lokale backoffice biedt hiervoor een aanvullend
+**Review 044 / eigenaarwerkblad technische preview**-paneel. Het leest
+een door de eigenaar gekozen technisch JSON-bestand (maximaal 32 KB),
+toont alleen een voorlopige structuurindicatie, verzamelt de drie
+toegelaten markeringen per scenario en biedt het werkblad als lokale
+JSON-download aan. De browser-JSON-parser detecteert dubbele sleutels
+niet; de striktere Python-parser is daarom normatief. Geen serverupload,
+runner-uitvoering, automatische goedkeuring of duurzame browseropslag.
+Status van deze interface: **DRAFT / NIET GETEST / HOLD / DENY**.
+
+### Bewijsindex voor technisch rapport en eigenaarwerkblad
+
+`review_044_owner_index.make_owner_evidence_index(technical_report, worksheet)`
+maakt uitsluitend na strikte inhoudelijke controle een lokale bewijsindex.
+Beide argumenten zijn de **originele bytes** van respectievelijk het
+synthetische technische rapport en het eigenaarwerkblad. De parser weigert
+onder andere dubbele JSON-sleutels, onbekende velden, gewijzigde hashes,
+verkeerde scenario-volgorde, verzonnen eigenaarprovenance en aangepaste
+HOLD/DENY-velden. Hij reconstrueert het eigenaarwerkblad volgens het
+bestaande contract, inclusief het onderscheid tussen ontbrekende en
+expliciet onbeoordeelde markeringen.
+
+De index vermeldt beide SHA-256-hashes en hoogstens
+`TWO_FILE_HASH_MATCH_UNTRUSTED`: de binding is een consistentieclaim,
+**geen herkomstbewijs**. Geen lokaal testprogramma wordt aangeroepen, geen
+server benaderd, geen identiteit vastgesteld en geen autorisatie verleend.
+Status: **DRAFT / NOT EXECUTED / HOLD / DENY**.
+
+De backoffice bevat nu eveneens een afzonderlijk paneel om die twee
+bestanden lokaal te kiezen en een bewijsindex als JSON te downloaden.
+Deze browservergelijking kan dubbele JSON-sleutels niet afwijzen en is dus
+**geen vervanging** van `make_owner_evidence_index` in Python. Een
+browseruitkomst `TWO_FILE_HASH_MATCH_UNTRUSTED` is uitsluitend indicatief;
+het bestand wordt niet verzonden of automatisch geregistreerd.
+
+### Lokaal drie-bestandendossier
+
+De pure functie `review_044_owner_dossier.assess_owner_dossier(
+technical_report, owner_worksheet, evidence_index)` accepteert uitsluitend
+de **drie originele bytebestanden**. De technische rapportcontrole en de
+eigenaarsmarkeringen worden opnieuw vanuit de bronnen beoordeeld; vervolgens
+wordt de verwachte bewijsindex opnieuw berekend en strikt vergeleken met
+het ingevoerde derde bestand. Dubbele JSON-sleutels, onbekende velden,
+afwijkende hashes en autorisatie-escalatie worden geweigerd.
+
+Een consistente dossierketen levert alleen
+`THREE_FILE_HASH_MATCH_UNTRUSTED` op. Dit bewijst geen bron, uitvoerende
+persoon, echte runtime-uitvoering of identiteit. Het dossier heeft geen
+databaseverbinding, testuitvoering, bestandsschrijfacties of bevoegdheid.
+**Status: DRAFT / NOT EXECUTED / HOLD / DENY.**
+
+Voor latere eigenaarbediening is daarnaast het backofficepaneel
+**Review 044 / lokaal drie-bestandendossier** toegevoegd. De drie bestanden
+worden niet verzonden of opgeslagen door PALACO; de browser biedt uitsluitend
+een indicatieve vergelijking en een downloadbare beoordeling. Bij een nieuwe
+bestandskeuze vervalt de vorige indicatie. Duplicaten van JSON-sleutels
+vallen buiten de browsergarantie; de Python-beoordelaar blijft normatief.
+
+### Lokaal Review 044-bewijsregister (concept)
+
+`review_044_owner_registry.append_owner_dossier(existing_registry,
+technical_report, owner_worksheet, evidence_index)` geeft een **nieuw
+JSON-registersnapshot als bytes** terug. De functie schrijft niets weg,
+roept geen runner aan en verandert geen account. `existing_registry` is
+uitsluitend `None` voor een nieuw register of de originele bytes van het
+vorige snapshot. Elk toegevoegd dossier moet eerst de strikte drie-
+bestandencontrole doorstaan. Herhaalde identieke dossierverwijzingen worden
+geweigerd; iedere nieuwe rij heeft een oplopend volgnummer, drie hashes,
+een eigen entry-hash en de hash van de voorgaande rij.
+
+Het register verzint geen tijdstempels en bewaart geen bronbestanden.
+Een hashketen controleert interne consistentie maar biedt **zonder externe
+ondertekening of onveranderlijke opslag geen bescherming tegen het volledig
+herschrijven van de geschiedenis**. Ook een geldig snapshot bewijst niet
+dat eerdere bronbestanden destijds echt of onafhankelijk geverifieerd waren.
+Maximaal 256 verwijzingen en 256 KB per snapshot. Alle rijen blijven
+`NOT_VERIFIED / HOLD / DENY / NOT_AUTHORIZED`.
+
+Het lokale backofficepaneel **Review 044 / lokaal bewijsregister** maakt
+hiervan een downloadbare, browsermatig voorbereide versie. Na een indicatieve
+beoordeling van drie dossierbestanden kan een bestaand register worden
+geselecteerd; leeg betekent een nieuw register. Het paneel controleert de
+volgorde, vaste HOLD/DENY-velden, interne hashketen en dubbele
+dossierverwijzingen alvorens één rij toe te voegen. Het schrijft niets op de
+server en vervangt het vorige bestand niet. De browser kan dubbele sleutels
+in JSON niet betrouwbaar afwijzen en verifieert geen externe historie:
+`review_044_owner_registry.py` blijft het normatieve validatiecontract.
+Het voorbereide snapshot wordt in een scrollbare tabel samengevat met
+volgnummer, verkorte entry-hash, voorgangerhash en de vaste HOLD/DENY-status.
+Bij bestandswissel wordt het oude overzicht gewist. De term
+`INTERN CONSISTENT` is geen externe authenticiteitsverklaring.
+Een geselecteerde rij krijgt daarnaast een uitsluitend lokaal inspectiepaneel:
+alle drie bronhashes, de eigen entry-hash, de voorgangerhash en het nummer
+zijn volledig leesbaar. De laatst toegevoegde rij wordt aanvankelijk
+geselecteerd; een ander volgnummer is aanklikbaar. De onafhankelijke
+verificatiestatus blijft uitdrukkelijk `NOT_VERIFIED`.
+Het paneel biedt een downloadbaar `palaco.pp.review-044-registry-row-inspection.v0`
+JSON-inspectierapport voor precies de geselecteerde regel. Het bevat geen
+automatisch ingevuld tijdstip, handtekening, zelfstandig authenticiteitsbewijs
+of productieautoriteit. Bij register- of dossierwijziging wordt een eerdere
+selectie en de bijbehorende exportmogelijkheid onmiddellijk ingetrokken.
+
+De pure offline functie
+`review_044_owner_inspection.validate_owner_inspection(registry_bytes,
+inspection_bytes)` koppelt een gedownload inspectierapport strikt aan het
+oorspronkelijke registersnapshot. De bestaande registervalidator beoordeelt
+eerst de volledige keten, waarna exact schema, veldset, vaste bewijsgrenzen,
+volgnummer en alle bron-/entry-/voorgangerhashes moeten overeenkomen.
+Dubbele JSON-sleutels en ambiguë of gemanipuleerde claims worden geweigerd
+met `PP_REVIEW_044_OWNER_INSPECTION_INVALID`. De geretourneerde beoordeling
+blijft `REGISTER_ROW_HASH_BINDING_CONSISTENT_UNTRUSTED / NOT_VERIFIED /
+HOLD / DENY / NOT_AUTHORIZED`. **Status: DRAFT / NOT EXECUTED.**
+
+Status: **DRAFT / NOT EXECUTED / HOLD / DENY**.
+
+| Fixture | Verwacht bij latere uitvoering | Risico dat wordt onderzocht |
+| --- | --- | --- |
+| `baseline_untrusted_hold` | `FOUR_FILE_HASH_MATCH_UNTRUSTED` | Correcte binding ≠ verificatie |
+| `handoff_changed_without_rebinding` | `PP_CHAIN_INVALID` | Gewijzigde oorspronkelijke overdracht |
+| `report_authority_escalation` | `PP_CHAIN_INVALID` | Onterechte autorisatieclaim in rapport |
+| `index_wrong_report_digest` | `PP_CHAIN_INVALID` | Verbroken tweede hashbinding |
+| `observation_wrong_index_digest` | `PP_CHAIN_INVALID` | Verbroken derde hashbinding |
+| `observation_authority_escalation` | `PP_CHAIN_INVALID` | Onterechte autorisatieclaim in observatie |
+| `observation_duplicate_key` | `PP_CHAIN_INVALID` | Ambigue JSON / dubbele sleutel |
+| `observation_truncated_json` | `PP_CHAIN_INVALID` | Ongeldige JSON-invoer |
+| `observation_oversized` | `PP_CHAIN_INVALID` | Overschreden invoerlimiet |
+
+## Registratieformat voor eigen waarnemingen
+
+Vul na uitvoering per scenario apart in:
+
+- `scenario_id`: exacte fixturenaam
+- `observed_result`: letterlijke foutcode of teruggegeven status
+- `expected_result`: waarde uit de tabel
+- `evidence_kind`: `SELF_REPORTED`, tenzij onafhankelijk bewijs bestaat
+- `executed_at`: werkelijk tijdstip van uitvoering, niet vooraf invullen
+- `notes`: geen P.P.-nummer of andere persoonsgegevens
+- `decision`: `HOLD` tot de bevoegde review expliciet anders beslist
+
+## AI-review aan de hand van drie lenzen
+
+- **TRIAS:** geen testfixture kan een productie- of identiteitsgate openen.
+- **ORACLE:** verwachte waarden zijn specificatie, niet geobserveerde PASS.
+- **MENTOR:** negen compacte scenario's geven de eigenaar een duidelijke
+  volgorde voor de latere testsessie; afwijkingen worden afzonderlijk hersteld.
+
+**Status:** PREPARED / NOT EXECUTED / HOLD / DENY.
+
+### Inspectierapporten lokaal importeren — alleen voorbereiding
+
+De backoffice heeft een apart importpaneel voor het oorspronkelijke
+Review 044-registersnapshot (maximaal 256 KiB) en een gedownload
+regelinspectierapport (maximaal 16 KiB). De knop **Vergelijk geselecteerde
+regel lokaal (indicatief)** leest beide bestanden uitsluitend via de
+browser-File API. Er is geen upload en geen databasehandeling.
+
+**Bewijsgrens:** de browser controleert alleen de herkenbare velden van
+de geselecteerde regel. Hij controleert *niet* de volledige hashketen en
+weigert niet betrouwbaar dubbele JSON-sleutels. Zelfs bij overeenkomst
+is dit **geen** strikte Python-verificatie.
+
+Een afzonderlijke opt-in CLI gebruikt de bestaande normatieve validator:
+`review_044_inspection_cli.py`. Pas tijdens de eigenaartestsessie:
+
+```powershell
+python .\review_044_inspection_cli.py --run --registry "PAD_NAAR_REGISTER.json" --inspection "PAD_NAAR_INSPECTIE.json" --json
+```
+
+Zonder `--run` worden geen bestanden gelezen. Een weigering geeft
+`PP_REVIEW_044_OWNER_INSPECTION_INVALID` en exitcode 1; een technisch
+consistente binding geeft exitcode 0, maar uitsluitend het label
+`REGISTER_ROW_HASH_BINDING_CONSISTENT_UNTRUSTED`. Bevoegdheden blijven
+`NOT_VERIFIED / HOLD / DENY / NOT_AUTHORIZED`. De CLI leest uitsluitend
+expliciet genoemde lokale bestanden, schrijft niets, toont geen
+bestandsinhoud of persoonsgegevens, en maakt geen netwerkverbinding.
+Deze nieuwe functie is **NOT EXECUTED**; pas jouw testwaarnemingen later
+als `SELF_REPORTED` vast.
+
+### Negatieve importregressies — voorbereid, NIET uitgevoerd
+
+`review_044_inspection_fixtures.build_inspection_fixtures()` levert
+**24 deterministische, volledig synthetische** scenario's als vier-tuples
+`(scenario_id, registry_bytes, inspection_bytes, expected_result)`.
+De fixturebouwer schrijft niets weg, gebruikt geen echte eigenaargegevens
+en roept de validator niet aan. De scenario's omvatten een uitsluitend
+technisch consistente basisbinding en afwijzingen voor:
+
+- onjuist of boolean volgnummer en mismatches in de vijf hashverwijzingen;
+- vervalste autorisatie-, verificatie- en historievermeldingen;
+- ontbrekende/onbekende velden en dubbele JSON-sleutels;
+- afgebroken, lege, ongeldige UTF-8 en te grote inspectiebestanden;
+- gemanipuleerde registerhash, volgorde, autorisatie, lege keten,
+  dubbele registersleutel en overschrijding van de registerlimiet.
+
+`review_044_inspection_runner.py` is een afzonderlijke opt-in runner.
+Hij roept de validator **alleen na expliciet `--run`** aan. Tijdens een
+latere, door de eigenaar gestarte testsessie:
+
+```powershell
+python .\review_044_inspection_runner.py --run --json
+```
+
+De JSON-uitvoer bevat technische waarnemingen onder
+`SYNTHETIC_AUTOMATED_LOCAL_EXECUTION`, nooit menselijke
+`SELF_REPORTED`-verklaringen of een onafhankelijk PASS-certificaat.
+Zonder `--run` blijft de uitvoering op NOT EXECUTED. Deze build heeft
+**geen fixtures uitgevoerd** en claimt geen testuitslagen. De code
+wijzigt geen PP-account, register, database of productieautorisatie.
+Alle bevoegdheidsvelden blijven `HOLD / DENY / NOT_AUTHORIZED`.
+
+### Technisch rapport en eigenaarswerkblad — strikt gescheiden (DRAFT)
+
+Nieuwe pure modules:
+
+- `review_044_inspection_owner_review.assess_inspection_technical_report(raw)`
+  controleert **alle 24** scenario's, vaste volgorde, verwachte codes,
+  uitsluitend toegestane technische resultaatcodes, `MATCH/MISMATCH`
+  consistentie, exacte veldsets, UTF-8, grootte en dubbele JSON-sleutels.
+  Een technisch rapport is altijd `IMPORTED / UNATTESTED`: zelfs 24
+  geclaimde MATCH-resultaten betekenen `ALL_MATCH_CLAIMED`, nooit PASS.
+- `review_044_inspection_owner_review.make_inspection_owner_worksheet(raw, marks)`
+  maakt een uitsluitend lokaal, ongetekend 24-regelig eigenaarwerkblad.
+  Alleen expliciet aangeboden markeringen worden `SELF_REPORTED`;
+  ontbrekende blijven `NOT_REVIEWED / NO_OBSERVATION`. Er wordt geen
+  tijdstip of menselijke waarneming verzonnen.
+- `review_044_inspection_owner_binding.validate_inspection_owner_worksheet(
+  raw_report, raw_worksheet)` controleert het werkblad opnieuw tegen
+  de originele technische rapportbytes, de 24 scenarionamen en exacte
+  markeringen/provenance. Verkeerde aantallen, extra velden, gewijzigde
+  hashes of HOLD-escalaties geven één vaste weigering:
+  `PP_REVIEW_044_INSPECTION_WORKSHEET_INVALID`. Een overeenkomst heet
+  uitsluitend `TWO_FILE_HASH_MATCH_UNTRUSTED`.
+
+Het rapport is maximaal 64 KiB; een werkblad maximaal 48 KiB.
+Deze modules hebben geen database-, netwerk-, test-runner-, tijd- of
+bestandsschrijfacties. Ze worden **niet** aangeroepen door de
+backoffice of een automatisch proces. De eigenaar bepaalt later of,
+wanneer en hoe de eigen tests en waarnemingen plaatsvinden.
+
+**Huidige status: DRAFT / NOT EXECUTED / NOT_VERIFIED / HOLD / DENY /
+NOT_AUTHORIZED.** Ook een consistente tweebestandenbinding geeft geen
+PALACO ONE-inlogrecht, identiteit, uitgifte of productiebevoegdheid.
+
+### Backoffice — eigenaarwerkblad voor 24 inspectiescenario's
+
+De bestaande lokale beheerpagina heeft nu het afzonderlijke paneel
+**Review 044 / eigenaarwerkblad inspectieregressies (24 scenario's)**.
+De eigenaar kiest een reeds bestaand, synthetisch technisch runner-JSON
+(maximaal 64 KiB), laadt dit expliciet in de browser en ziet de
+24 scenario's met hun geclaimde technische MATCH/MISMATCH-uitkomst.
+
+Iedere regel kan afzonderlijk worden gemarkeerd als:
+
+- niet ingevoerd: `NOT_REVIEWED / NO_OBSERVATION`;
+- expliciet niet beoordeeld: `NOT_REVIEWED / SELF_REPORTED`;
+- waargenomen zoals gerapporteerd: `OBSERVED_AS_REPORTED / SELF_REPORTED`;
+- afwijking gerapporteerd: `DISCREPANCY_REPORTED / SELF_REPORTED`.
+
+Een klik op **Download mijn 24-scenario-eigenaarwerkblad (.json)**
+maakt uitsluitend lokaal het contract
+`palaco.pp.review-044-inspection-owner-worksheet.v0` aan, met de
+SHA-256-vingerafdruk van het originele technische rapport.
+De browseruitvoer houdt dezelfde veldnamen, volgorde en vaste
+HOLD/DENY-grenzen aan als de pure Python-werkbladbouwer.
+Een bestandswissel of afmelding wist de tijdelijke markeringen.
+
+**Geen onafhankelijke controle:** de browserparser kan dubbele
+JSON-sleutels niet betrouwbaar afwijzen en bewijst de uitvoering van
+een runner niet. De strikte controle blijft bij
+`assess_inspection_technical_report()` en
+`validate_inspection_owner_worksheet()` in Python. Er wordt geen
+serverupload, databasewijziging, PALACO ONE-koppeling of automatische
+autorisatie uitgevoerd. De server biedt de beide Review 044-scripts
+uitsluitend aan via twee expliciete statische allowlist-paden.
+
+**Status: DRAFT / NOT EXECUTED / NOT_VERIFIED / HOLD / DENY.**
+
+### Backoffice — twee-bestandenbinding van het inspectiewerkblad
+
+Het afzonderlijke paneel **Review 044 / technische rapportbinding met
+eigenaarwerkblad** leest twee originele lokale JSON-bestanden: het
+synthetische technische inspectierapport (maximaal 64 KiB) en het
+eigenaarwerkblad (maximaal 48 KiB). Het vergelijkt de vaste
+rapportcontracten, 24 scenario's, gemelde markeringen, interne aantallen
+en SHA-256 van beide oorspronkelijke bytestromen.
+
+Een consistente browserindicatie toont de volledige hashes, de
+technisch *geclaimde* vergelijking en de eigenaarsmarkeringen.
+Een optionele expliciete download schrijft alleen een nieuwe, ongetekende
+`palaco.pp.review-044-inspection-owner-browser-binding.v0` met
+`CLIENT_TWO_FILE_HASH_MATCH_UNTRUSTED` en vaste
+`NOT_VERIFIED / HOLD / DENY / NOT_AUTHORIZED`-velden. Een nieuwe
+bestandskeuze of afmelding wist eerdere resultaten en blokkeert export.
+
+**Bewijsgrens:** `JSON.parse` kan dubbele JSON-sleutels niet
+betrouwbaar detecteren. De browser voert dus *geen* strikte Python-validatie
+uit. Gebruik voor de normatieve controle later de pure functie
+`review_044_inspection_owner_binding.validate_inspection_owner_worksheet(
+technical_report_bytes, worksheet_bytes)` op beide originele bestanden.
+Die functie kan alleen interne consistentie vaststellen, geen
+onafhankelijke authenticiteit, tijd, daadwerkelijke testuitvoering,
+persoonlijke identiteit of bevoegdheid.
+
+De server serveert het nieuwe script alleen via een expliciete lokale
+allowlist-route. Geen algemene bestandsserver, uploadendpoint of
+autorisatieroute is toegevoegd. **DRAFT / NOT EXECUTED / HOLD / DENY.**
+
+### Offline vastleggen van de strikte Python-beoordeling (DRAFT)
+
+`review_044_inspection_evidence.compile_inspection_owner_evidence(
+technical_report, owner_worksheet)` leest geen bestanden en voert geen
+tests uit. Hij roept uitsluitend de twee strikte, bestaande in-memory
+contractbeoordelaars aan voor de **originele bytebestanden**. Onjuiste
+rapportstructuur, dubbele JSON-sleutels, afwijkende scenariorijen,
+vervalste eigenaarsmarkeringen of gebroken SHA-256-binding leiden tot
+`PP_REVIEW_044_INSPECTION_EVIDENCE_INVALID`.
+
+De uitvoer bevat onder andere de SHA-256 van beide bronnen, het aantal
+technisch *geclaimde* afwijkingen, expliciet door de eigenaar gemarkeerde
+scenario's, en de vaste bewijsstatus. De uitkomst
+`STRICT_PYTHON_TWO_FILE_HASH_MATCH_UNTRUSTED` duidt **alleen op strikte
+interne consistentie**, niet op een bewezen uitgevoerde runner, tijd,
+bronidentiteit, eigenaarshandtekening of autorisatie.
+
+De opt-in opdrachtregel `review_044_inspection_evidence_cli.py` gebruikt
+dezelfde functie. **Tot de latere eigenaarstestsessie niet uitvoeren.**
+Zonder `--run` worden geen bestanden geopend. Tijdens een expliciet
+geautoriseerde lokale testsessie kan de eigenaar kiezen voor een
+consoleweergave:
+
+```powershell
+python .\review_044_inspection_evidence_cli.py --run --technical "PAD_NAAR_TECHNISCH.json" --worksheet "PAD_NAAR_WERKBLAD.json"
+```
+
+Of een expliciet nieuw JSON-bestand (niet overschrijven):
+
+```powershell
+python .\review_044_inspection_evidence_cli.py --run --technical "PAD_NAAR_TECHNISCH.json" --worksheet "PAD_NAAR_WERKBLAD.json" --export "review-044-evidence-hold.json"
+```
+
+De CLI leest maximaal 64 KiB technische rapportbytes en 48 KiB
+werkbladbytes, geeft geen broninhoud terug bij een fout en weigert een
+bestaand exportpad. Zonder `--export` schrijft hij niets naar schijf.
+Er is geen webserver, database of PALACO ONE-runtimekoppeling.
+Een technisch consistente uitkomst blijft
+`UNSIGNED_LOCAL_PYTHON_VALIDATION_RESULT / NOT_VERIFIED / HOLD / DENY /
+NOT_AUTHORIZED`, zonder zelfstandige bevoegdheid of PASS-claim.
+
+**Status: DRAFT / NOT EXECUTED / NOT_VERIFIED / HOLD / DENY.**
+
+### Read-only backofficeweergave van een geëxporteerd Python-bewijsrapport
+
+Het lokale backofficepaneel **Review 044 / Python-bewijsrapport —
+alleen-lezen overzicht** kan een reeds door de eigenaar opgeslagen
+`palaco.pp.review-044-inspection-owner-evidence.v0`-JSON van maximaal
+16 KiB lezen. Er worden geen bestanden geüpload, opgeslagen, gewijzigd
+of verzonden en er wordt geen Python gestart.
+
+Het paneel splitst de inhoud in drie uitdrukkelijk verschillende
+categorieën:
+
+1. **Technisch geclaimd:** schema, twee volledige SHA-256-hashes,
+   aantallen en het label `STRICT_PYTHON_TWO_FILE_HASH_MATCH_UNTRUSTED`
+   zoals *in het gekozen bestand vermeld*.
+2. **Eigenaarswaarnemingen:** alleen aantallen van gerapporteerde
+   markeringen en afwijkingen; de uitvoeringsherkomst blijft
+   `NOT_INDEPENDENTLY_ESTABLISHED`.
+3. **Onafhankelijke verificatie:** uitsluitend
+   `NOT_VERIFIED / HOLD / DENY / NOT_AUTHORIZED`, zonder identiteit,
+   ondertekening, onveranderlijke historie of productiebevoegdheid.
+
+De browser weigert onbekende velden, verkeerde vaste statuswaarden,
+ongeldige SHA-256-vormen, onmogelijke aantallen of tegenstrijdige
+technische vergelijkingslabels. De ingelezen JSON blijft echter
+**onvertrouwde gebruikersinput**: een bestand kan nagemaakt zijn en
+`JSON.parse` detecteert geen dubbele sleutels. De browser voert daarom
+geen strikte broncontrole of echte herverificatie uit. Een strikt oordeel
+vereist later opnieuw de twee originele bronbestanden via
+`review_044_inspection_evidence_cli.py --run`.
+
+Bij nieuwe bestandskeuze of afmelden wordt de tijdelijke weergave
+gewist. Het extra JavaScriptbestand staat alleen op de expliciete
+lokale allowlist van de server.
+
+**Status: DRAFT / NOT EXECUTED / HOLD / DENY.**
+
+### PP-RECOVERY-002 — alleen-lezen herstelcoördinatie
+
+De module `review_044_recovery_coordination.py` biedt
+`compile_recovery_coordination(handoff_bytes, technical_report_bytes,
+owner_worksheet_bytes)` aan. De functie herbeoordeelt drie originele
+lokale bytebestanden via de strikte bestaande contracten:
+`parse_review_handoff`, `assess_inspection_technical_report` en
+`validate_inspection_owner_worksheet` (via de bewijscompiler).
+Ongeldige invoer wordt geweigerd met
+`PP_RECOVERY_002_COORDINATION_INVALID`. De uitvoer bevat uitsluitend
+drie SHA-256-verwijzingen, niet-persoonsgebonden status- en telvelden,
+en verplichte blokkades. Er komen geen P.P.-nummers, consumer-ID's,
+gebruikersnamen, sessies of geheimen in het overzicht.
+
+**Zeer belangrijk:** de bronnen kunnen elk intern consistent zijn
+zonder dat de identiteit of bevoegdheid van hun maker, of een
+gemeenschappelijke subjectbinding, is vastgesteld. Daarom blijft
+`crossSourceSubjectBinding=NOT_ESTABLISHED`,
+`ownerAuthority=NOT_ESTABLISHED` en
+`palacoOneSession=NOT_CREATED`. Er wordt geen PALACO ONE-account
+aangemaakt, geen bestaande registratie aangepast en geen uitgifte toegestaan.
+De volgende stap is alleen
+`MANUAL_SOURCE_AND_IDENTITY_REVIEW_ONLY`.
+
+De opt-in CLI `review_044_recovery_coordination_cli.py` opent geen
+bronbestanden zonder expliciet `--run`. Tijdens de latere eigenaartestsessie:
+
+```powershell
+python .\review_044_recovery_coordination_cli.py --run --handoff "PP_HANDOFF.json" --technical "TECHNISCH.json" --worksheet "EIGENAAR.json"
+```
+
+Met optioneel `--export "PP_RECOVERY_002_HOLD.json"` wordt alleen een
+nieuw bestand aangemaakt; bestaande bestanden worden nooit overschreven.
+Zonder `--export` wordt alleen JSON naar de terminal geschreven.
+Er is geen netwerk-, database-, runtime- of authenticatieactie.
+
+De backoffice bevat nu het paneel **PP-RECOVERY-002 /
+herstelcoördinatie — alleen lezen**. Het leest een bestaand JSON-rapport
+(maximaal 16 KiB) via de lokale File API en toont drie afzonderlijke
+rubrieken: P.P.-status, Review 044-bewijsclaim en de identiteitsblokkades.
+Dit is uitsluitend een browserindicatie van **onvertrouwde** JSON:
+`JSON.parse` is geen bewijs van een uitgevoerde Python-validator en
+detecteert geen dubbele sleutels. Bij bestandswissel of afmelding wordt
+de weergave gewist. De serverroute voor dit script is expliciet
+geallowlist; geen API voor uploads, accountbinding of autorisatie is toegevoegd.
+
+**Status: DRAFT / NOT EXECUTED / NOT_VERIFIED / HOLD / DENY /
+NOT_AUTHORIZED.**
+
+### PP-RECOVERY-002 — beslisdossier met vijf geblokkeerde bewijsvereisten
+
+`review_044_recovery_decision.prepare_decision_dossier(handoff_bytes,
+technical_report_bytes, owner_worksheet_bytes, review_marks=None)`
+bereidt vanuit **de drie originele bytestromen** een nieuw, alleen-lezen
+beslisdossier voor. Het gebruikt de bestaande strikte herstelcoördinator
+en doet geen runtime-, test-, database-, netwerk- of PALACO ONE-operaties.
+
+Vijf vereisten staan **onvoorwaardelijk op `NOT_ESTABLISHED / BLOCKED`**:
+
+1. `SOURCE_ATTESTATION` — onafhankelijk bewijs van bronherkomst;
+2. `CROSS_SOURCE_SUBJECT` — onafhankelijk bewijs dat bronnen hetzelfde
+   subject betreffen;
+3. `OWNER_AUTHORITY` — geauthenticeerde eigenaarsbevoegdheid;
+4. `RUNTIME_EXECUTION` — onafhankelijke vaststelling van uitvoering;
+5. `HUMAN_REVIEW` — vastgelegde beoordeling door een bevoegde reviewer.
+
+Een optioneel, afzonderlijk bestand met maximaal vijf expliciete
+eigenaarsmarkeringen kan uitsluitend `NOT_REVIEWED`,
+`REVIEW_REQUESTED` of `BLOCKER_REPORTED` bevatten. Dit zijn
+**zelfgerapporteerde planningsmarkeringen**, geen afgeronde bewijscontroles.
+Niet ingevulde markeringen blijven `NO_OBSERVATION`. Geen enkele
+markering kan een bewijsstatus of autorisatiepoorten veranderen.
+
+`review_044_recovery_decision_cli.py` is uitsluitend opt-in; zonder
+`--run` leest hij geen bronbestanden. Een latere eigenaartestsessie kan
+de volgende opdracht gebruiken:
+
+```powershell
+python .\review_044_recovery_decision_cli.py --run --handoff "PP_HANDOFF.json" --technical "TECHNISCH.json" --worksheet "EIGENAAR.json" --export "PP_RECOVERY_DECISION_HOLD.json"
+```
+
+`--marks "MARKERINGEN.json"` is optioneel. Zonder `--export`
+schrijft de CLI uitsluitend naar de terminal; met `--export` wordt
+uitsluitend een **nieuw** bestand gemaakt. Een bestaand bestand
+wordt nooit overschreven.
+
+De backoffice heeft een aanvullend, alleen-lezen paneel
+**PP-RECOVERY-002 / beslisdossier — vijf bewijsvereisten**. Het leest
+een door de eigenaar gekozen dossier van maximaal 16 KiB lokaal en
+toont de vijf poorten, bronhashes en de geblokkeerde PALACO ONE-overdracht.
+Een browsercontrole op ingelezen JSON bewijst geen Python-uitvoering
+en detecteert geen dubbele sleutels. De server serveert uitsluitend het
+specifiek toegestane script. Geen upload, accountkoppeling of uitgifte.
+
+**Onvoorwaardelijke uitkomst:** `crossSourceSubjectBinding=NOT_ESTABLISHED`,
+`ownerAuthority=NOT_ESTABLISHED`, `humanReview=NOT_COMPLETED`,
+`palacoOneHandoff=BLOCKED`, `palacoOneSession=NOT_CREATED`,
+`NOT_VERIFIED / HOLD / DENY / NOT_AUTHORIZED`.
+
+**Status: DRAFT / NOT EXECUTED.**
+
+### Human-review queue — ongetekende verzoeken, geen beslissingsbevoegdheid
+
+`review_044_human_review_queue.append_review_request(
+dossier_bytes, previous_queue_bytes, requirement_id, action)` bereidt
+een **nieuw lokaal snapshot** voor van een aan een specifiek beslisdossier
+gebonden rij verzoeken. De Python-parser weigert onbekende velden,
+dubbele JSON-sleutels, een onjuist beslisdossier, gewijzigde voorganger-
+of entry-hashes, volgordefouten en autorisatie-escalaties.
+Maximaal 128 gebeurtenissen / 128 KiB per snapshot.
+Een hashketen zonder externe verankering is **geen** bewijs van een
+onveranderlijke geschiedenis.
+
+Alleen deze verzoektypen bestaan:
+`REVIEW_REQUESTED`, `EVIDENCE_REQUESTED`,
+`BLOCKER_REPORTED`. Ze kunnen worden gekoppeld aan precies vijf
+vaste bewijsvereisten: `SOURCE_ATTESTATION`,
+`CROSS_SOURCE_SUBJECT`, `OWNER_AUTHORITY`,
+`RUNTIME_EXECUTION` en `HUMAN_REVIEW`.
+Er is opzettelijk **geen** `APPROVED`, `PASS`,
+`IDENTITY_VERIFIED` of `ISSUANCE`-actie.
+Geen authenticatie of bevoegdheid van een reviewer is in dit
+prototype vastgesteld: `UNSIGNED_LOCAL_REVIEW_REQUEST` is
+een beperkte provenanceclaim, geen menselijke ondertekening.
+
+`review_044_human_review_queue_cli.py` is opt-in. Zonder
+`--run` worden geen bestanden geopend. Later, tijdens de
+eigenaartestsessie, kan een nieuw snapshot worden voorbereid met:
+
+```powershell
+python .\review_044_human_review_queue_cli.py --run --dossier "PP_RECOVERY_DECISION_HOLD.json" --requirement "SOURCE_ATTESTATION" --action "EVIDENCE_REQUESTED" --export "PP_REVIEW_QUEUE_001.json"
+```
+
+Gebruik bij een volgende gebeurtenis ook
+`--previous "PP_REVIEW_QUEUE_001.json"` en een **nieuw**
+`--export`-pad. De CLI schrijft uitsluitend bij deze expliciete actie,
+weigert overschrijven en wijzigt de bronbestanden niet.
+
+De backoffice bevat het alleen-lezen paneel
+**PP-RECOVERY-002 / human-review queue** voor een bestaand
+beslisdossier en queue-snapshot. Het geeft uitsluitend een
+browservergelijking op herkenbare velden; het kan geen dubbele
+JSON-sleutels of de volledige cryptografische keten normatief
+beoordelen. De Python-module blijft leidend. De server heeft
+alleen een expliciete route voor het extra JavaScriptbestand.
+Geen accountmutatie, externe toegang, testen, merge of uitrol.
+
+**Alle vijf poorten blijven BLOCKED. Status:
+DRAFT / NOT EXECUTED / NOT_VERIFIED / HOLD / DENY /
+NOT_AUTHORIZED.**
+
+### Human-review intake — bewijsstukken en reviewerclaims, niet geverifieerd
+
+`review_044_review_intake.append_review_intake(
+decision_dossier_bytes, review_queue_bytes, previous_intake_bytes,
+request_sequence, evidence_bytes, evidence_kind, submitter_role_claim)`
+bereidt offline een nieuw, beperkt `palaco.pp.recovery-002-review-intake.v0`
+JSON-snapshot voor. Het verlangt het **originele beslisdossier**, een
+volledig strikte queue-snapshot en het door de eigenaar bewust gekozen
+bewijsbestand (max. 64 KiB). Het koppelt dat bewijsbestand uitsluitend
+via SHA-256 aan een bestaand reviewverzoek. De uitvoer bevat geen
+bewijsinhoud, reviewernaam, P.P.-nummer, consumer-ID of sessietoken.
+
+`submitterRoleClaim` is beperkt tot `OWNER_CLAIMED`,
+`REVIEWER_CLAIMED` of `SOURCE_CLAIMED`. **Geen daarvan bewijst
+identiteit of bevoegdheid**. Bewijstypen zijn `DOCUMENT`,
+`SCREENSHOT`, `LOG_EXCERPT`, `OTHER_UNTRUSTED`.
+De intake weigert onbekende velden, dubbele JSON-sleutels, gemanipuleerde
+hashketens, ontbrekende reviewverzoeken, een verkeerde dossier- of
+queue-binding, dubbele bewijsverwijzingen binnen hetzelfde verzoek en
+pogingen tot autorisatieverhoging. Maximaal 64 intake-items en 16 KiB
+per JSON-snapshot. Ook een geldige keten bewijst zonder externe
+ondertekening geen onveranderlijke historie.
+
+`review_044_review_intake_cli.py` voert **niets** uit zonder `--run`.
+Later kan de eigenaar een nieuwe intake voorbereiden met:
+
+```powershell
+python .\review_044_review_intake_cli.py --run --dossier "PP_RECOVERY_DECISION_HOLD.json" --queue "PP_REVIEW_QUEUE_001.json" --request-sequence 1 --evidence "BEWIJSSTUK.json" --kind DOCUMENT --role-claim REVIEWER_CLAIMED --export "PP_REVIEW_INTAKE_001.json"
+```
+
+Bij een volgend item is `--previous "PP_REVIEW_INTAKE_001.json"`
+vereist. De bijbehorende **zelfde queue-snapshot** moet behouden blijven;
+nieuwe queueversies vergen een nieuwe intakeketen. Export is create-only,
+zonder overschrijven. De CLI start geen tests, upload, databasewijziging
+of PALACO ONE-inlog. De status is zonder uitzondering:
+`sourceAuthenticity=NOT_ESTABLISHED`,
+`reviewerAuthentication=NOT_ESTABLISHED`,
+`reviewerAuthority=NOT_ESTABLISHED`, `subjectBinding=NOT_ESTABLISHED`,
+`NOT_VERIFIED / HOLD / DENY / NOT_AUTHORIZED`.
+
+**Status: DRAFT / NOT EXECUTED.**
+
+### Backoffice — read-only intakeoverzicht bewijsstukken en reviewerclaims
+
+De bestaande lokale beheerpagina heeft nu het paneel
+**PP-RECOVERY-002 / bewijs-intake en reviewerclaims — alleen lezen**.
+De eigenaar kan drie bestaande lokale bestanden kiezen: het
+beslisdossier (maximaal 16 KiB), de bijbehorende human-review queue
+(maximaal 128 KiB) en het review-intake-snapshot (maximaal 16 KiB).
+Het paneel leest de bestanden alleen na een expliciete klik, uitsluitend
+via de browser-File API.
+
+De presentatie scheidt:
+- **Bewijsverwijzingen**: volgnummer, reviewverzoek, bewijsvereiste,
+  bewijstype en verkorte SHA-256 van het oorspronkelijke bewijsbestand;
+- **Reviewer-/indienersrolclaims**: `OWNER_CLAIMED`,
+  `REVIEWER_CLAIMED` of `SOURCE_CLAIMED`, expliciet onbevestigd;
+- **Alle vijf beslisvereisten**: altijd `NOT_ESTABLISHED / BLOCKED`;
+- **Statusoverzicht**: `reviewerAuthority=NOT_ESTABLISHED`,
+  `sourceAuthenticity=NOT_ESTABLISHED`, PALACO ONE-overdracht
+  `BLOCKED`, `NOT_VERIFIED / HOLD / DENY / NOT_AUTHORIZED`.
+
+De browser controleert herkenbare vaste velden, grenzen, rijvolgorde,
+het verband met de opgegeven queue-verzoeken en tegenstrijdige
+autorisatieclaims. Dit is **geen normatieve SHA-256-ketenvalidatie**:
+de browser herberekent de canonieke dossier- en queuehashes niet,
+controleert de volledige historische keten niet en kan dubbele JSON-sleutels
+niet betrouwbaar detecteren. De bestaande Python-module
+`review_044_review_intake.py` blijft het strikte in-memory contract.
+Zelfs een strikt consistente intake is een ongetekende, niet-onafhankelijk
+geverifieerde claim.
+
+Bij bestandswissel of afmelding wordt de vorige intakeweergave gewist.
+Het script is toegevoegd aan de beperkte lokale server-allowlist.
+Er is geen nieuw uploadendpoint, databasewijziging, aanmeldroute,
+achtergrondtaak, testuitvoering, merge of publicatie.
+
+**Status: DRAFT / NOT EXECUTED / NOT_VERIFIED / HOLD / DENY /
+NOT_AUTHORIZED.**
+
+### Intakebeoordeling — per bewijsstuk ontbrekende controles (DRAFT)
+
+De pure functie `review_044_intake_assessment.assess_review_intake(
+decision_dossier_bytes, review_queue_bytes, intake_bytes)`
+controleert opnieuw de oorspronkelijke dossier-, queue- en intakecontracten.
+Een fout in structuur, volgorde, digestketen, queuebinding, rolclaim
+of duplicaatverwijzing wordt geweigerd met
+`PP_RECOVERY_002_INTAKE_ASSESSMENT_INVALID`.
+Ze leest geen bewijsinhoud van schijf, voert geen tests uit en stelt
+nimmer bron- of revieweridentiteit vast.
+
+Ieder intake-item krijgt zes expliciet openstaande controles:
+
+1. `ORIGINAL_EVIDENCE_BYTES_NOT_RECHECKED`;
+2. `SOURCE_PROVENANCE_NOT_ATTESTED`;
+3. `SUBMITTER_IDENTITY_NOT_AUTHENTICATED`;
+4. `REVIEWER_AUTHORITY_NOT_ESTABLISHED`;
+5. `SUBJECT_BINDING_NOT_ESTABLISHED`;
+6. `INDEPENDENT_REVIEW_NOT_COMPLETED`.
+
+Het rapport bevat tevens de SHA-256 van de originele intakebytes,
+de canonieke dossier- en queuedigests, aantallen en vijf open
+bewijsvereisten, die allemaal `NOT_ESTABLISHED / BLOCKED` blijven.
+Het originele bewijsbestand wordt niet meegeleverd en zijn hash
+wordt daarom **niet opnieuw vergeleken** met originele bewijsbytes.
+Interne consistentie is geen attestatie of bewijs van de uitvoerder.
+
+De opt-in `review_044_intake_assessment_cli.py` leest niets zonder
+`--run`. Tijdens een latere door de eigenaar uitgevoerde testsessie:
+
+```powershell
+python .\review_044_intake_assessment_cli.py --run --dossier "PP_RECOVERY_DECISION_HOLD.json" --queue "PP_REVIEW_QUEUE_001.json" --intake "PP_REVIEW_INTAKE_001.json" --export "PP_INTAKE_ASSESSMENT_HOLD.json"
+```
+
+Zonder `--export` geeft de CLI JSON op de terminal; met `--export`
+maakt hij alleen een nieuw bestand aan. Overschrijven wordt geweigerd.
+Geen PALACO ONE-accountactie, netwerkverzoek, databasewijziging,
+testuitvoering of stilzwijgende bevoegdheidsverlening.
+
+Het backofficepaneel **PP-RECOVERY-002 / intakebeoordeling —
+ontbrekende controles** kan een eerder opgeslagen rapport van maximaal
+64 KiB uitsluitend lokaal tonen. De browser controleert het herkenbare
+schema, vaste HOLD-velden, aantallen en vereisten, maar verifieert
+niet onafhankelijk dat Python is uitgevoerd. `JSON.parse` is geen
+normatieve strikte bronparser; de originele drie bestanden blijven
+nodig voor de Python-contractcontrole.
+
+**DRAFT / NOT EXECUTED / NOT_VERIFIED / HOLD / DENY / NOT_AUTHORIZED.**
+
+### Verificatieplan — zes afhankelijke stappen per bewijsstuk
+
+`review_044_verification_plan.prepare_verification_plan(
+decision_dossier_bytes, review_queue_bytes, intake_bytes)` valideert
+eerst de **originele drie bestanden** via het bestaande strikte
+intakebeoordelingscontract. Daarna wordt voor ieder intake-item
+een workflow met precies zes handmatige controles voorbereid:
+originele bewijsbytes vergelijken (1); onafhankelijke bronherkomst
+verkrijgen (2, na 1); indiener onafhankelijk authenticeren (3);
+reviewer onafhankelijk authenticeren en bevoegdheid vaststellen (4);
+subjectbinding aantonen (5, na 2 en 3); gedocumenteerde onafhankelijke
+review afronden (6, na 1 t/m 5).
+
+De vijf bestaande beslispoorten hebben ieder expliciete afhankelijkheden
+en blijven zonder uitzondering `NOT_ESTABLISHED / BLOCKED`.
+Elke geplande controle heeft `status=NOT_STARTED`,
+`verification=NOT_VERIFIED` en
+`reviewerAuthority=NOT_ESTABLISHED`. Geen automatisch bewijsresultaat,
+voltooiingsmarkering, PASS, identiteitsbinding of PALACO ONE-sessie.
+Bron- en beoordelingsdossier, queue en intake worden verbonden met
+SHA-256-verwijzingen. Een digest is geen onafhankelijke attestatie.
+
+De CLI `review_044_verification_plan_cli.py` is bewust opt-in:
+zonder `--run` worden geen bronbestanden geopend. Pas tijdens de
+latere eigenaartestsessie mag de gebruiker expliciet kiezen voor:
+
+```powershell
+python .\review_044_verification_plan_cli.py --run --dossier "PP_RECOVERY_DECISION_HOLD.json" --queue "PP_REVIEW_QUEUE_001.json" --intake "PP_REVIEW_INTAKE_001.json" --export "PP_VERIFICATION_PLAN_HOLD.json"
+```
+
+Zonder `--export` wordt alleen naar stdout geschreven; met
+`--export` uitsluitend naar een nieuw bestand. Geen overschrijving,
+netwerk, database, tests, reviewerautorisatie of productieactie.
+
+**DRAFT / NOT EXECUTED / NOT_VERIFIED / HOLD / DENY / NOT_AUTHORIZED.**
+
+### Backoffice — alleen-lezen verificatieplan met afhankelijkheden
+
+Het aanvullende paneel **PP-RECOVERY-002 / verificatieplan —
+zes afhankelijke stappen** leest een reeds opgeslagen
+`palaco.pp.recovery-002-verification-plan.v0`-JSON van maximaal
+128 KiB volledig lokaal. De eigenaar ziet per intake-item de zes
+voorbereide controles, de expliciete voorwaarden voor elke stap en
+de vijf beslispoorten met hun afhankelijke controlevolgordes.
+
+De browser weigert een afwijkend schema, onbekende velden, onjuiste
+hashvormen, onmogelijke aantallen, ontbrekende controles, afwijkende
+volgorde, gewijzigde afhankelijkheden, of enige claim van uitvoering
+of vrijgave. `NOT_STARTED / NOT_VERIFIED / NOT_ESTABLISHED / BLOCKED`
+zijn vaste contractwaarden. Geen check wordt uitgevoerd of afgevinkt.
+
+**Strikte scheiding:** de ingelezen JSON kan nagemaakt zijn en
+`JSON.parse` herkent dubbele sleutels niet als fout. Het paneel
+controleert niet opnieuw de oorspronkelijke dossier-, queue- en
+intakebytes. De bestaande offline Python-module
+`review_044_verification_plan.py` blijft het normatieve contract voor
+interne consistentie; ook die module verstrekt geen externe attestatie
+of identiteitsautorisatie.
+
+Het afzonderlijke JavaScriptbestand is toegevoegd aan de expliciete
+lokale server-allowlist. Bij bestandswissel, verborgen beheerderssessie
+of afmelding wordt de tijdelijke weergave gewist. Er is geen nieuwe
+API, upload, databasewijziging, netwerkverzoek, runner, merge of uitrol.
+
+**Status: DRAFT / NOT EXECUTED / NOT_VERIFIED / HOLD / DENY /
+NOT_AUTHORIZED.**
+
+### PP-RECOVERY-002 — observatieregister voor verificatiestappen (DRAFT)
+
+De pure module `review_044_observation_register.py` biedt
+`append_observation(dossier_bytes, queue_bytes, intake_bytes,
+verification_plan_bytes, previous_register_bytes,
+intake_sequence, check_order, mark)`. Hij valideert opnieuw alle
+oorspronkelijke dossier-/queue-/intakecontracten, bouwt het
+verificatieplan in geheugen opnieuw op en vergelijkt de volledige
+planstructuur type-exact met het aangeleverde planbestand.
+Daarna controleert hij elk event uit het vorige register,
+inclusief volgnummer, verwijzingen en de SHA-256-hashketen.
+
+Er zijn uitsluitend drie **zelfgerapporteerde** markeringen:
+
+- `OBSERVATION_REPORTED` — een eigen waarneming gemeld;
+- `BLOCKER_REPORTED` — een blokkade gemeld;
+- `RECHECK_REQUESTED` — een nieuwe controle gevraagd.
+
+Iedere gebeurtenis bindt aan één `intakeSequence` en één
+`checkOrder` (1 t/m 6) met de onveranderlijke
+`checkId` uit het verificatieplan. Het nieuwe snapshot bevat
+maximaal 128 gebeurtenissen en 128 KiB JSON. De gehele
+historie is uitsluitend een **lokale hashketenclaim**; zonder
+onafhankelijke verankering of handtekening levert dit geen
+bewijs van ongewijzigde historie, tijd of revieweridentiteit.
+
+Alle events behouden `checkStatus=NOT_STARTED`,
+`verification=NOT_VERIFIED` en `gate=BLOCKED`.
+De registerkop houdt `humanReview=NOT_COMPLETED`,
+`reviewerAuthority=NOT_ESTABLISHED` en
+`HOLD / DENY / NOT_AUTHORIZED` vast. Er is geen actie
+voor PASS, COMPLETED, identiteitsactivatie of uitgifte.
+
+De lokale CLI `review_044_observation_register_cli.py` is
+uitdrukkelijk opt-in. Zonder `--run` wordt geen bestand
+geopend. Tijdens een latere eigenaartestsessie kan bijvoorbeeld
+een eerste snapshot worden aangemaakt:
+
+```powershell
+python .\review_044_observation_register_cli.py --run --dossier "PP_RECOVERY_DECISION_HOLD.json" --queue "PP_REVIEW_QUEUE_001.json" --intake "PP_REVIEW_INTAKE_001.json" --plan "PP_VERIFICATION_PLAN_HOLD.json" --intake-sequence 1 --check-order 1 --mark OBSERVATION_REPORTED --export "PP_OBSERVATION_001.json"
+```
+
+Voor opvolgende waarnemingen wordt ook het vorige bestand
+opgegeven met `--previous "PP_OBSERVATION_001.json"`,
+gecombineerd met een **nieuwe** `--export`-bestandsnaam.
+De CLI maakt uitsluitend een nieuw bestand aan, weigert
+overschrijven en verandert de oorspronkelijke bronnen niet.
+Zonder `--run` geen uitvoering; ook met `--run` worden
+geen technische of identiteitscontroles uitgevoerd — alleen
+bestaande JSON-contracten beoordeeld voor een self-report.
+
+**DRAFT / NOT EXECUTED / NOT_VERIFIED / HOLD / DENY /
+NOT_AUTHORIZED.**
+
+### Backoffice — alleen-lezen observatiegeschiedenis per verificatiestap
+
+De PALACO PHONE-backoffice heeft nu het paneel
+**PP-RECOVERY-002 / voortgangsregister — ongetekende waarnemingen**.
+Het leest een eerder opgeslagen verificatieplan (maximaal 128 KiB)
+en een observatiesnapshot (maximaal 128 KiB) via de lokale browser-File API.
+Geen automatische runner, netwerkoverdracht, database-opslag of
+PALACO ONE-identiteitshandeling wordt aangeroepen.
+
+De browser controleert een beperkte herkenbare structuur en berekent
+SHA-256 van de **originele planbytes**, die gelijk moet zijn aan
+`verificationPlanSha256` in het observatiesnapshot. Per
+gebeurtenis toont het paneel volgnummer, intake, checknummer, check-ID,
+zelfrapportagemarkering en een verkorte eventhash. Het telt afzonderlijk
+`OBSERVATION_REPORTED`, `BLOCKER_REPORTED` en
+`RECHECK_REQUESTED`.
+
+**Verificatiegrens:** de browser herberekent niet de hele eventhashketen,
+kan dubbele JSON-sleutels niet betrouwbaar weigeren en controleert niet
+de originele onderliggende dossier-, queue- en intakecontracten.
+Het paneel is uitsluitend een **lokale indicatie** van ongetekende
+gebruikersbestanden. De pure Python-module
+`review_044_observation_register.py` blijft het strikte contract
+voor hashketen- en dossierconsistentie. Ook strikte consistentie
+bewijst geen externe historie, persoonlijke identiteit, menselijke
+review of bronauthenticiteit.
+
+Bij bestandwijziging, sessieverlies of afmelding wordt de weergave
+gewist. Het script is afzonderlijk toegevoegd aan de beperkte
+lokale server-allowlist, zonder nieuw uploadendpoint.
+**Alle controles blijven `NOT_STARTED`, de vijf beslispoorten
+`BLOCKED`, en PALACO ONE-overdracht blijft geblokkeerd.**
+
+**Status: DRAFT / NOT EXECUTED / NOT_VERIFIED / HOLD / DENY /
+NOT_AUTHORIZED.**
+
+### Overkoepelende herstelcockpit — vijf bewijsstromen, één read-only status
+
+`review_044_recovery_cockpit.prepare_recovery_cockpit(
+dossier_bytes, queue_bytes, intake_bytes, plan_bytes, register_bytes)`
+bouwt een **beperkte samenhangsrapportage** uit de oorspronkelijke
+vijf lokale bestanden: beslisdossier, human-review queue,
+review-intake, verificatieplan en observatieregister. De Pythonmodule
+gebruikt de bestaande strikte parsers en eist onderlinge binding.
+Het plan wordt uit de originele bronnen opnieuw samengesteld en
+type-exact gecontroleerd; het observatieregister wordt opnieuw
+beoordeeld inclusief zijn lokale eventhashketen.
+Een ongeldig bestand, mismatch of rechtenescalatie wordt geweigerd
+met `PP_RECOVERY_002_COCKPIT_INVALID`.
+
+Het JSON-rapport scheidt vijf **ruwe bestands-SHA-256** van
+verzoek-, intake-, controle- en waarnemingsaantallen. Alle vijf
+beslispoorten blijven `BLOCKED / NOT_VERIFIED`; geen teller of
+technische consistentie kan dit wijzigen.
+`independentSourceAttestation=ABSENT`,
+`reviewerAuthority=NOT_ESTABLISHED`,
+`subjectBinding=NOT_ESTABLISHED`,
+`historicalImmutability=NOT_ESTABLISHED`,
+`palacoOneHandoff=BLOCKED`, `NOT_VERIFIED / HOLD / DENY /
+NOT_AUTHORIZED` blijven verplicht.
+
+De CLI `review_044_recovery_cockpit_cli.py` leest geen bestanden
+zonder `--run`. Tijdens de latere eigenaartestsessie kan de
+eigenaar expliciet een nieuw rapport voorbereiden:
+
+```powershell
+python .\review_044_recovery_cockpit_cli.py --run --dossier "PP_RECOVERY_DECISION_HOLD.json" --queue "PP_REVIEW_QUEUE_001.json" --intake "PP_REVIEW_INTAKE_001.json" --plan "PP_VERIFICATION_PLAN_HOLD.json" --observations "PP_OBSERVATION_001.json" --export "PP_RECOVERY_COCKPIT_HOLD.json"
+```
+
+`--export` is create-only, nooit een overschrijving. Zonder
+`--export` wordt uitsluitend JSON naar stdout geschreven.
+Dit is een opt-in lokale samenhangsbeoordeling, geen uitvoering van
+tests, bewijscontroles of identiteitsactivatie.
+
+Het lokale backofficepaneel **PP-RECOVERY-002 / herstelcockpit —
+alle vijf bewijsstromen** leest de vijf originele JSON-bestanden
+plus het eerder geëxporteerde cockpitrapport. De browser herberekent
+SHA-256 voor de **originele byteinhoud** van de vijf geselecteerde
+bestanden en vergelijkt die met de SHA-256 in het ongetekende
+cockpitrapport. De rapportclaims en vaste HOLD-staten zijn apart
+zichtbaar. Het paneel voert **niet** alle Python-validaties opnieuw
+uit, detecteert geen dubbele JSON-sleutels en bewijst niet wie het
+rapport heeft vervaardigd. Er is geen netwerkverkeer, upload,
+database-mutatie of account-API toegevoegd.
+
+Bij bestandswijziging, een verborgen beheerderssessie of afmelden
+wordt de tijdelijke weergave gewist. Het extra JavaScriptbestand
+is enkel via de expliciete lokale server-allowlist bereikbaar.
+
+**DRAFT / NOT EXECUTED / NOT_VERIFIED / HOLD / DENY /
+NOT_AUTHORIZED.**
+
+### Centraal PP-RECOVERY-002 herstelstatusrapport — blokkades en vervolgstappen
+
+De pure functie `review_044_recovery_status.build_recovery_status_report(
+dossier_bytes, queue_bytes, intake_bytes, plan_bytes, observations_bytes)`
+valideert vijf oorspronkelijke lokale JSON-bestanden via de bestaande
+strikte herstelcockpit. Ongeldige broncontracten, inconsistente
+verwijzingen, afwijkende eventketens en vrijgaveclaims worden geweigerd.
+Het resultaat bevat SHA-256-verwijzingen, aantallen, een vaste set van
+**vijf geblokkeerde beslispoorten** en zes onveranderlijk
+`NOT_STARTED / NOT_VERIFIED` controlefasen.
+
+De acht voorgestelde **toekomstige handmatige acties** zijn geordend:
+oorspronkelijke bestanden behouden, bewijsbytes hervergelijken,
+bronherkomst onafhankelijk onderbouwen, indiener authenticeren,
+reviewerbevoegdheid vaststellen, subjectbinding aantonen,
+bevoegde menselijke review vastleggen en pas daarna een afzonderlijk
+bevoegd HOLD-besluit laten herbeoordelen. De acties worden in dit
+rapport **niet uitgevoerd** en hebben
+`authorizationEffect=NONE`. De herbeoordeling is een
+voorstel voor een externe bevoegde workflow, nooit een automatische
+opheffing van HOLD.
+
+De opt-in CLI `review_044_recovery_status_cli.py` leest geen
+bronbestanden zonder `--run`. Tijdens een latere testsessie kan
+de eigenaar een statusrapport opstellen met:
+
+```powershell
+python .\review_044_recovery_status_cli.py --run --dossier "PP_RECOVERY_DECISION_HOLD.json" --queue "PP_REVIEW_QUEUE_001.json" --intake "PP_REVIEW_INTAKE_001.json" --plan "PP_VERIFICATION_PLAN_HOLD.json" --observations "PP_OBSERVATION_001.json" --export "PP_RECOVERY_STATUS_HOLD.json"
+```
+
+Met `--export` wordt uitsluitend een **nieuw** bestand gemaakt;
+bestaande bestanden worden nooit overschreven. Zonder
+`--export` schrijft de CLI alleen JSON naar stdout. Er worden
+geen tests, proof checks, accountsessies of autorisatiehandelingen
+gestart.
+
+Het nieuwe backofficepaneel **PP-RECOVERY-002 / centraal
+herstelstatusrapport — alleen lezen** leest het geëxporteerde JSON
+van maximaal 32 KiB. Het toont brongetallen, de vijf poorten,
+de zes controlefasen en acht handmatige vervolgstappen. De browser
+weigert tegenstrijdige vaste HOLD-statussen, maar valideert niet
+opnieuw de vijf originele broncontracten, de volledige SHA-256-ketens
+of de herkomst van het statusbestand. Het blijft een **ongetekende
+browserindicatie**, geen onafhankelijk Python-attest.
+
+Het JavaScriptbestand staat op de expliciete lokale server-allowlist.
+Er is geen nieuwe upload/API-route, testuitvoering, merge of
+productie-uitrol. Bij bestandswijziging of afmelden wordt de tijdelijke
+weergave gewist.
+
+**DRAFT / NOT EXECUTED / NOT_VERIFIED / HOLD / DENY /
+NOT_AUTHORIZED.**
+
+### PP-RECOVERY-002 — vrijgavegereedheidsanalyse: alleen ontbrekende voorwaarden
+
+`review_044_release_readiness.analyze_release_readiness(
+dossier_bytes, queue_bytes, intake_bytes, plan_bytes, observations_bytes)`
+hergebruikt de strikte vijfbron-controle via
+`build_recovery_status_report`. De functie retourneert een
+niet-autorisatieverlenend rapport van **zes globale blokkades**,
+**vijf afzonderlijke beslispoorten** en voor elke poort precies
+de ontbrekende handmatige verificatiestappen uit het eerder
+vastgelegde zesstappenplan. De geblokkeerde poorten krijgen
+één voorgestelde externe handmatige vervolgrichting.
+
+Het schema `palaco.pp.recovery-002-release-readiness.v0` heeft
+onvoorwaardelijk `overallReadiness=NOT_READY`,
+`blockedGateCount=5`, `gate=BLOCKED`,
+`readiness=NOT_READY`, `manualDecision=REQUIRED_OUTSIDE_THIS_MODULE`,
+`independentVerification=NOT_VERIFIED`,
+`reviewerAuthority=NOT_ESTABLISHED`,
+`authorization=HOLD`, `accessDecision=DENY`,
+`issuance=NOT_AUTHORIZED` en `palacoOneHandoff=BLOCKED`.
+Interne consistentie of het bestaan van veel zelfrapportages
+is geen toestemming, revieweridentiteit of onafhankelijke attestatie.
+
+De opt-in `review_044_release_readiness_cli.py` leest niets zonder
+`--run`. Tijdens een latere gebruikerssessie kan een nieuw rapport
+als volgt worden voorbereid:
+
+```powershell
+python .\review_044_release_readiness_cli.py --run --dossier "PP_RECOVERY_DECISION_HOLD.json" --queue "PP_REVIEW_QUEUE_001.json" --intake "PP_REVIEW_INTAKE_001.json" --plan "PP_VERIFICATION_PLAN_HOLD.json" --observations "PP_OBSERVATION_001.json" --export "PP_READINESS_GAPS_HOLD.json"
+```
+
+`--export` maakt een nieuw bestand; overschrijven is verboden.
+Zonder `--export` wordt het JSON-rapport uitsluitend naar stdout
+geschreven. Er worden geen tests, identiteitscontroles, merge, deploy
+of autorisatiehandelingen gestart.
+
+Het backofficepaneel **PP-RECOVERY-002 / vrijgavegereedheid —
+ontbrekende voorwaarden** leest een bestaand rapport tot 32 KiB
+via de browser-File API. Het controleert op herkenbare schema-,
+teller- en blokkadevelden, maar voert geen volledige strikte Python-
+validatie uit en verifieert niet de oorspronkelijke vijf bronbestanden.
+Ook het geraadpleegde rapport is een **ongetekende claim**.
+Het nieuwe JavaScriptbestand is alleen aan de expliciete
+lokale server-allowlist toegevoegd.
+
+**Status: DRAFT / NOT EXECUTED / NOT_VERIFIED / NOT_READY /
+HOLD / DENY / NOT_AUTHORIZED.**
+
+### PP-RECOVERY-002 — ongetekend human-review handoffmanifest
+
+De nieuwe pure module `review_044_human_review_handoff.py` bereidt
+een overdrachts**manifest** voor op basis van de vijf oorspronkelijke
+bronbestanden. De module hergebruikt de strikte
+`analyze_release_readiness` en `build_recovery_status_report`
+en laat alle vijf poorten `BLOCKED`. De output bevat vijf ruwe
+bronbestand-SHA-256-referenties, de zes globale ontbrekende
+voorwaarden, alle per-poort ontbrekende checks en canonieke digests
+van de voorafgaande analyse- en statusobjecten. Er wordt geen
+oorspronkelijke bewijsinhoud, PP-nummer, persoon of account-ID
+in het manifest opgenomen.
+
+Het schema `palaco.pp.recovery-002-human-review-handoff.v0`
+verklaart expliciet `intendedRecipient=
+INDEPENDENT_AUTHORIZED_HUMAN_REVIEWER_UNASSIGNED`,
+`recipientAuthentication=NOT_ESTABLISHED`,
+`recipientAuthorization=NOT_ESTABLISHED`,
+`deliveryStatus=NOT_DELIVERED`,
+`receiptStatus=NOT_ACKNOWLEDGED`,
+`manifestProvenance=UNSIGNED_LOCAL_DRAFT`,
+`originalEvidenceIncluded=false`,
+`originalEvidenceRetention=REQUIRED_SEPARATELY`,
+`releaseReadiness=NOT_READY` en
+`HOLD / DENY / NOT_AUTHORIZED`.
+Een dergelijke manifestclaim is geen bewijs van verzending,
+ontvangst, onafhankelijke bronherkomst of bevoegde reviewer.
+
+De opt-in `review_044_human_review_handoff_cli.py` opent zonder
+`--run` geen bronbestanden. Later kan de eigenaar, tijdens de
+eigen testsessie, expliciet een **nieuw** manifest voorbereiden:
+
+```powershell
+python .\review_044_human_review_handoff_cli.py --run --dossier "PP_RECOVERY_DECISION_HOLD.json" --queue "PP_REVIEW_QUEUE_001.json" --intake "PP_REVIEW_INTAKE_001.json" --plan "PP_VERIFICATION_PLAN_HOLD.json" --observations "PP_OBSERVATION_001.json" --export "PP_HUMAN_REVIEW_HANDOFF_HOLD.json"
+```
+
+De export schrijft alleen een nieuw bestand (`xb`), nooit een
+bestaand bestand over; zonder `--export` alleen naar stdout.
+Er wordt niets verstuurd of geauthenticeerd.
+
+De backoffice heeft een afzonderlijk paneel
+**PP-RECOVERY-002 / overdrachtsmanifest menselijke review — alleen
+lezen**. De browser leest maximaal 32 KiB lokale JSON, toont
+vijf bronreferenties, globale blokkades en vijf open poorten,
+en weigert tegenstrijdige autorisatieclaims. De weergave is
+uitsluitend **indicatief**: er is geen onafhankelijke herberekening
+van de vijf originele bronhashes, geen strikte Python-validatie en
+geen cryptografische attestatie van de manifestmaker.
+Het nieuwe script staat uitsluitend op de expliciete lokale
+server-allowlist. Geen API, upload, merge, tests of uitrol.
+
+**DRAFT / NOT EXECUTED / NOT_DELIVERED / NOT_ACKNOWLEDGED /
+NOT_VERIFIED / NOT_READY / HOLD / DENY / NOT_AUTHORIZED.**
+
+### Ontvangst- en reviewerprotocol — uitsluitend onbevestigde claims
+
+De pure module `review_044_review_protocol.py` biedt
+`append_review_protocol_claim(dossier_bytes, queue_bytes, intake_bytes,
+plan_bytes, observations_bytes, manifest_bytes,
+previous_protocol_bytes, mark, role_claim, requirement_id)`.
+Hij reconstrueert het bestaande, ongetekende handoffmanifest uit de vijf
+originele bronnen, eist een **type-exacte** overeenkomst met het
+aangeleverde manifest, bindt het protocol aan de SHA-256 van de
+originele manifestbytes en valideert de hashketen van een eerder
+protocol-snapshot. Onjuiste, te grote en tegenstrijdige gegevens worden
+afgewezen met `PP_RECOVERY_002_REVIEW_PROTOCOL_INVALID`.
+
+Het protocol accepteert uitsluitend **zelfgerapporteerde** categorieën:
+`RECEIPT_CLAIMED`, `REVIEW_REQUESTED`,
+`IDENTITY_CHECK_REQUESTED`, `AUTHORITY_CHECK_REQUESTED`,
+`AUTHENTICATION_BLOCKER_REPORTED`, `EVIDENCE_GAP_REPORTED`
+en `RECHECK_REQUESTED`. Een opgegeven rol is uitsluitend
+`OWNER_CLAIMED`, `RECIPIENT_CLAIMED` of
+`REVIEWER_CLAIMED`. Iedere claim is verbonden met één van de vijf
+bewijspoorten en krijgt een volgnummer en lokale SHA-256-hashverwijzing.
+Er is geen markering `RECEIVED_VERIFIED`, `REVIEW_APPROVED`,
+`PASS` of `AUTHORIZED`.
+
+Het register is maximaal 64 KiB, 64 events, en houdt
+`receiptVerification=NOT_VERIFIED`,
+`reviewerAuthentication=NOT_ESTABLISHED`,
+`reviewerAuthority=NOT_ESTABLISHED`,
+`humanReview=NOT_COMPLETED`, `gate=BLOCKED`,
+`palacoOneHandoff=BLOCKED` en `HOLD / DENY /
+NOT_AUTHORIZED` vast. De lokale hashketen heeft geen onafhankelijke
+handtekening, timestamp of externe onveranderlijke verankering.
+
+De CLI `review_044_review_protocol_cli.py` opent geen bestanden
+zonder expliciet `--run`; `--export` is create-only en verplicht
+voor een registratie. Tijdens een latere eigenaartestsessie:
+
+```powershell
+python .\review_044_review_protocol_cli.py --run --dossier "PP_RECOVERY_DECISION_HOLD.json" --queue "PP_REVIEW_QUEUE_001.json" --intake "PP_REVIEW_INTAKE_001.json" --plan "PP_VERIFICATION_PLAN_HOLD.json" --observations "PP_OBSERVATION_001.json" --manifest "PP_HUMAN_REVIEW_HANDOFF_HOLD.json" --mark IDENTITY_CHECK_REQUESTED --role-claim REVIEWER_CLAIMED --requirement HUMAN_REVIEW --export "PP_REVIEW_PROTOCOL_001.json"
+```
+
+Bij de volgende registratie is `--previous` met het vorige
+protocol-snapshot nodig, terwijl `--export` naar een **nieuwe**
+bestandsnaam verwijst. Een `RECEIPT_CLAIMED` is geen bewezen
+ontvangst: voor een werkelijke beoordeling moet de reviewer via een
+afzonderlijk onafhankelijk authenticatie- en autorisatieproces
+worden vastgesteld, met een separaat besluitrecord buiten dit
+claims-only protocol.
+
+De backoffice heeft nu het nieuwe paneel
+**PP-RECOVERY-002 / ontvangst- en beoordelingsprotocol — alleen lezen**.
+De browser leest lokaal een manifest van maximaal 32 KiB en een
+protocolsnapshot van maximaal 64 KiB, vergelijkt de
+SHA-256 van de ongewijzigde manifestbytes en presenteert de
+onbevestigde claims. De browser herberekent niet de complete
+eventketen of de vijf oorspronkelijke broncontracten en kan dubbele
+JSON-sleutels niet normatief uitsluiten. Het paneel is daarom
+uitdrukkelijk niet geschikt als bewijs van ontvangst,
+reviewerbevoegdheid, onafhankelijke beoordeling of vrijgave.
+Geen API, upload, tests, merge of uitrol.
+
+**DRAFT / NOT EXECUTED / NOT_DELIVERED /
+RECEIPT_NOT_VERIFIED / REVIEWER_AUTHORITY_NOT_ESTABLISHED /
+NOT_READY / HOLD / DENY / NOT_AUTHORIZED.**
+
+### Onafhankelijke reviewer-authenticatie — beveiligingscontract, geen authenticator
+
+De pure module `review_044_reviewer_auth_contract.py` levert het
+contract `palaco.pp.recovery-002-reviewer-auth-contract.v0`.
+Hij herbouwt het ongetekende handoffmanifest uit de oorspronkelijke
+vijf bronnen en eist een type-exacte match; vervolgens valideert
+hij het bijbehorende claims-only ontvangstprotocol en de volledige
+lokale SHA-256-eventketen. Het resultaat koppelt de byte-SHA-256
+van manifest en protocol aan de lijst van onvervulde externe eisen.
+Een correcte keten geeft **geen** identiteit, bevoegdheid of onafhankelijk
+bewijs van aflevering/ontvangst.
+
+De acht noodzakelijke externe controles zijn:
+1. betrouwbare, onafhankelijke identity provider;
+2. verse, doelgroepgebonden challenge met phishingbestendige authenticatie;
+3. onafhankelijk ondertekende reviewer-rolattestatie;
+4. scope- en doelbinding aan PP-RECOVERY-002;
+5. replaypreventie, geldigheid en intrekking met vertrouwde tijd en opslag;
+6. onafhankelijke functiescheiding en belangenconflictcontrole;
+7. ondertekend ontvangstbewijs over **exacte** manifestbytes;
+8. extern verankerde, manipulatiebestendige auditregistratie.
+
+De nieuwe contractmodule **implementeert geen enkele externe controle**:
+`identityProviderIntegration=NOT_CONFIGURED`,
+`credentialValidation=NOT_PERFORMED`,
+`reviewerAuthentication=NOT_ESTABLISHED`,
+`recipientAuthentication=NOT_ESTABLISHED`,
+`reviewerAuthority=NOT_ESTABLISHED`,
+`humanReview=NOT_COMPLETED` en alle vijf poorten blijven
+`NOT_VERIFIED / BLOCKED`. PALACO ONE krijgt geen sessie of token.
+Er bestaan geen PASS-, SIGN-, LOGIN- of GRANT-acties in dit contract.
+
+`review_044_reviewer_auth_contract_cli.py` leest niets zonder
+expliciet `--run`, en maakt uitsluitend een nieuw bestand
+via `--export`. Een mogelijke *latere* offline eigenaarshandeling:
+
+```powershell
+python .\review_044_reviewer_auth_contract_cli.py --run --dossier "PP_RECOVERY_DECISION_HOLD.json" --queue "PP_REVIEW_QUEUE_001.json" --intake "PP_REVIEW_INTAKE_001.json" --plan "PP_VERIFICATION_PLAN_HOLD.json" --observations "PP_OBSERVATION_001.json" --manifest "PP_HUMAN_REVIEW_HANDOFF_HOLD.json" --protocol "PP_REVIEW_PROTOCOL_001.json" --export "PP_REVIEWER_AUTH_REQUIREMENTS_HOLD.json"
+```
+
+Het lokale backofficepaneel **PP-RECOVERY-002 / onafhankelijke
+reviewer-authenticatie — eisencontract** leest uitsluitend een eerder
+opgeslagen JSON-bestand van maximaal 32 KiB. Het paneel controleert
+herkenbare vorm, acht vaste controle-ID's, vijf geblokkeerde poorten
+en afwezigheid van autorisatieclaims, maar controleert niet opnieuw
+de oorspronkelijke zeven documenten. Het is geen identiteitsprovider
+en geen bewijs dat Python, externe crypto-validatie of reviewercontrole
+heeft plaatsgevonden. Bij bestandwijziging of afmelden wordt de
+weergave gewist; de statische module is op de expliciete
+server-allowlist aangesloten. Geen tests, merge, deploy,
+identiteitsuitgifte of wijziging van HOLD.
+
+**DRAFT / NOT EXECUTED / NOT_VERIFIED / NOT_READY /
+REVIEWER_AUTHORITY_NOT_ESTABLISHED / HOLD / DENY / NOT_AUTHORIZED.**
+
+### Reviewer-identiteitsdienst — gescheiden architectuurcontract (niet actief)
+
+`review_044_reviewer_service_blueprint.py` definieert drie strikt
+gescheiden trust boundaries: **AUTHENTICATION**, **AUTHORIZATION** en
+**AUDIT**. De module valideert eerst de vijf originele bronbestanden,
+het ongetekende human-review handoffmanifest, het ontvangstprotocol
+en het eerdere reviewer-authenticatiecontract. De oorspronkelijke
+contractbytes worden gebonden via SHA-256. Het authenticatiecontract
+moet exact overeenkomen met de opnieuw berekende structuur; een
+afwijking wordt geweigerd met
+`PP_RECOVERY_002_REVIEWER_SERVICE_BLUEPRINT_INVALID`.
+
+De drie grenzen bevatten alleen **nog te implementeren eisen**:
+
+- **Authenticatie**: vertrouwde issuer, doelgroepgebonden challenge,
+  algoritme-/handtekeningcontrole, vertrouwde tijd, replaypreventie,
+  sleutelintrekking. Toekomstige output: `IDENTITY_ASSERTION`.
+- **Autorisatie**: onafhankelijke rolattestatie, PP-RECOVERY-002-scope,
+  least privilege, functiescheiding, conflict-/intrekkingscontrole,
+  deny-by-default. Toekomstige output: `REVIEWER_SCOPE_DECISION`.
+- **Audit**: exact-manifestgebonden ondertekende ontvangst, onafhankelijke
+  auditverankering, vertrouwde timestamp en externe verificatie.
+  Toekomstige output: `SIGNED_RECEIPT_AND_IMMUTABLE_AUDIT_REFERENCE`.
+
+De module **verifieert geen tokens, sleutels of handtekeningen**,
+raadpleegt geen identity provider en schrijft geen auditrecord. De
+drie services hebben `implementation=NOT_IMPLEMENTED`,
+`trustEvaluation=NOT_PERFORMED` en `outboundAuthority=NONE`.
+Alle acht reviewer-eisen blijven `NOT_ESTABLISHED` en alle vijf
+beslispoorten `BLOCKED`. De vaste systeemstatus blijft
+`NOT_VERIFIED / NOT_READY / HOLD / DENY / NOT_AUTHORIZED`.
+Een claims-only ontvangst- of reviewerregistratie kan deze
+trust boundary nooit oversteken.
+
+De opt-in CLI `review_044_reviewer_service_blueprint_cli.py` opent
+geen bestanden zonder `--run`. `--export` is verplicht en maakt
+uitsluitend een nieuw bestand aan; er is geen overwrite, test-runner,
+netwerkactie of autorisatieroute. Voor een latere eigenaartestsessie:
+
+```powershell
+python .\review_044_reviewer_service_blueprint_cli.py --run --dossier "PP_RECOVERY_DECISION_HOLD.json" --queue "PP_REVIEW_QUEUE_001.json" --intake "PP_REVIEW_INTAKE_001.json" --plan "PP_VERIFICATION_PLAN_HOLD.json" --observations "PP_OBSERVATION_001.json" --manifest "PP_HUMAN_REVIEW_HANDOFF_HOLD.json" --protocol "PP_REVIEW_PROTOCOL_001.json" --contract "PP_REVIEWER_AUTH_REQUIREMENTS_HOLD.json" --export "PP_REVIEWER_SERVICE_BLUEPRINT_HOLD.json"
+```
+
+Het nieuwe backofficepaneel **PP-RECOVERY-002 / reviewer-identiteitsdienst —
+drie gescheiden beveiligingslagen** kan een bestaand lokaal JSON-rapport
+van maximaal 32 KiB indicatief tonen. Browserimport valideert niet de
+originele acht documenten, echte authenticatie of externe audit.
+Het script staat op de beperkte server-allowlist; bij afmelding
+of bestandwijziging wordt de lokale weergave gewist. Geen API, login,
+merge, deploy, issuance of functionele tests.
+
+**DRAFT / NOT EXECUTED / NOT_IMPLEMENTED / NOT_VERIFIED /
+NOT_READY / HOLD / DENY / NOT_AUTHORIZED.**
+
+### Reviewer-service interfacecontracten — drie gescheiden, uitgeschakelde API's
+
+`review_044_reviewer_interface_contract.py` definieert een
+machineleesbaar ontwerp voor drie toekomstige interne interfaces,
+**geen bestaande HTTP-routes**:
+`POST /internal/reviewer-auth/assert` (AUTHENTICATION),
+`POST /internal/reviewer-auth/scope` (AUTHORIZATION),
+en `POST /internal/reviewer-auth/receipt` (AUDIT).
+De request- en toekomstige responsevelden zijn gespecificeerd,
+maar elk interfaceobject blijft
+`implementation=NOT_IMPLEMENTED`,
+`endpointEnabled=false`,
+`acceptsSelfReportedRoleClaims=false`,
+`responseToday=DENY_UNIMPLEMENTED`.
+
+De pure functie `prepare_reviewer_interface_contract` krijgt de
+vijf oorspronkelijke bronbestanden, het handoffmanifest,
+ontvangstprotocol, reviewer-authenticatiecontract en de voorgaande
+drie-lagen-blauwdruk als **negen byte-inputs**. Zij valideert de
+complete onderlinge bronbinding via eerdere strikte Pythonmodules,
+vereist een type-exact identieke blauwdruk en maakt alleen een
+ongetekend ontwerpcontract. Een afwijking wordt
+`PP_RECOVERY_002_REVIEWER_INTERFACE_INVALID`. Deze controle
+is nog niet uitgevoerd in de huidige bouwstap.
+
+Het foutcontract vermeldt 16 specifieke toekomstige foutcodes,
+waaronder `INVALID_SIGNATURE`, `REPLAY_DETECTED`,
+`CREDENTIAL_REVOKED`, `AUDIT_UNAVAILABLE` en
+`TRUSTED_TIME_UNAVAILABLE`. Onbekende fouten en onbeschikbare
+afhankelijkheden zijn **DENY**. Geheime credentials en privésleutels
+mogen niet in fout- of auditlogs verschijnen. Vier intrekkingen
+zijn afzonderlijk toegewezen aan de verantwoordelijke laag:
+credential, reviewerrol, ondertekeningssleutel en
+auditverankering. Iedere intrekking is `DENY` tot een nieuwe
+onafhankelijke beoordeling.
+
+De contractuele scheiding is expliciet: authenticatie
+verleent geen autorisatie; autorisatie authenticeert niet;
+audit verleent nooit rechten; één enkele dienst kan HOLD
+niet opheffen. PALACO ONE-sessiecreatie is verboden.
+Geen endpoint, identity provider, tokenvalidator, beleidsengine,
+auditanker of cryptografische handtekening is hiermee gebouwd.
+
+De opt-in `review_044_reviewer_interface_contract_cli.py`
+leest zonder `--run` geen bestanden en schrijft met
+`--export` uitsluitend een nieuw JSON-bestand, nooit een
+bestaand bestand over. Voor een toekomstige eigenaartestsessie:
+
+```powershell
+python .\review_044_reviewer_interface_contract_cli.py --run --dossier "PP_RECOVERY_DECISION_HOLD.json" --queue "PP_REVIEW_QUEUE_001.json" --intake "PP_REVIEW_INTAKE_001.json" --plan "PP_VERIFICATION_PLAN_HOLD.json" --observations "PP_OBSERVATION_001.json" --manifest "PP_HUMAN_REVIEW_HANDOFF_HOLD.json" --protocol "PP_REVIEW_PROTOCOL_001.json" --contract "PP_REVIEWER_AUTH_REQUIREMENTS_HOLD.json" --blueprint "PP_REVIEWER_SERVICE_BLUEPRINT_HOLD.json" --export "PP_REVIEWER_INTERFACE_CONTRACT_HOLD.json"
+```
+
+Het backofficepaneel **PP-RECOVERY-002 / interfacecontracten —
+authenticatie, autorisatie en audit** toont een eerder opgeslagen
+lokaal JSON-contract van maximaal 32 KiB. Het controleert
+herkenbare vaste structuur, drie uitgeschakelde routes, foutcodes,
+intrekkingen en functiescheiding. Het is geen normatieve hercontrole
+van negen originele inputbestanden en kan geen onafhankelijke
+bevoegdheid vaststellen. De statische viewer staat op de expliciete
+lokale server-allowlist; geen nieuwe server-API is toegevoegd.
+
+**DRAFT / NOT EXECUTED / NOT_IMPLEMENTED / NOT_VERIFIED /
+NOT_READY / HOLD / DENY / NOT_AUTHORIZED.**
+
+### PP-RECOVERY-002 — trust-transition protocol, uitsluitend geblokkeerde overgangen
+
+De pure module `review_044_trust_transition.py` definieert het
+versiegebonden contract
+`palaco.pp.recovery-002-trust-transition.v0`. De functie
+`prepare_trust_transition_protocol` neemt tien strikt gekoppelde
+bronbestanden als bytes, valideert het eerdere interfacecontract
+type-exact tegenover de opnieuw gegenereerde Pythonstructuur
+en vereist dat alle toekomstige API-endpoints uitgeschakeld blijven.
+
+Het protocol beschrijft precies drie, **niet uitgevoerde** overgangen:
+
+1. `AUTHENTICATION_TO_AUTHORIZATION` — een door een externe
+   vertrouwde issuer gecontroleerde identiteitsassertie, gebonden aan
+   challenge, audience, purpose, geldigheid en intrekkingscontrole.
+2. `AUTHORIZATION_TO_AUDIT` — onafhankelijke rolattestatie,
+   scopecontrole, functiescheiding en handoff-manifestbinding,
+   waarna ondertekende ontvangst en externe audit vereist zijn.
+3. `AUDIT_TO_MANUAL_REVIEW` — een onafhankelijk geverifieerde
+   ondertekening, externe auditankercontrole, betrouwbare timestamp
+   en **afzonderlijk bevoegd menselijk reviewbesluit**.
+
+Iedere overgang heeft vier verplichte externe bewijsvoorwaarden,
+`proofAcceptance=NOT_IMPLEMENTED`, `status=BLOCKED`
+en `decision=DENY`. Negen gebundelde mislukkingstypen, inclusief
+replay, intrekking, ontbrekende handtekening, ongeldige scope,
+onbereikbare audit en onbetrouwbare tijd, leiden altijd tot DENY.
+Een eerdere self-report, lokaal ontvangstprotocol of interne
+SHA-256-keten kan nooit zelf een overgang voltooien.
+
+De opt-in `review_044_trust_transition_cli.py` opent
+zonder `--run` geen invoerbestanden; `--export` maakt
+uitsluitend een nieuw JSON-bestand aan. Voor een latere
+eigenaartestsessie is de opdracht:
+
+```powershell
+python .\review_044_trust_transition_cli.py --run --dossier "PP_RECOVERY_DECISION_HOLD.json" --queue "PP_REVIEW_QUEUE_001.json" --intake "PP_REVIEW_INTAKE_001.json" --plan "PP_VERIFICATION_PLAN_HOLD.json" --observations "PP_OBSERVATION_001.json" --manifest "PP_HUMAN_REVIEW_HANDOFF_HOLD.json" --protocol "PP_REVIEW_PROTOCOL_001.json" --contract "PP_REVIEWER_AUTH_REQUIREMENTS_HOLD.json" --blueprint "PP_REVIEWER_SERVICE_BLUEPRINT_HOLD.json" --interfaces "PP_REVIEWER_INTERFACE_CONTRACT_HOLD.json" --export "PP_TRUST_TRANSITIONS_HOLD.json"
+```
+
+Het backofficepaneel **PP-RECOVERY-002 / trust-transition protocol —
+drie geblokkeerde grenzen** leest lokaal maximaal 32 KiB JSON
+en presenteert de drie overgangen en negen DENY-fouten. Deze
+browserweergave controleert geen originele bronketen, ondertekening,
+cryptografische identiteitsbewijzen of actieve audit. De statische
+script-URL is expliciet aan de lokale server-allowlist toegevoegd:
+er bestaat **geen nieuwe runtime-API**.
+
+Geen tests, merge, uitrol, reviewbesluit, vrijgave, uitgifte,
+sessiecreatie of overdracht naar PALACO ONE.
+
+**DRAFT / NOT EXECUTED / NOT_IMPLEMENTED / NOT_VERIFIED /
+NOT_READY / HOLD / DENY / NOT_AUTHORIZED.**
+
+### Revocation & Recovery Contract — vier scenario's, geen uitvoerende intrekking
+
+De pure module `review_044_revocation_recovery.py` beschrijft
+intrekkingsgevolgen en extern vereiste herstelstappen, maar voert
+**geen enkele intrekking of hersteloperatie** uit. De functie
+`prepare_revocation_recovery_contract` neemt de elf originele
+bytebestanden uit de reviewketen, reconstrueert het
+trust-transition contract en vergelijkt het aangeleverde
+contract opnieuw **type-exact**. Afwijkingen worden geweigerd
+met `PP_RECOVERY_002_REVOCATION_RECOVERY_INVALID`.
+
+De vier niet-uitgevoerde intrekkingsscenario's zijn:
+`CREDENTIAL_REVOKED` (AUTHENTICATION; kan afgeleide
+identiteitsasserties, scopebesluiten en ontvangstbewijzen raken),
+`ROLE_REVOKED` (AUTHORIZATION; scopebesluiten en ontvangsten),
+`SIGNING_KEY_REVOKED` (AUDIT; ondertekende ontvangsten) en
+`AUDIT_ANCHOR_COMPROMISED` (AUDIT; geankerde ontvangsten).
+Ze hebben alle
+`propagation=REQUIRED_ACROSS_DEPENDENT_SERVICES`,
+`detection=NOT_IMPLEMENTED`,
+`invalidationExecution=NOT_EXECUTED`,
+`effectiveDecision=DENY` en `restorePermission=NONE`.
+Het manifest is dus een **eisencontract**, geen bewijs dat
+afhankelijke rechten daadwerkelijk ingetrokken zijn.
+
+Acht voorbereide stappen vereisen onafhankelijke intrekkingsattestatie,
+quarantaine van afgeleide claims, nonce-/credentialverval,
+hercontrole van issuersleutels, nieuwe rol- en scopeverificatie,
+een opnieuw geverifieerde ondertekende ontvangst en auditanker,
+nieuwe bevoegde menselijke beoordeling en behoud van HOLD totdat
+een **afzonderlijk bevoegd extern besluit** is genomen.
+Geen herstelstap maakt lokaal nieuwe tokens, sessies of rechten aan.
+Alle drie de trust transitions blijven `BLOCKED / DENY`.
+
+De CLI `review_044_revocation_recovery_cli.py` vereist expliciet
+`--run` en `--export`; export maakt uitsluitend een nieuw bestand
+met `xb`. De latere handmatige opdracht:
+
+```powershell
+python .\review_044_revocation_recovery_cli.py --run --dossier "PP_RECOVERY_DECISION_HOLD.json" --queue "PP_REVIEW_QUEUE_001.json" --intake "PP_REVIEW_INTAKE_001.json" --plan "PP_VERIFICATION_PLAN_HOLD.json" --observations "PP_OBSERVATION_001.json" --manifest "PP_HUMAN_REVIEW_HANDOFF_HOLD.json" --protocol "PP_REVIEW_PROTOCOL_001.json" --contract "PP_REVIEWER_AUTH_REQUIREMENTS_HOLD.json" --blueprint "PP_REVIEWER_SERVICE_BLUEPRINT_HOLD.json" --interfaces "PP_REVIEWER_INTERFACE_CONTRACT_HOLD.json" --transitions "PP_TRUST_TRANSITIONS_HOLD.json" --export "PP_REVOCATION_RECOVERY_HOLD.json"
+```
+
+Het alleen-lezen backofficepaneel **PP-RECOVERY-002 / revocation &
+recovery** leest maximaal 32 KiB lokale JSON, toont vier
+intrekkingsscenario's en acht herstelcontroles en weigert herkenbare
+tegenstrijdige vrijgaveclaims. De browser controleert niet opnieuw
+de elf bronbestanden, externe credentials, daadwerkelijke
+intrekkingsregistraties of auditbewijzen. De nieuwe statische
+JavaScriptviewer is alleen op de expliciete lokale server-allowlist
+toegevoegd. Er is **geen runtime-API of revocation feed** geïnstalleerd.
+
+Geen tests, merge, deploy, identiteitshandeling,
+autorisatie, daadwerkelijke intrekking of PALACO ONE-sessie.
+
+**DRAFT / NOT EXECUTED / NOT_IMPLEMENTED / NOT_VERIFIED /
+NOT_READY / HOLD / DENY / NOT_AUTHORIZED.**
+
+### PP-RECOVERY-002 — centraal Security Assurance Dossier (twaalf bronbestanden)
+
+De nieuwe pure module `review_044_security_assurance.py` vormt een
+centrale, **ongetekende interne samenhangsrapportage** van twaalf
+oorspronkelijke bytebestanden: beslisdossier, review-queue, intake,
+verificatieplan, observatieregister, handoffmanifest, receiptprotocol,
+reviewer-authenticatie-eisen, reviewer-service-blauwdruk,
+interfacecontracten, trust-transitions en revocation/recovery.
+
+`prepare_security_assurance_dossier` controleert de bestandsgrootte
+en strikte typevereisten, reconstrueert het laatste
+revocation/recoverycontract uit de eerdere elf bronnen, vergelijkt het
+type-exact met het twaalfde bestand en koppelt de **originele SHA-256
+bytevingerafdrukken** aan alle bronrollen. Onjuiste onderlinge
+referenties of een afwijkend afsluitend contract worden geweigerd
+met `PP_RECOVERY_002_SECURITY_ASSURANCE_INVALID`. Deze interne
+consistentiecontrole is **geen** onafhankelijke bewijsattestatie.
+
+Het dossier toont acht `NOT_ESTABLISHED` reviewercontroles,
+drie `BLOCKED / DENY` trust-transitions,
+vier niet-uitgevoerde intrekkingsscenario's,
+acht `NOT_STARTED` herstelcontroles, vijf
+`BLOCKED / NOT_VERIFIED` beslispoorten en
+elf expliciet openstaande assurance-gaps:
+bronherkomst, indieneridentiteit, reviewerauthenticatie,
+reviewerbevoegdheid, subjectbinding, cryptografische controle,
+ondertekende ontvangst, onafhankelijke audit, daadwerkelijke
+intrekkingsverwerking, menselijke review en PALACO ONE-autorisatie.
+
+**Onveranderlijke uitvoerstatussen:** `NOT_VERIFIED`,
+`NOT_COMPLETED`, `NOT_ESTABLISHED`, `NOT_READY`,
+`palacoOneHandoff=BLOCKED`, `palacoOneSession=NOT_CREATED`,
+`authorization=HOLD`, `accessDecision=DENY`,
+`issuance=NOT_AUTHORIZED`. Lokale SHA-256-hashes en de
+interne reconstrueerbaarheid van JSON-contracten bewijzen geen
+authenticiteit van de maker, vertrouwde timestamp, actieve
+intrekking, herkomst van originele bewijsbytes of bevoegd besluit.
+
+De expliciete offline CLI
+`review_044_security_assurance_cli.py`
+leest niets zonder `--run` en schrijft alleen een nieuw bestand met
+`--export` via create-only `xb`, zonder overschrijven.
+Voor een eventuele latere handmatige eigenaartestsessie:
+
+```powershell
+python .\review_044_security_assurance_cli.py --run --dossier "PP_RECOVERY_DECISION_HOLD.json" --queue "PP_REVIEW_QUEUE_001.json" --intake "PP_REVIEW_INTAKE_001.json" --plan "PP_VERIFICATION_PLAN_HOLD.json" --observations "PP_OBSERVATION_001.json" --manifest "PP_HUMAN_REVIEW_HANDOFF_HOLD.json" --protocol "PP_REVIEW_PROTOCOL_001.json" --contract "PP_REVIEWER_AUTH_REQUIREMENTS_HOLD.json" --blueprint "PP_REVIEWER_SERVICE_BLUEPRINT_HOLD.json" --interfaces "PP_REVIEWER_INTERFACE_CONTRACT_HOLD.json" --transitions "PP_TRUST_TRANSITIONS_HOLD.json" --revocation "PP_REVOCATION_RECOVERY_HOLD.json" --export "PP_SECURITY_ASSURANCE_HOLD.json"
+```
+
+Het backofficepaneel **PP-RECOVERY-002 / Security Assurance Dossier —
+centrale bewijsgrenzen** leest lokaal tot 64 KiB JSON en toont
+twaalf bronverwijzingen en elf openstaande gaps. Deze
+browserweergave valideert een beperkte vaste structuur, maar
+**herberekent niet de twaalf originele broncontracten**,
+controleert geen externe handtekeningen of revieweridentiteiten en
+mag geen PASS, vrijgave of ontvangst bevestigen.
+Het statische script staat op de expliciete server-allowlist.
+Geen API, tests, merge, productie-uitrol, credentialintrekking,
+reviewbesluit of PALACO ONE-sessie uitgevoerd.
+
+**DRAFT / NOT EXECUTED / NOT_IMPLEMENTED / NOT_VERIFIED /
+NOT_READY / HOLD / DENY / NOT_AUTHORIZED.**
+
+### Centrale versie- en compatibiliteitsregistratie — twaalf v0-contracten
+
+De pure module `review_044_contract_compatibility.py`
+biedt `build_contract_compatibility_register` voor de twaalf
+oorspronkelijke bronbestanden plus het eerder geëxporteerde
+Security Assurance Dossier (dertien byte-inputs). Voor ieder bronbestand
+controleert zij het expliciet verwachte `schema`,
+`reference=PP-RECOVERY-002`, het maximale bestandsformaat en
+de originele byte-SHA-256. Het hele assurance-dossier wordt via
+de bestaande strikte Pythonketen opnieuw opgebouwd en
+**type-exact** vergeleken; alleen identieke v0-broncontracten
+zijn intern compatibel. Foutieve koppelingen en onbekende versies
+worden geweigerd met `PP_RECOVERY_002_COMPATIBILITY_INVALID`.
+
+Het register geeft per bron `majorVersion=0`,
+`compatibility=INTERNALLY_MATCHED_V0_ONLY`,
+`externalAttestation=NOT_VERIFIED` en
+`migration=NOT_PERFORMED`. De centrale compatibiliteitsregels
+zijn expliciet:
+
+- onbekende schema's weigeren;
+- gemengde versies weigeren;
+- stille migraties verbieden;
+- voorwaartse versies niet stilzwijgend accepteren;
+- broncontracten volledig opnieuw valideren;
+- voor bevoegdheidsconclusies onafhankelijke externe attestatie eisen.
+
+Het register zelf **migreert of wijzigt geen data**, ondersteunt
+geen automatische schema-upgrade, en is geen bewijs van externe
+authenticiteit of cryptografische handtekening. Een
+breaking change vereist een nieuwe onafhankelijke review.
+Alle vijf poorten blijven `BLOCKED / NOT_VERIFIED`;
+`NOT_READY / HOLD / DENY / NOT_AUTHORIZED` blijft verplicht.
+
+De opt-in CLI `review_044_contract_compatibility_cli.py` leest
+zonder `--run` geen bestanden en schrijft bij `--export`
+uitsluitend een nieuw JSON-bestand via create-only `xb`.
+Tijdens een latere eigenaarssessie:
+
+```powershell
+python .\review_044_contract_compatibility_cli.py --run --dossier "PP_RECOVERY_DECISION_HOLD.json" --queue "PP_REVIEW_QUEUE_001.json" --intake "PP_REVIEW_INTAKE_001.json" --plan "PP_VERIFICATION_PLAN_HOLD.json" --observations "PP_OBSERVATION_001.json" --manifest "PP_HUMAN_REVIEW_HANDOFF_HOLD.json" --protocol "PP_REVIEW_PROTOCOL_001.json" --contract "PP_REVIEWER_AUTH_REQUIREMENTS_HOLD.json" --blueprint "PP_REVIEWER_SERVICE_BLUEPRINT_HOLD.json" --interfaces "PP_REVIEWER_INTERFACE_CONTRACT_HOLD.json" --transitions "PP_TRUST_TRANSITIONS_HOLD.json" --revocation "PP_REVOCATION_RECOVERY_HOLD.json" --assurance "PP_SECURITY_ASSURANCE_HOLD.json" --export "PP_CONTRACT_COMPATIBILITY_HOLD.json"
+```
+
+Het nieuwe alleen-lezen backofficepaneel
+**PP-RECOVERY-002 / versie- en compatibiliteitsregister**
+leest maximaal 64 KiB lokaal JSON, toont twaalf v0-contractregels
+en zes compatibiliteitsbeperkingen. De browser doet uitsluitend
+indicatieve schema- en statuscontrole en herberekent geen dertien
+originele bronnen. De statische JavaScriptmodule is opgenomen
+in de bestaande lokale server-allowlist; geen nieuwe endpoint,
+migratie, test, merge of deploy toegevoegd.
+
+**DRAFT / NOT EXECUTED / NOT_VERIFIED / NOT_READY /
+HOLD / DENY / NOT_AUTHORIZED.**
+
+### PP-RECOVERY-002 — Change Impact Register (hypothetisch, niet uitvoerend)
+
+De pure module `review_044_change_impact.py` maakt een
+afhankelijkheidsanalyse van een **voorgestelde** contractwijziging.
+De functie `prepare_change_impact_register` vereist alle twaalf
+originele contractbestanden, het Security Assurance Dossier,
+het bestaande compatibiliteitsregister, een expliciete
+`changed_role` en een `change_type`.
+De bestaande dertien broncontracten worden opnieuw gevalideerd via
+`build_contract_compatibility_register`; het aangeleverde register
+moet **type-exact** overeenkomen met de opnieuw berekende structuur.
+Anders wordt geweigerd met
+`PP_RECOVERY_002_CHANGE_IMPACT_INVALID`.
+
+Er zijn vier expliciete hypothetische wijzigingstypes:
+`SCHEMA_CHANGE`, `VERSION_CHANGE`, `CONTENT_CHANGE` en
+`POLICY_CHANGE`. Het model maakt geen wijziging, ontvangt geen
+voorgestelde nieuwe bronbytes en **bewijst dus niet dat een
+toekomstige wijziging compatibel is**. De afhankelijkheidsketen
+is conservatief lineair: alle contracten van de opgegeven bronrol
+tot en met contract twaalf worden als mogelijk beïnvloed gemarkeerd.
+Het Security Assurance Dossier en het compatibiliteitsregister
+moeten altijd opnieuw worden gegenereerd. Alle vijf
+beslispoorten krijgen `reassessment=REQUIRED`,
+`gate=BLOCKED`, `verification=NOT_VERIFIED`.
+Unknown schema, gemengde versies, niet-beoordeelde wijzigingen
+of een release zonder extern bewijs blijven `DENY`;
+stille migratie is verboden.
+
+De opt-in `review_044_change_impact_cli.py` leest zonder
+`--run` geen bestanden en schrijft via `--export` uitsluitend
+een nieuw JSON-bestand (`xb`). Tijdens een latere
+eigenaarssessie kan bijvoorbeeld een *hypothetische*
+wijziging van de reviewer-authenticatie-eisen worden geanalyseerd:
+
+```powershell
+python .\review_044_change_impact_cli.py --run --dossier "PP_RECOVERY_DECISION_HOLD.json" --queue "PP_REVIEW_QUEUE_001.json" --intake "PP_REVIEW_INTAKE_001.json" --plan "PP_VERIFICATION_PLAN_HOLD.json" --observations "PP_OBSERVATION_001.json" --manifest "PP_HUMAN_REVIEW_HANDOFF_HOLD.json" --protocol "PP_REVIEW_PROTOCOL_001.json" --contract "PP_REVIEWER_AUTH_REQUIREMENTS_HOLD.json" --blueprint "PP_REVIEWER_SERVICE_BLUEPRINT_HOLD.json" --interfaces "PP_REVIEWER_INTERFACE_CONTRACT_HOLD.json" --transitions "PP_TRUST_TRANSITIONS_HOLD.json" --revocation "PP_REVOCATION_RECOVERY_HOLD.json" --assurance "PP_SECURITY_ASSURANCE_HOLD.json" --registry "PP_CONTRACT_COMPATIBILITY_HOLD.json" --changed-role REVIEWER_AUTH_REQUIREMENTS --change-type POLICY_CHANGE --export "PP_CHANGE_IMPACT_HOLD.json"
+```
+
+Het aparte lokale backofficepaneel **PP-RECOVERY-002 /
+Change Impact Register** leest een ongetekend rapport
+tot 64 KiB, toont de mogelijk getroffen broncontracten
+en markeert de vijf blijvend geblokkeerde poorten.
+Het controleert **niet** opnieuw de veertien oorspronkelijke
+bronbestanden en is geen autorisatie-, migratie- of
+reviewbeslissysteem. De statische viewer staat alleen
+op de expliciete lokale server-allowlist.
+Er zijn geen tests, merge, deploy, uitgifte, accountmutatie,
+echte wijziging of PALACO ONE-sessie uitgevoerd.
+
+**DRAFT / HYPOTHETICAL_NOT_APPLIED / NOT_EXECUTED /
+NOT_VERIFIED / NOT_READY / HOLD / DENY / NOT_AUTHORIZED.**
+
+### PP-RECOVERY-002 — Release Integrity Manifest (ongetekend; niet vrijgeefbaar)
+
+`review_044_release_integrity.py` consolideert de **originele
+bytebestanden** van de twaalf broncontracten, het Security Assurance
+Dossier, het compatibiliteitsregister én een Change Impact Register
+(totaal **vijftien**). Het compatibiliteits- en impactrapport wordt
+via de bestaande Pythonketen opnieuw opgebouwd en type-exact
+vergeleken met de aangeleverde originele bytes; onbekende schema's,
+onverwachte bestandsgrootten en afwijkende referenties worden
+geweigerd met `PP_RECOVERY_002_RELEASE_INTEGRITY_INVALID`.
+De functie `prepare_release_integrity_manifest` berekent voor elk
+van de vijftien artefacten de SHA-256 van de originele bytes,
+de vaste v0-schemaversie, de bronrol en de toegestane grootte.
+De veertien afhankelijkheidsrelaties leggen vast dat een wijziging
+herbouw en hercontrole van latere contracten vereist.
+
+De module vereist een **bestaand** hypothetisch Change Impact Register
+waarvan de opgegeven bronrol en wijzigingscategorie al intern
+consistent zijn. De analyse past geen voorgestelde nieuwe bytes toe,
+voert geen migration uit en bewijst geen externe compatibiliteit.
+De release is **niet** klaar: negen open blockers, zes
+`BLOCKED / NOT_VERIFIED` releasepoorten en de vijf oorspronkelijke
+`BLOCKED / NOT_VERIFIED` beslispoorten. Een hash zonder
+vertrouwde handtekening en externe herkomstattestatie vormt nooit
+voldoende releasebewijs.
+
+Het outputcontract
+`palaco.pp.recovery-002-release-integrity.v0` heeft vaste velden
+`softwareBundle=NOT_CREATED`, `sbom=NOT_GENERATED`,
+`provenanceAttestation=NOT_ESTABLISHED`,
+`signing=NOT_PERFORMED`, `runtimeTests=NOT_EXECUTED`,
+`deployment=NOT_EXECUTED`, `releaseReadiness=NOT_READY`,
+`palacoOneHandoff=BLOCKED`, `palacoOneSession=NOT_CREATED`,
+`authorization=HOLD`, `accessDecision=DENY`,
+`issuance=NOT_AUTHORIZED`.
+
+De opt-in `review_044_release_integrity_cli.py` opent geen
+bronbestanden zonder `--run` en schrijft uitsluitend naar een
+**nieuw** JSON-bestand via `--export` (create-only `xb`).
+Voor een latere handmatige eigenaarssessie:
+
+```powershell
+python .\review_044_release_integrity_cli.py --run --dossier "PP_RECOVERY_DECISION_HOLD.json" --queue "PP_REVIEW_QUEUE_001.json" --intake "PP_REVIEW_INTAKE_001.json" --plan "PP_VERIFICATION_PLAN_HOLD.json" --observations "PP_OBSERVATION_001.json" --manifest "PP_HUMAN_REVIEW_HANDOFF_HOLD.json" --protocol "PP_REVIEW_PROTOCOL_001.json" --contract "PP_REVIEWER_AUTH_REQUIREMENTS_HOLD.json" --blueprint "PP_REVIEWER_SERVICE_BLUEPRINT_HOLD.json" --interfaces "PP_REVIEWER_INTERFACE_CONTRACT_HOLD.json" --transitions "PP_TRUST_TRANSITIONS_HOLD.json" --revocation "PP_REVOCATION_RECOVERY_HOLD.json" --assurance "PP_SECURITY_ASSURANCE_HOLD.json" --registry "PP_CONTRACT_COMPATIBILITY_HOLD.json" --impact "PP_CHANGE_IMPACT_HOLD.json" --export "PP_RELEASE_INTEGRITY_HOLD.json"
+```
+
+Het nieuwe alleen-lezen backofficepaneel
+**PP-RECOVERY-002 / Release Integrity Manifest — geen vrijgave**
+toont een bestaand lokaal JSON-rapport van maximaal 64 KiB,
+vijftien artefactverwijzingen en negen open releaseblokkades.
+De browser controleert een beperkte vaste structuur en voert
+geen herberekening van de originele vijftien bronbestanden,
+cryptografische attestatie, onafhankelijke reviewerbeoordeling,
+echt softwarepackaging of deploy uit. De viewer is uitsluitend
+opgenomen in de expliciete lokale server-allowlist;
+**er is geen nieuwe API-route** toegevoegd.
+
+Geen tests, merge, deploy, software-uitgave, sessie, rechtenwijziging
+of autonome vervolgstap uitgevoerd.
+
+**DRAFT / NOT EXECUTED / NOT_VERIFIED / NOT_READY /
+HOLD / DENY / NOT_AUTHORIZED.**
+
+### Release Evidence Matrix — zes geblokkeerde releasepoorten
+
+`review_044_release_evidence_matrix.py` bevat een pure, niet-
+autoriserende `prepare_release_evidence_matrix` die de vijftien
+oorspronkelijke bytes van de vorige release-integriteitsketen en
+het zestiende Release Integrity Manifest strikt controleert.
+De module herbouwt het integriteitsmanifest uit de eerdere
+bronnen en vereist een **type-exact** gelijke structuur.
+Foutieve koppelingen, versies of vrijgaveclaims worden
+geweigerd met `PP_RECOVERY_002_RELEASE_EVIDENCE_MATRIX_INVALID`.
+Een inhoudelijk correct intern contract is geen onafhankelijke
+herkomstattestatie of reviewerbevoegdheid.
+
+De zes releasepoorten krijgen elk drie ontbrekende externe
+bewijsstukken en één expliciete onafhankelijke rol:
+`SOURCE_PROVENANCE` (bronbeheerder),
+`VERSION_COMPATIBILITY` (onafhankelijk compatibiliteitsreviewer),
+`INDEPENDENT_VERIFICATION` (technisch verificateur),
+`AUTHORIZED_HUMAN_REVIEW` (bevoegd onafhankelijk reviewer),
+`CRYPTOGRAPHIC_RELEASE_ATTESTATION` (release-attestor) en
+`DEPLOYMENT_APPROVAL` (bevoegd releaseoperator).
+Alle **achttien** items blijven `MISSING /
+NOT_PERFORMED`. Reviewer-authenticatie en bevoegdheid blijven
+`NOT_ESTABLISHED`; menselijke beoordeling `NOT_COMPLETED`;
+alle zes poorten `BLOCKED / DENY`.
+
+Het verslag bevat geen originele externe bewijzen, ondertekende
+ontvangst, actieve softwarebundel, SBOM of releasehandtekening.
+De status blijft `NOT_VERIFIED / NOT_READY / HOLD / DENY /
+NOT_AUTHORIZED`, met `palacoOneHandoff=BLOCKED` en
+`palacoOneSession=NOT_CREATED`.
+
+`review_044_release_evidence_matrix_cli.py` leest niets zonder
+expliciet `--run` en schrijft uitsluitend een nieuw JSON-bestand
+via verplicht `--export` (create-only `xb`).
+Voor een latere handmatige eigenaarssessie:
+
+```powershell
+python .\review_044_release_evidence_matrix_cli.py --run --dossier "PP_RECOVERY_DECISION_HOLD.json" --queue "PP_REVIEW_QUEUE_001.json" --intake "PP_REVIEW_INTAKE_001.json" --plan "PP_VERIFICATION_PLAN_HOLD.json" --observations "PP_OBSERVATION_001.json" --manifest "PP_HUMAN_REVIEW_HANDOFF_HOLD.json" --protocol "PP_REVIEW_PROTOCOL_001.json" --contract "PP_REVIEWER_AUTH_REQUIREMENTS_HOLD.json" --blueprint "PP_REVIEWER_SERVICE_BLUEPRINT_HOLD.json" --interfaces "PP_REVIEWER_INTERFACE_CONTRACT_HOLD.json" --transitions "PP_TRUST_TRANSITIONS_HOLD.json" --revocation "PP_REVOCATION_RECOVERY_HOLD.json" --assurance "PP_SECURITY_ASSURANCE_HOLD.json" --registry "PP_CONTRACT_COMPATIBILITY_HOLD.json" --impact "PP_CHANGE_IMPACT_HOLD.json" --integrity "PP_RELEASE_INTEGRITY_HOLD.json" --export "PP_RELEASE_EVIDENCE_MATRIX_HOLD.json"
+```
+
+Het nieuwe backofficepaneel **PP-RECOVERY-002 / Release Evidence
+Matrix — zes geblokkeerde releasepoorten** leest een lokaal
+ongetekend JSON-bestand van maximaal 32 KiB. De browser
+controleert alleen een herkenbare vaste schema- en blokkadestructuur
+en herberekent niet de zestien bronbestanden of externe
+reviewerattestatie. De JavaScriptviewer staat op de expliciete
+statische server-allowlist; er is geen nieuwe uitvoerende API-route
+aangemaakt. Geen tests, merge, deploy, vrijgave, ondertekening,
+autorisatie of PALACO ONE-sessie.
+
+**DRAFT / NOT EXECUTED / NOT_VERIFIED / NOT_READY /
+HOLD / DENY / NOT_AUTHORIZED.**
+
+### PP-RECOVERY-002 — Release Readiness Cockpit (offline, geen vrijgave)
+
+`review_044_release_readiness_cockpit.py` bevat
+`prepare_release_readiness_cockpit`. De pure functie
+controleert zeventien lokale byte-inputs: de vijftien eerdere
+originele contracten, het Release Integrity Manifest en de
+Release Evidence Matrix. Zij herberekent de matrix vanuit
+de zestien voorafgaande originele bytebestanden en vereist een
+**type-exacte** overeenkomst, inclusief de `HOLD / DENY`
+veiligheidsgrenzen. Inconsistente bronnen worden afgewezen met
+`PP_RECOVERY_002_READINESS_COCKPIT_INVALID`.
+Dit is een **interne consistentiecontrole**, geen onafhankelijke
+bewijsverificatie of extern afgegeven releasebesluit.
+
+De output `palaco.pp.recovery-002-release-readiness-cockpit.v0`
+omvat de originele byte-SHA-256 van de matrix en de daarin
+gerefereerde release-integriteitsmanifesthash, een compacte
+weergave van **15 bronartefacten**, **6 geblokkeerde releasepoorten**,
+**18 ontbrekende bewijsstukken**, **9 open blockers**,
+**5 geblokkeerde herstelbeslispoorten** en **0 vrijgegeven poorten**.
+Per releasepoort zijn de vereiste externe reviewerrol en
+drie ontbrekende bewijs-ID's opgenomen. Daarnaast bevat het
+rapport vijf niet-uitgevoerde handoffstappen. Alle statussen
+blijven `NOT_STARTED`, `NOT_ESTABLISHED`,
+`NOT_PERFORMED`, `BLOCKED`, `NOT_VERIFIED`,
+`NOT_READY`, `HOLD` en `DENY`.
+`interactiveApproval=PROHIBITED`,
+`palacoOneHandoff=BLOCKED` en
+`palacoOneSession=NOT_CREATED` zijn verplicht.
+
+De opt-in `review_044_release_readiness_cockpit_cli.py`
+opent zonder `--run` geen bestanden. Met `--export`
+schrijft hij uitsluitend een nieuw JSON-rapport via `xb`.
+Voor een latere handmatige eigenaartestsessie:
+
+```powershell
+python .\review_044_release_readiness_cockpit_cli.py --run --dossier "PP_RECOVERY_DECISION_HOLD.json" --queue "PP_REVIEW_QUEUE_001.json" --intake "PP_REVIEW_INTAKE_001.json" --plan "PP_VERIFICATION_PLAN_HOLD.json" --observations "PP_OBSERVATION_001.json" --manifest "PP_HUMAN_REVIEW_HANDOFF_HOLD.json" --protocol "PP_REVIEW_PROTOCOL_001.json" --contract "PP_REVIEWER_AUTH_REQUIREMENTS_HOLD.json" --blueprint "PP_REVIEWER_SERVICE_BLUEPRINT_HOLD.json" --interfaces "PP_REVIEWER_INTERFACE_CONTRACT_HOLD.json" --transitions "PP_TRUST_TRANSITIONS_HOLD.json" --revocation "PP_REVOCATION_RECOVERY_HOLD.json" --assurance "PP_SECURITY_ASSURANCE_HOLD.json" --registry "PP_CONTRACT_COMPATIBILITY_HOLD.json" --impact "PP_CHANGE_IMPACT_HOLD.json" --integrity "PP_RELEASE_INTEGRITY_HOLD.json" --matrix "PP_RELEASE_EVIDENCE_MATRIX_HOLD.json" --export "PP_RELEASE_READINESS_COCKPIT_HOLD.json"
+```
+
+Het alleen-lezen backofficepaneel
+**PP-RECOVERY-002 / Release Readiness Cockpit — alleen lezen**
+toont een bestaand lokaal rapport van maximaal 32 KiB en de
+vaste, niet-vrijgevende status. Browserimport verifieert
+geen externe ondertekening, revieweridentiteit, originele
+zeventien bronbestanden of releasebewijs. De statische
+viewer is opgenomen in de beperkte lokale server-allowlist;
+er zijn geen nieuwe uitvoerende HTTP-endpoints toegevoegd.
+
+**DRAFT / NOT EXECUTED / NOT_VERIFIED / NOT_READY /
+HOLD / DENY / NOT_AUTHORIZED.** Geen tests, merge,
+uitrol, autorisatie of PALACO ONE-sessie uitgevoerd.
+
+### PP-RECOVERY-002 — Verification Execution Plan (handmatig, NIET uitgevoerd)
+
+De nieuwe pure module `review_044_release_execution_plan.py`
+bevat `prepare_release_verification_execution_plan`. Zij ontvangt
+**achttien oorspronkelijke bytebestanden**: de vijftien contracten,
+het Release Integrity Manifest, de Release Evidence Matrix en de
+Release Readiness Cockpit. De cockpit wordt vanuit de eerdere
+zeventien bronnen opnieuw opgebouwd en streng type-exact
+vergeleken met het achttiende bestand. Afwijkingen en
+ongeoorloofde vrijgaveclaims leveren
+`PP_RECOVERY_002_RELEASE_EXECUTION_PLAN_INVALID` op.
+
+Het plan bevat **achttien unieke check-ID's**,
+`RG01-E01` tot `RG06-E03`, drie per releasepoort.
+Per check zijn de vereist onafhankelijke reviewerrol,
+bewijs-ID en latere procedurestap vastgelegd. Alle velden
+`execution=NOT_STARTED`,
+`evidenceCapture=NOT_PROVIDED`,
+`independentVerification=NOT_PERFORMED`,
+`reviewerAuthentication=NOT_ESTABLISHED`,
+`reviewerAuthority=NOT_ESTABLISHED`,
+`gate=BLOCKED`, `decision=DENY` blijven onveranderd.
+De zeven procedurestappen beschrijven bronvingerafdrukken
+registreren, onafhankelijke bronattestatie opvragen,
+revieweridentiteit extern bevestigen, rolscope en intrekking
+controleren, externe bewijsverificatie, afzonderlijke
+lokale waarnemingen en menselijke review buiten dit systeem.
+
+Een later observatiecontract is alleen **gespecificeerd**:
+`recordType=SELF_REPORTED_LOCAL_OBSERVATION_ONLY`,
+`externalSignature=NOT_VERIFIED`, `roleClaims=UNAUTHENTICATED`,
+`allowedEffect=NONE`. Deze stap implementeert nog geen
+bewijssnapshot of registratie. Er zijn **geen tests uitgevoerd**.
+
+`review_044_release_execution_plan_cli.py` opent
+geen bronbestanden zonder expliciet `--run` en schrijft
+uitsluitend naar een nieuw bestand met `--export` via
+create-only `xb`. Voor een latere eigenaarssessie:
+
+```powershell
+python .\review_044_release_execution_plan_cli.py --run --dossier "PP_RECOVERY_DECISION_HOLD.json" --queue "PP_REVIEW_QUEUE_001.json" --intake "PP_REVIEW_INTAKE_001.json" --plan "PP_VERIFICATION_PLAN_HOLD.json" --observations "PP_OBSERVATION_001.json" --manifest "PP_HUMAN_REVIEW_HANDOFF_HOLD.json" --protocol "PP_REVIEW_PROTOCOL_001.json" --contract "PP_REVIEWER_AUTH_REQUIREMENTS_HOLD.json" --blueprint "PP_REVIEWER_SERVICE_BLUEPRINT_HOLD.json" --interfaces "PP_REVIEWER_INTERFACE_CONTRACT_HOLD.json" --transitions "PP_TRUST_TRANSITIONS_HOLD.json" --revocation "PP_REVOCATION_RECOVERY_HOLD.json" --assurance "PP_SECURITY_ASSURANCE_HOLD.json" --registry "PP_CONTRACT_COMPATIBILITY_HOLD.json" --impact "PP_CHANGE_IMPACT_HOLD.json" --integrity "PP_RELEASE_INTEGRITY_HOLD.json" --matrix "PP_RELEASE_EVIDENCE_MATRIX_HOLD.json" --cockpit "PP_RELEASE_READINESS_COCKPIT_HOLD.json" --export "PP_VERIFICATION_EXECUTION_PLAN_HOLD.json"
+```
+
+Het nieuwe paneel **PP-RECOVERY-002 / Verification Execution
+Plan — later handmatig uitvoeren** is uitsluitend leesbaar en
+kan een lokaal JSON-plan van maximaal 32 KiB indicatief
+presenteren. Browserimport controleert herkenbare vaste status-
+en check-ID's maar herberekent niet de achttien originele
+bronbestanden. De statische JavaScriptviewer is toegevoegd
+aan de expliciete lokale server-allowlist; er zijn geen
+nieuwe uitvoerende API-routes, authenticaties of reviews gebouwd.
+
+**DRAFT / NOT_EXECUTED / NOT_VERIFIED / NOT_READY /
+HOLD / DENY / NOT_AUTHORIZED.**
+
+### PP-RECOVERY-002 — afzonderlijk Release Observation Register (uitsluitend claims)
+
+De pure module `review_044_release_observation_register.py`
+definieert `append_release_observation` voor een **latere**
+handmatige eigenaarssessie, nadrukkelijk niet voor automatische tests.
+Zij ontvangt de achttien oorspronkelijke bytebestanden van het
+Verification Execution Plan, de originele planbytes en optioneel
+de voorafgaande registersnapshot. De gehele planinhoud wordt uit
+de achttien originele bronnen opnieuw gereconstrueerd en type-exact
+geverifieerd voordat de aangeleverde snapshot wordt geaccepteerd.
+
+Iedere geregistreerde waarneming verwijst naar een bestaande
+`RG01-E01` tot `RG06-E03` check-ID en is beperkt tot:
+`OBSERVATION_REPORTED`, `BLOCKER_REPORTED` of
+`RECHECK_REQUESTED`. De opgegeven rol is uitsluitend
+`OWNER_CLAIMED`, `REVIEWER_CLAIMED` of `SOURCE_CLAIMED`;
+dit zijn **nooit geauthenticeerde identiteiten**.
+Een notitie is maximaal 500 tekens, en een optioneel
+bewijsbestand is maximaal 64 KiB. Het bestand zelf wordt niet in
+het register opgenomen: alleen de SHA-256 van de exacte bytes.
+Dit vormt geen bewijs van origine of onafhankelijke verificatie.
+
+De module controleert in de Pythonlaag de maximaal 128 bestaande
+events, de volgorde, check- en gatebinding, vaste DENY-statussen
+en de lokale SHA-256-hashketen inclusief voorgaande eventhash.
+De hashketen is **geen digitale handtekening, geen vertrouwde tijd
+en geen tamperproof extern auditlog**; een aanvaller met volledige
+schrijftoegang kan een nieuwe lokale keten produceren.
+Er zijn geen PASS-markeringen, wijzigingen van bestaande
+events, bevoegdheidsbesluiten of uitvoering van checks mogelijk.
+
+De opt-in CLI `review_044_release_observation_register_cli.py`
+leest niets zonder `--run` en schrijft een nieuwe snapshot met
+`--export` via uitsluitend create-only `xb`. Voor een latere
+eigenaarssessie kan bijvoorbeeld de eerste check als
+**zelf-gerapporteerde observatie** worden geregistreerd:
+
+```powershell
+python .\review_044_release_observation_register_cli.py --run --dossier "PP_RECOVERY_DECISION_HOLD.json" --queue "PP_REVIEW_QUEUE_001.json" --intake "PP_REVIEW_INTAKE_001.json" --plan "PP_VERIFICATION_PLAN_HOLD.json" --observations "PP_OBSERVATION_001.json" --manifest "PP_HUMAN_REVIEW_HANDOFF_HOLD.json" --protocol "PP_REVIEW_PROTOCOL_001.json" --contract "PP_REVIEWER_AUTH_REQUIREMENTS_HOLD.json" --blueprint "PP_REVIEWER_SERVICE_BLUEPRINT_HOLD.json" --interfaces "PP_REVIEWER_INTERFACE_CONTRACT_HOLD.json" --transitions "PP_TRUST_TRANSITIONS_HOLD.json" --revocation "PP_REVOCATION_RECOVERY_HOLD.json" --assurance "PP_SECURITY_ASSURANCE_HOLD.json" --registry "PP_CONTRACT_COMPATIBILITY_HOLD.json" --impact "PP_CHANGE_IMPACT_HOLD.json" --integrity "PP_RELEASE_INTEGRITY_HOLD.json" --matrix "PP_RELEASE_EVIDENCE_MATRIX_HOLD.json" --cockpit "PP_RELEASE_READINESS_COCKPIT_HOLD.json" --execution-plan "PP_VERIFICATION_EXECUTION_PLAN_HOLD.json" --check-id RG01-E01 --mark OBSERVATION_REPORTED --role-claim OWNER_CLAIMED --note "Lokale waarneming; geen onafhankelijke bevestiging" --export "PP_RELEASE_OBSERVATION_001_HOLD.json"
+```
+
+Om later een tweede event toe te voegen, wordt bovendien
+`--previous-register "PP_RELEASE_OBSERVATION_001_HOLD.json"`
+meegegeven en een **andere nieuwe** `--export`-naam gekozen.
+Een optioneel `--evidence "pad\\naar\\bewijsbestand"` voegt
+alleen de byte-SHA-256 toe. Geen daadwerkelijk bewijs wordt
+vertrouwd of geaccepteerd op basis van deze lokale input.
+
+Het backofficepaneel **PP-RECOVERY-002 / Release Observation
+Register — onbevestigde lokale waarnemingen** leest maximaal
+128 KiB JSON en toont per event het check-ID, markering,
+zelf-geclaimde rol en eventuele hashvingerafdruk. De browser
+controleert alleen een herkenbare structuur, **niet** de
+SHA-256-hashketen, oorspronkelijke negentien bronnen of externe
+authenticiteit. De statische script-URL staat op de bestaande
+lokale allowlist. Er zijn geen nieuwe API-routes toegevoegd.
+
+**DRAFT / NOT_EXECUTED / NOT_VERIFIED / NOT_READY / HOLD /
+DENY / NOT_AUTHORIZED.** Geen tests, merge, deploy, sessie,
+uitgifte of automatische goedkeuring uitgevoerd.
+
+### PP-RECOVERY-002 — Verification Evidence Intake (niet-vertrouwde bewijsverwijzingen)
+
+De pure module `review_044_release_evidence_intake.py` definieert
+`append_release_evidence_intake`. Voor een **latere**
+handmatige eigenaarssessie reconstrueert zij het originele
+Verification Execution Plan op basis van de achttien
+byte-inputs, verifieert type-exact de opgegeven planbytes en
+controleert de volledige voorafgaande observation-eventketen.
+Het aangeleverde bewijsbestand moet byte-voor-byte dezelfde
+SHA-256 opleveren als de `evidenceSha256` van een
+**bestaande, specifiek geselecteerde** observatie.
+Een verkeerde hash, onbekend check-ID of afwijkende
+observatiereferentie wordt geweigerd met
+`PP_RECOVERY_002_RELEASE_EVIDENCE_INTAKE_INVALID`.
+
+Het append-only intakeregister accepteert maximaal
+64 bewijsreferenties, maximaal één per bestaande
+observatievolgnummer, en is gebonden aan de **exacte**
+plan- en observatieregisterbytes. Het intakesnapshot bevat
+uitsluitend bewijsmetadata: observatievolgnummer,
+observatie-eventhash, check-ID, releasepoort, bewijstype
+(`DOCUMENT`, `SCREENSHOT`, `LOG_EXCERPT`,
+`OTHER_UNTRUSTED`), SHA-256 van bewijsbytes,
+bestandsgrootte en een lokale hashketen met vorige recordhash.
+Bewijsbytes zelf worden **niet** opgeslagen.
+Per bewijsbestand geldt maximaal 64 KiB.
+
+De bronketen en het eerdere register worden in de Pythonlaag
+gecontroleerd. Geen lokaal bewijs wordt onafhankelijk
+geauthenticeerd: `UNSIGNED_LOCAL_UNTRUSTED`,
+`NOT_VERIFIED`, `NOT_PERFORMED`, `NOT_ESTABLISHED`,
+`BLOCKED`, `DENY` blijven op iedere referentie staan.
+De lokale hashketen is geen externe audit, handtekening,
+betrouwbare klok of garantie tegen volledige lokale herschrijving.
+
+De CLI `review_044_release_evidence_intake_cli.py`
+leest zonder expliciet `--run` geen bronbestanden;
+`--export` maakt uitsluitend een **nieuw** JSON-bestand aan
+(create-only `xb`). Na het bestaan van een daadwerkelijke,
+later door de eigenaar opgestelde observatiesnapshot met een
+bewijshash, kan de volgende soort opdracht handmatig worden gebruikt:
+
+```powershell
+python .\review_044_release_evidence_intake_cli.py --run --dossier "PP_RECOVERY_DECISION_HOLD.json" --queue "PP_REVIEW_QUEUE_001.json" --intake "PP_REVIEW_INTAKE_001.json" --plan "PP_VERIFICATION_PLAN_HOLD.json" --observations "PP_OBSERVATION_001.json" --manifest "PP_HUMAN_REVIEW_HANDOFF_HOLD.json" --protocol "PP_REVIEW_PROTOCOL_001.json" --contract "PP_REVIEWER_AUTH_REQUIREMENTS_HOLD.json" --blueprint "PP_REVIEWER_SERVICE_BLUEPRINT_HOLD.json" --interfaces "PP_REVIEWER_INTERFACE_CONTRACT_HOLD.json" --transitions "PP_TRUST_TRANSITIONS_HOLD.json" --revocation "PP_REVOCATION_RECOVERY_HOLD.json" --assurance "PP_SECURITY_ASSURANCE_HOLD.json" --registry "PP_CONTRACT_COMPATIBILITY_HOLD.json" --impact "PP_CHANGE_IMPACT_HOLD.json" --integrity "PP_RELEASE_INTEGRITY_HOLD.json" --matrix "PP_RELEASE_EVIDENCE_MATRIX_HOLD.json" --cockpit "PP_RELEASE_READINESS_COCKPIT_HOLD.json" --execution-plan "PP_VERIFICATION_EXECUTION_PLAN_HOLD.json" --observation-register "PP_RELEASE_OBSERVATION_001_HOLD.json" --observation-sequence 1 --kind SCREENSHOT --evidence "bewijs-screenshot.png" --export "PP_RELEASE_EVIDENCE_INTAKE_001_HOLD.json"
+```
+
+Voor een volgende bewijsverwijzing geldt
+`--previous-intake "PP_RELEASE_EVIDENCE_INTAKE_001_HOLD.json"`
+en een **nieuwe** `--export`-naam. Beide intakebestanden moeten
+van hetzelfde exacte observatieregister afkomstig zijn; een
+gewijzigd observatieregister vereist een apart, opnieuw
+beoordeeld intakepad.
+
+Het paneel **PP-RECOVERY-002 / Verification Evidence Intake**
+is uitsluitend leesbaar en toont maximaal 64 ongetekende
+bewijsverwijzingen uit een lokaal JSON-bestand tot 64 KiB.
+De browser controleert slechts vaste schema- en blokkadevelden
+en herberekent geen bewijsbytehash, recordhashketen,
+broncontracten of externe identiteit. Het statische script
+is op de expliciete lokale server-allowlist opgenomen.
+Er is geen nieuwe API-route, test, merge, uitrol,
+bewijsauthenticatie of vrijgave toegevoegd.
+
+**DRAFT / NOT_EXECUTED / NOT_VERIFIED / NOT_READY /
+HOLD / DENY / NOT_AUTHORIZED.**
+
+### PP-RECOVERY-002 — Evidence Review Handoff (uitsluitend lokaal, NIET VERSTUURD)
+
+De pure module `review_044_release_evidence_review_handoff.py`
+bevat `prepare_release_evidence_review_handoff` voor de
+**achttien originele bytebronnen**, het Verification Execution Plan,
+de volledige lokale observatieketen en het exacte Evidence Intake-bestand.
+Het plan wordt uit de bronbytes gereconstrueerd en type-exact vergeleken;
+de volledige observatiehashketen en de intakeketen worden met de
+bestaande strikte Pythonvalidators opnieuw gecontroleerd.
+Ontbrekende, inconsistente of afwijkende gekoppelde bronnen worden
+geweigerd met `PP_RECOVERY_002_RELEASE_EVIDENCE_HANDOFF_INVALID`.
+Deze lokale overeenstemming is geen externe authenticiteit.
+
+Per bestaande intakereferentie toont het ongetekende dossier check-ID,
+releasepoort, vereist onafhankelijk reviewerprofiel, bewijs-ID,
+eventhash, byte-SHA-256, bestandsgrootte en bewijstype.
+**De originele bewijsbestanden blijven buiten het handoffbestand.**
+Het handoffcontract omvat zeven verplichte externe checks:
+revieweridentiteit, onafhankelijke rol/scope, revocation en
+separation-of-duties, originele bewijsbytes en provenance,
+ondertekende ontvangst met exacte binding aan de handoff,
+onafhankelijk auditanker en vertrouwde tijd, en een afzonderlijk
+bevoegd menselijk besluit. Alle checks staan `NOT_STARTED`;
+alle zes releasepoorten blijven `BLOCKED / DENY`.
+
+De statussen `handoffProvenance=UNSIGNED_LOCAL_REQUEST_NOT_SENT`,
+`delivery=NOT_SENT`, `recipientAuthentication=NOT_ESTABLISHED`,
+`reviewerAuthority=NOT_ESTABLISHED`, `signedReceipt=NOT_AVAILABLE`,
+`externalAudit=NOT_VERIFIED`, `humanReview=NOT_COMPLETED`,
+`releaseReadiness=NOT_READY`, `palacoOneHandoff=BLOCKED`,
+`palacoOneSession=NOT_CREATED`, `authorization=HOLD`,
+`accessDecision=DENY` en `issuance=NOT_AUTHORIZED`
+worden **nooit** opgewaardeerd door lokale bytes, hashes of claims.
+Er is geen bericht verzonden en geen werkelijk ontvangstbewijs aanwezig.
+
+`review_044_release_evidence_review_handoff_cli.py`
+is een opt-in offline export: zonder `--run` worden geen
+bestanden geopend; `--export` schrijft uitsluitend een nieuw
+JSON-bestand via `xb`, zonder bestaande data te overschrijven.
+Een latere handmatige eigenaarssessie kan de volgende opdracht
+gebruiken wanneer alle bronbestanden en lokale registers bestaan:
+
+```powershell
+python .\review_044_release_evidence_review_handoff_cli.py --run --dossier "PP_RECOVERY_DECISION_HOLD.json" --queue "PP_REVIEW_QUEUE_001.json" --intake "PP_REVIEW_INTAKE_001.json" --plan "PP_VERIFICATION_PLAN_HOLD.json" --observations "PP_OBSERVATION_001.json" --manifest "PP_HUMAN_REVIEW_HANDOFF_HOLD.json" --protocol "PP_REVIEW_PROTOCOL_001.json" --contract "PP_REVIEWER_AUTH_REQUIREMENTS_HOLD.json" --blueprint "PP_REVIEWER_SERVICE_BLUEPRINT_HOLD.json" --interfaces "PP_REVIEWER_INTERFACE_CONTRACT_HOLD.json" --transitions "PP_TRUST_TRANSITIONS_HOLD.json" --revocation "PP_REVOCATION_RECOVERY_HOLD.json" --assurance "PP_SECURITY_ASSURANCE_HOLD.json" --registry "PP_CONTRACT_COMPATIBILITY_HOLD.json" --impact "PP_CHANGE_IMPACT_HOLD.json" --integrity "PP_RELEASE_INTEGRITY_HOLD.json" --matrix "PP_RELEASE_EVIDENCE_MATRIX_HOLD.json" --cockpit "PP_RELEASE_READINESS_COCKPIT_HOLD.json" --execution-plan "PP_VERIFICATION_EXECUTION_PLAN_HOLD.json" --observation-register "PP_RELEASE_OBSERVATION_001_HOLD.json" --evidence-intake "PP_RELEASE_EVIDENCE_INTAKE_001_HOLD.json" --export "PP_EVIDENCE_REVIEW_HANDOFF_HOLD.json"
+```
+
+Het nieuwe **alleen-lezen backofficepaneel** voor Evidence Review Handoff
+leest maximaal 64 KiB lokaal JSON, toont de voorbereide bewijsverwijzingen
+en zeven externe reviewvereisten. De browser valideert de
+herkenbare ongetekende structuur, **niet** de oorspronkelijke
+bronbytes, hashketens, revieweridentiteit of externe audit.
+Het statische script is aan de bestaande lokale server-allowlist
+toegevoegd; er zijn geen nieuwe API-routes geïmplementeerd.
+
+**DRAFT / NOT_SENT / NOT_EXECUTED / NOT_VERIFIED /
+NOT_READY / HOLD / DENY / NOT_AUTHORIZED.**
+Geen tests, merge, deploy, autorisatie, ontvangstverklaring of
+PALACO ONE-sessie uitgevoerd.
+
+### PP-RECOVERY-002 — Independent Review Receipt Protocol (geen ontvangst uitgegeven)
+
+De module `review_044_independent_receipt_protocol.py` bevat
+`prepare_independent_review_receipt_protocol`. Zij valideert
+de achttien originele bytebronnen, het Execution Plan,
+het lokale observatieregister en de Evidence Intake via de
+bestaande Pythonketen. Het daaruit gereconstrueerde
+**Evidence Review Handoff** moet type-exact overeenkomen met het
+aangeleverde originele handoffbestand (maximaal 64 KiB).
+Een afwijking wordt geweigerd met
+`PP_RECOVERY_002_INDEPENDENT_RECEIPT_PROTOCOL_INVALID`.
+Interne overeenstemming bewijst geen externe herkomst.
+
+Het ontwerpcontract `palaco.pp.recovery-002-independent-review-receipt-protocol.v0`
+is uitsluitend een lijst van noodzakelijke voorwaarden.
+Het bevat twaalf ontbrekende receiptvelden: protocolversie,
+exacte handoffhash, uitgever/audience, reviewer subject en scope,
+onafhankelijkheidsattest, nonce en purpose, vertrouwde geldigheidstijden,
+ondertekende bewijssethash, extern auditanker, afzonderlijke
+reviewbeslissing, signing-key-identificatie en detached signature.
+Er is **geen cryptografisch algoritme of sleutelvertrouwensbron
+geconfigureerd**; `signatureVerification=NOT_IMPLEMENTED`.
+De acht onafhankelijke verificatiestappen eisen onder meer
+canonical byte-binding, signature checking, nonce/replay/expiry,
+reviewer-scope, sleutel-/rolintrekking, extern auditanker en
+een apart bevoegd menselijk besluit. Tien foutscenario's hebben
+altijd `DENY` en `authorityEffect=NONE`.
+
+De output vermeldt expliciet:
+`receiptBytes=NOT_PRESENT`, `signedReceipt=NOT_AVAILABLE`,
+`receiptSubmission=NOT_IMPLEMENTED`, `delivery=NOT_SENT`,
+`independentVerifier=NOT_CONFIGURED`,
+`trustedClock=NOT_CONFIGURED`, `revocationCheck=NOT_PERFORMED`,
+`auditAnchoring=NOT_IMPLEMENTED`,
+`reviewerAuthentication=NOT_ESTABLISHED`,
+`reviewerAuthority=NOT_ESTABLISHED`, `humanReview=NOT_COMPLETED`,
+`independentVerification=NOT_VERIFIED`,
+`releaseReadiness=NOT_READY`, `palacoOneHandoff=BLOCKED`,
+`palacoOneSession=NOT_CREATED`, `authorization=HOLD`,
+`accessDecision=DENY` en `issuance=NOT_AUTHORIZED`.
+Een ongetekend JSON-bestand of lokale rolclaim kan geen van deze
+statussen wijzigen.
+
+`review_044_independent_receipt_protocol_cli.py` vereist
+`--run`, leest alleen begrensde originele inputs en schrijft
+uitsluitend een **nieuw** JSON-bestand via `--export` met
+create-only `xb`. Er wordt niets verstuurd of ondertekend.
+Een later voorbeeld voor een handmatige eigenaarssessie:
+
+```powershell
+python .\review_044_independent_receipt_protocol_cli.py --run --dossier "PP_RECOVERY_DECISION_HOLD.json" --queue "PP_REVIEW_QUEUE_001.json" --intake "PP_REVIEW_INTAKE_001.json" --plan "PP_VERIFICATION_PLAN_HOLD.json" --observations "PP_OBSERVATION_001.json" --manifest "PP_HUMAN_REVIEW_HANDOFF_HOLD.json" --protocol "PP_REVIEW_PROTOCOL_001.json" --contract "PP_REVIEWER_AUTH_REQUIREMENTS_HOLD.json" --blueprint "PP_REVIEWER_SERVICE_BLUEPRINT_HOLD.json" --interfaces "PP_REVIEWER_INTERFACE_CONTRACT_HOLD.json" --transitions "PP_TRUST_TRANSITIONS_HOLD.json" --revocation "PP_REVOCATION_RECOVERY_HOLD.json" --assurance "PP_SECURITY_ASSURANCE_HOLD.json" --registry "PP_CONTRACT_COMPATIBILITY_HOLD.json" --impact "PP_CHANGE_IMPACT_HOLD.json" --integrity "PP_RELEASE_INTEGRITY_HOLD.json" --matrix "PP_RELEASE_EVIDENCE_MATRIX_HOLD.json" --cockpit "PP_RELEASE_READINESS_COCKPIT_HOLD.json" --execution-plan "PP_VERIFICATION_EXECUTION_PLAN_HOLD.json" --observation-register "PP_RELEASE_OBSERVATION_001_HOLD.json" --evidence-intake "PP_RELEASE_EVIDENCE_INTAKE_001_HOLD.json" --review-handoff "PP_EVIDENCE_REVIEW_HANDOFF_HOLD.json" --export "PP_INDEPENDENT_RECEIPT_PROTOCOL_HOLD.json"
+```
+
+Het lokale alleen-lezen paneel **PP-RECOVERY-002 / Independent
+Review Receipt Protocol — geen ontvangst** toont een JSON-contract
+van maximaal 64 KiB met de twaalf ontbrekende ontvangstvelden en
+acht nog niet uitgevoerde externe controles. De browser valideert
+alleen herkenbare schema- en blokkadevelden, **niet** de originele
+bronnen, cryptografische signatures, revieweridentiteit, vertrouwde
+klok of audit. Het script is toegevoegd aan de expliciete
+statische server-allowlist; geen uitvoerend endpoint.
+
+**DRAFT / NOT_SENT / NOT_EXECUTED / NOT_VERIFIED /
+NOT_READY / HOLD / DENY / NOT_AUTHORIZED.**
+Geen tests, merge, release, deployment, ondertekening, auditactie,
+autorisatie, ontvangstverklaring of PALACO ONE-sessie uitgevoerd.
+
+### PP-RECOVERY-002 — Independent Receipt Verification Blueprint (geen runtime)
+
+De pure module `review_044_independent_receipt_verifier_blueprint.py`
+bevat `prepare_independent_receipt_verifier_blueprint` voor
+een toekomstig **extern vertrouwd** verificatiesysteem.
+De achttien originele bytebronnen, het Execution Plan,
+de observatie- en intakeketen, het Review Handoff en het
+Independent Review Receipt Protocol worden in de bestaande
+strikte Pythonketen herbouwd. De originele protocolbytes
+worden type-exact met het verwachte contract vergeleken.
+Afwijkingen of ongeoorloofde vrijgaveclaims worden geweigerd
+met `PP_RECOVERY_002_RECEIPT_VERIFIER_BLUEPRINT_INVALID`.
+Dat bewijst **uitsluitend interne consistentie**, geen echte
+handtekening, revieweridentiteit of betrouwbare ontvangst.
+
+De blueprint definieert negen afgeschermde componenten:
+receiptformaat, exacte handoffbinding, extern trust-anchorregister,
+cryptografische signature validator, key lifecycle en rotatie,
+een atomische replay-ledger, onafhankelijke reviewercontrole,
+auditanker en een **apart** menselijk beslissysteem.
+Zeven key-lifecycle-eisen omvatten issuer root-pinning,
+key-ID/issuer/audience-binding, algorithm allowlisting,
+rotatie-overlap, sleutelgeldigheid, ondertekende revocationfeeds
+en compromisrespons. Zes replay-eisen bevatten single-use
+cryptografische nonce, koppeling aan handoff/purpose,
+vertrouwde tijd met beperkte afwijking, **atomische**
+consume-once opslag, fail-closed uitval en afwijzing van
+expiry/mismatch/replay. Zes auditeisen bevatten signed logs,
+onafhankelijke inclusion/consistency proofs, trusted timestamps,
+fail-closed uitval, least privilege en dataminimalisatie.
+
+Vijf expliciete trust boundaries verhinderen dat ongetekende
+lokale bewijsclaims, technisch gevalideerde ontvangst of
+een viewer zonder afzonderlijke bevoegdheidscontrole als
+releaseautorisatie gelden. De oorspronkelijke acht
+verificatievoorwaarden en tien afwijzingsscenario's blijven
+`NOT_PERFORMED / BLOCKED` respectievelijk
+`DENY / authorityEffect=NONE`.
+
+**Geen component is geïmplementeerd of geconfigureerd als
+werkelijk verificatiesysteem.** Het JSON-contract bevat
+`signingKeyMaterial=NOT_PRESENT`,
+`trustedIssuers=NOT_CONFIGURED`,
+`signatureValidation=NOT_IMPLEMENTED`,
+`nonceLedger=NOT_CONFIGURED`,
+`trustedClock=NOT_CONFIGURED`,
+`auditService=NOT_CONFIGURED`,
+`independentVerifier=NOT_DEPLOYED`,
+`receiptAcceptance=NOT_PERFORMED`,
+`receiptDelivery=NOT_SENT`,
+`reviewerAuthority=NOT_ESTABLISHED`,
+`independentVerification=NOT_VERIFIED`,
+`releaseReadiness=NOT_READY`,
+`palacoOneHandoff=BLOCKED`,
+`palacoOneSession=NOT_CREATED`,
+`authorization=HOLD`,
+`accessDecision=DENY` en `issuance=NOT_AUTHORIZED`.
+
+De CLI `review_044_independent_receipt_verifier_blueprint_cli.py`
+opent zonder expliciet `--run` geen inputbestanden.
+Met `--export` wordt alleen een **nieuw** JSON-contract
+geschreven via create-only `xb`; er worden geen keys
+aangemaakt, cryptografische handtekeningen gevalideerd,
+externe diensten aangeroepen of credentials uitgegeven.
+
+```powershell
+python .\review_044_independent_receipt_verifier_blueprint_cli.py --run --dossier "PP_RECOVERY_DECISION_HOLD.json" --queue "PP_REVIEW_QUEUE_001.json" --intake "PP_REVIEW_INTAKE_001.json" --plan "PP_VERIFICATION_PLAN_HOLD.json" --observations "PP_OBSERVATION_001.json" --manifest "PP_HUMAN_REVIEW_HANDOFF_HOLD.json" --protocol "PP_REVIEW_PROTOCOL_001.json" --contract "PP_REVIEWER_AUTH_REQUIREMENTS_HOLD.json" --blueprint "PP_REVIEWER_SERVICE_BLUEPRINT_HOLD.json" --interfaces "PP_REVIEWER_INTERFACE_CONTRACT_HOLD.json" --transitions "PP_TRUST_TRANSITIONS_HOLD.json" --revocation "PP_REVOCATION_RECOVERY_HOLD.json" --assurance "PP_SECURITY_ASSURANCE_HOLD.json" --registry "PP_CONTRACT_COMPATIBILITY_HOLD.json" --impact "PP_CHANGE_IMPACT_HOLD.json" --integrity "PP_RELEASE_INTEGRITY_HOLD.json" --matrix "PP_RELEASE_EVIDENCE_MATRIX_HOLD.json" --cockpit "PP_RELEASE_READINESS_COCKPIT_HOLD.json" --execution-plan "PP_VERIFICATION_EXECUTION_PLAN_HOLD.json" --observation-register "PP_RELEASE_OBSERVATION_001_HOLD.json" --evidence-intake "PP_RELEASE_EVIDENCE_INTAKE_001_HOLD.json" --review-handoff "PP_EVIDENCE_REVIEW_HANDOFF_HOLD.json" --receipt-protocol "PP_INDEPENDENT_RECEIPT_PROTOCOL_HOLD.json" --export "PP_RECEIPT_VERIFIER_BLUEPRINT_HOLD.json"
+```
+
+Het nieuwe alleen-lezen backofficepaneel
+**PP-RECOVERY-002 / Independent Receipt Verification Blueprint**
+toont een lokaal JSON-contract tot 64 KiB met negen componenten
+en negentien niet-geconfigureerde controles. Browserimport
+verifieert geen oorspronkelijke bewijsbytes, externe sleutel,
+signature, trusted clock, nonce-ledger of audit. Het statische
+JavaScriptbestand is expliciet opgenomen in de bestaande
+lokale server-allowlist; er is geen nieuw uitvoerend endpoint.
+
+**DRAFT / NOT_SENT / NOT_EXECUTED / NOT_VERIFIED /
+NOT_READY / HOLD / DENY / NOT_AUTHORIZED.**
+Geen tests, merge, release, deployment, ondertekening,
+auditactie, autorisatie of PALACO ONE-sessie uitgevoerd.
+
+### PP-RECOVERY-002 — Verifier Trust Policy Register (DENY-ALL, geen sleutels)
+
+De pure module `review_044_verifier_trust_policy.py` introduceert
+`prepare_verifier_trust_policy_register`. De functie reconstrueert
+opnieuw de volledige voorafgaande contractketen uit achttien originele
+bytebronnen, Execution Plan, Observation Register, Evidence Intake,
+Review Handoff en Independent Receipt Protocol. De aangeleverde
+verifier-blueprintbytes moeten **type-exact** overeenkomen met de
+opnieuw opgebouwde blueprint. Bij afwijkingen geldt
+`PP_RECOVERY_002_VERIFIER_TRUST_POLICY_INVALID`; een geslaagde
+interne vergelijking is nog geen externe authenticiteitsgarantie.
+
+De v0-policy heeft uitdrukkelijk **nul** vertrouwde uitgevers en
+**nul** toegestane algoritmen. Er worden geen echte issuer-ID's,
+trust roots, key fingerprints, private/public keys, endpoints,
+credentials of secret bytes opgeslagen of ingeladen. Geen standaard
+algoritme wordt als geaccepteerd voorgesteld totdat een apart
+bevoegd proces een extern controleerbaar beleid goedkeurt.
+
+Het beleid specificeert 22 nog niet geconfigureerde controles:
+vijf voor issuer-identiteit en externe root-attestatie, vijf voor
+algoritmetoelating en downgradepreventie, zes voor sleutelrotatie
+en sleutelgeldigheid, zes voor getekende revocationfeeds en
+compromisafhandeling. Twaalf expliciete foutcondities, waaronder
+onbekende issuer, ontbrekende rootpin, ongeldige signing key,
+stale revocationfeeds, afwezige trusted clock, replay-store
+failure, onbekende reviewer en ontbrekende menselijke review
+zijn onvoorwaardelijk `DENY` met `authorityEffect=NONE`.
+
+Een toekomstig werkelijk trustplatform moet minimaal een
+extern beheerde issuer authority, publiek vertrouwde
+keymaterialen met pinned roots, key-ID/issuer/audience-binding,
+gecontroleerde algorithm allowlist, rotatie-epochs en overlap,
+onafhankelijke signature verificatie, actueel
+ondertekend revocationbeleid en menselijke goedkeuring hebben.
+Deze versie implementeert geen van deze diensten.
+
+De verplichte statussen omvatten
+`policyMode=DENY_ALL_UNTIL_EXTERNAL_TRUST_CONFIGURED_AND_VERIFIED`,
+`trustAnchorImport=PROHIBITED_IN_THIS_MODULE`,
+`keyMaterial=NOT_PRESENT`,
+`issuerOnboarding=NOT_IMPLEMENTED`,
+`signatureVerification=NOT_IMPLEMENTED`,
+`keyRotation=NOT_IMPLEMENTED`,
+`revocationFeed=NOT_CONFIGURED`,
+`independentVerifier=NOT_DEPLOYED`,
+`independentVerification=NOT_VERIFIED`,
+`releaseReadiness=NOT_READY`,
+`palacoOneHandoff=BLOCKED`,
+`palacoOneSession=NOT_CREATED`,
+`authorization=HOLD`, `accessDecision=DENY`
+en `issuance=NOT_AUTHORIZED`.
+
+Met `review_044_verifier_trust_policy_cli.py` kan **later**
+een lokaal, ongetekend `JSON`-overzicht worden opgesteld.
+Zonder `--run` worden geen bestanden geopend en
+`--export` maakt uitsluitend een nieuw bestand aan
+(create-only `xb`). De parameters omvatten de achttien
+originele CLI-bronnen en aanvullend
+`--execution-plan`, `--observation-register`,
+`--evidence-intake`, `--review-handoff`,
+`--receipt-protocol`, `--verifier-blueprint`
+en `--export`. De optionele latere eigenaarssessie
+mag dit uitsluitend als beleidssnapshot beschouwen.
+
+In het backofficepaneel **PP-RECOVERY-002 / Verifier Trust
+Policy Register — standaard DENY** kan maximaal 64 KiB
+ongetekend JSON indicatief worden bekeken.
+De viewer toont de 22 niet-geconfigureerde beleidsvereisten
+en twaalf afwijzingsscenario's. Zij verifieert geen sleutel,
+issuer, signature, auditanker of reviewerbevoegdheid.
+De statische JavaScriptviewer is toegevoegd aan de lokale
+allowlist; er is geen nieuwe uitvoerende serverroute gemaakt.
+
+**DRAFT / NOT_EXECUTED / NOT_VERIFIED / NOT_READY /
+HOLD / DENY / NOT_AUTHORIZED.** Er zijn geen tests,
+merge, release, deploy, ondertekening, sleutelimport,
+auditactie, autorisatie of PALACO ONE-sessie uitgevoerd.
+
+### PP-RECOVERY-002 — Trust Policy Change Control (hypothetisch, DENY)
+
+De pure `review_044_trust_policy_change_control.py` reconstrueert het
+bestaande deny-all Trust Policy Register uit achttien originele
+bytebronnen en zes aanvullende contractartefacten: Execution Plan,
+Observation Register, Evidence Intake, Review Handoff,
+Independent Receipt Protocol en Verifier Blueprint. De aangeleverde
+exacte trustpolicybytes worden **type-exact** vergeleken met de
+opnieuw opgebouwde beleidsversie. Afwijkingen leveren
+`PP_RECOVERY_002_TRUST_POLICY_CHANGE_CONTROL_INVALID` op.
+Deze vergelijking is uitsluitend interne consistentie en geen
+extern bewijs van herkomst of bevoegdheid.
+
+`prepare_trust_policy_change_control` accepteert uitsluitend vier
+begrensde categorieën: `ISSUER_POLICY`, `ALGORITHM_POLICY`,
+`KEY_ROTATION_POLICY` of `REVOCATION_POLICY`, en een van vijf
+hypothetische wijzigingstypen: `PROPOSE_REQUIREMENT_REVISION`,
+`PROPOSE_NEW_TRUST_ROOT`, `PROPOSE_ALGORITHM_ALLOWLIST`,
+`PROPOSE_KEY_ROTATION` of `PROPOSE_REVOCATION_POLICY`.
+Er worden **geen voorgestelde sleutelbytes, uitgevers, rootpins of
+nieuwe algoritmen geaccepteerd of geïnstalleerd**. Het uitgebrachte
+ongetekende voorstel verwijst alleen naar de oorspronkelijke
+SHA-256 van de volledige trustpolicybytes.
+
+Per voorstel worden de vereisten uit de gekozen beleidscategorie
+gemarkeerd als `REASSESSMENT_REQUIRED`; alle vier categorieën
+vereisen conservatieve hercontrole. Negen release- en
+vertrouwenspoorten blijven `BLOCKED / NOT_PERFORMED`.
+Drie afzonderlijke rollen moeten later onafhankelijk worden
+geauthenticeerd en bevoegd bevonden:
+`INDEPENDENT_SECURITY_REVIEWER`,
+`AUTHORIZED_TRUST_POLICY_OWNER` en
+`INDEPENDENT_RELEASE_ATTESTOR`.
+Er zijn twaalf vaste afwijzingsredenen. Lokale rolclaims of
+een gegenereerd JSON-rapport mogen niet tot een nieuw
+vertrouwensanker of release-autorisatie leiden.
+
+Het contract `palaco.pp.recovery-002-trust-policy-change-control.v0`
+bevat de vaste velden `scope=UNSIGNED_HYPOTHETICAL_POLICY_PROPOSAL_ONLY`,
+`changeApplied=false`, `externalReview=NOT_STARTED`,
+`changeAuthorization=DENY`, `deploymentAuthorization=DENY`,
+`issuerPromotion=PROHIBITED`, `algorithmPromotion=PROHIBITED`,
+`trustedIssuerCount=0`, `allowedAlgorithms=[]`,
+`keyMaterial=NOT_PRESENT`, `independentVerification=NOT_VERIFIED`,
+`releaseReadiness=NOT_READY`, `palacoOneHandoff=BLOCKED`,
+`palacoOneSession=NOT_CREATED`, `authorization=HOLD`,
+`accessDecision=DENY` en `issuance=NOT_AUTHORIZED`.
+
+`review_044_trust_policy_change_control_cli.py` opent zonder
+`--run` geen originele bestanden en schrijft na expliciete
+opdracht alleen een **nieuwe** JSON-snapshot via
+`--export` met `xb`. Zij vereist de achttien originele
+bronparameters, `--execution-plan`, `--observation-register`,
+`--evidence-intake`, `--review-handoff`,
+`--receipt-protocol`, `--verifier-blueprint`,
+`--trust-policy`, `--change-category` en `--change-type`.
+Voor een latere handmatige illustratie van de laatste twee
+parameters: `--change-category KEY_ROTATION_POLICY
+--change-type PROPOSE_KEY_ROTATION`.
+
+De nieuwe alleen-lezen backofficeviewer
+**PP-RECOVERY-002 / Trust Policy Change Control — niet toegepast**
+toont een ongetekende JSON-snapshot tot 64 KiB. Deze browser
+controleert herkenbare vaste JSON- en DENY-structuren, maar
+verifieert niet de originele bronbytes, handtekening,
+revieweridentiteit of externe vertrouwensankers. De statische
+JavaScriptviewer is toegevoegd aan de lokale server-allowlist;
+geen nieuw uitvoerend API-endpoint of beleidsmutatie.
+
+**DRAFT / NOT_APPLIED / NOT_EXECUTED / NOT_VERIFIED /
+NOT_READY / HOLD / DENY / NOT_AUTHORIZED.** Geen tests,
+merge, release, deploy, sleutelimport, ondertekening,
+autorisatie of PALACO ONE-sessie uitgevoerd.
+
+### PP-RECOVERY-002 — Trust Change Review Dossier (niet verzonden, geen review)
+
+De nieuwe pure module `review_044_trust_change_review_dossier.py`
+bouwt een **uitsluitend ongetekend en niet-verzonden** dossier
+voor een hypothetische wijziging van het deny-all trustbeleid.
+Zij reconstrueert de volledige contractketen via achttien
+originele bytebronnen en zeven aanvullende invoeren:
+Execution Plan, Observation Register, Evidence Intake,
+Review Handoff, Independent Receipt Protocol, Verifier Blueprint
+en het Trust Policy Register. Het aangeleverde exacte
+Change Control-bestand wordt type-exact vergeleken met een
+opnieuw gegenereerd wijzigingsvoorstel. Afwijkingen of
+verzonnen vrijgaveclaims worden afgewezen met
+`PP_RECOVERY_002_TRUST_CHANGE_REVIEW_DOSSIER_INVALID`.
+Dit levert **interne consistentie**, geen externe authenticiteit.
+
+Het dossier bevat de exacte SHA-256-verwijzingen naar de
+Change Control en Trust Policy, de gekozen beleidscategorie
+en het hypothetische wijzigingstype. Het bevat de
+betrokken beleidsvereisten en **negen ontbrekende onafhankelijke
+bewijsstukken**: issuer-root en herkomst, een ondertekend
+canoniek beleidsverschil, cryptografische compatibiliteit,
+ondertekende rotatie/intrekkingsbewijzen, replay- en
+tijdcontrole, externe auditinclusie, identiteits- en
+rolscheidingsbewijs, reproduceerbare tests en een afzonderlijk
+getekend menselijk besluit. De bewijzen zelf worden **niet**
+ontvangen of beoordeeld: elk bewijs blijft
+`NOT_PROVIDED / NOT_PERFORMED`.
+
+Voor de rollen `INDEPENDENT_SECURITY_REVIEWER`,
+`AUTHORIZED_TRUST_POLICY_OWNER` en
+`INDEPENDENT_RELEASE_ATTESTOR` geldt
+`authentication=NOT_ESTABLISHED`,
+`authority=NOT_ESTABLISHED` en `decision=NOT_COMPLETED`.
+De negen reeds bestaande trust- en releaseherbeoordelingen
+blijven `BLOCKED`. Zeven afzonderlijke beslisvoorwaarden
+voor bronattestatie, onafhankelijke bewijsverificatie,
+rolscope/intrekking, ondertekend beleidsverschil, onafhankelijke
+testbeoordeling, extern auditanker en bevoegd menselijk
+releasebesluit zijn allemaal `BLOCKED`.
+
+Het outputcontract
+`palaco.pp.recovery-002-trust-change-review-dossier.v0`
+behoudt `dossierProvenance=UNSIGNED_LOCAL_REVIEW_REQUEST_NOT_SENT`,
+`handoffDelivery=NOT_SENT`, `signedReceipt=NOT_AVAILABLE`,
+`externalAudit=NOT_VERIFIED`, `independentReview=NOT_COMPLETED`,
+`decision=DENY`, `changeApplied=false`,
+`trustedIssuerCount=0`, `allowedAlgorithms=[]`,
+`keyMaterial=NOT_PRESENT`, `issuerPromotion=PROHIBITED`,
+`algorithmPromotion=PROHIBITED`,
+`releaseReadiness=NOT_READY`, `palacoOneHandoff=BLOCKED`,
+`palacoOneSession=NOT_CREATED`, `authorization=HOLD`,
+`accessDecision=DENY` en `issuance=NOT_AUTHORIZED`.
+
+De opt-in `review_044_trust_change_review_dossier_cli.py`
+leest zonder expliciet `--run` geen bestanden. Zij
+vereist de achttien oorspronkelijke bronparameters en
+`--execution-plan`, `--observation-register`,
+`--evidence-intake`, `--review-handoff`,
+`--receipt-protocol`, `--verifier-blueprint`,
+`--trust-policy`, `--change-control` en `--export`.
+Met `--run` wordt uitsluitend een **nieuw** ongetekend
+JSON-rapport geschreven via create-only `xb`.
+Het bestand mag niet worden behandeld als ontvangst,
+bewijsverificatie, beleidswijziging of autorisatie.
+
+Het backofficepaneel **PP-RECOVERY-002 / Trust Change Review
+Dossier — niet verzonden** kan een lokaal JSON-bestand tot
+64 KiB indicatief weergeven. Het toont negen ontbrekende
+externe bewijzen en zeven geblokkeerde beslisvoorwaarden.
+De browser controleert alleen vaste JSON- en DENY-structuren,
+**niet** de oorspronkelijke byteketen, echte revieweridentiteit,
+signature of auditanker. Het statische script is toegevoegd
+aan de expliciete server-allowlist; er zijn geen nieuwe
+uitvoerende API-endpoints of live mutaties.
+
+**DRAFT / NOT_SENT / NOT_APPLIED / NOT_EXECUTED /
+NOT_VERIFIED / NOT_READY / HOLD / DENY / NOT_AUTHORIZED.**
+Geen tests, merge, deployment, ondertekening,
+reviewergoedkeuring, trustpromotie of PALACO ONE-sessie.
+
+### PP-RECOVERY-002 — Trust Change Decision Protocol (DENY-only)
+
+De pure module `review_044_trust_change_decision_protocol.py`
+bevat `prepare_trust_change_decision_protocol`. De functie
+herbouwt via de bestaande keten de originele achttien
+bytebronnen, Execution Plan, Observation Register, Evidence Intake,
+Review Handoff, Independent Receipt Protocol, Verifier Blueprint,
+Trust Policy, Change Control en het Trust Change Review Dossier.
+Het originele ongetekende reviewdossier moet **type-exact**
+overeenkomen met het nieuw gereconstrueerde dossier (max. 64 KiB).
+Een afwijking of een ongeldige vrijgaveclaim wordt afgewezen met
+`PP_RECOVERY_002_TRUST_CHANGE_DECISION_PROTOCOL_INVALID`.
+Dit is interne consistentie, **geen** onafhankelijke
+bewijsverificatie, echte ontvangst of menselijke autorisatie.
+
+Het nieuwe v0-contract modelleert drie strikt gescheiden fasen:
+`LOCAL_CLAIM_INTAKE` (uitsluitend ongeauthenticeerd lokaal
+verzoek), `EXTERNAL_EVIDENCE_VERIFICATION` (onafhankelijke
+vertrouwde verifier vereist), en `AUTHORIZED_HUMAN_DECISION`
+(afzonderlijke bevoegde, ondertekende beslissing vereist).
+De drie trust boundaries blijven `crossing=PROHIBITED`,
+`authorityEffect=NONE`: een lokaal verzoek kan geen bewijs
+attesteren, een externe technische controle kan geen beleid
+vrijgeven, en een menselijk besluit verleent op zichzelf
+geen bevoegdheid tot deploy.
+
+De negen externe bewijsvoorwaarden blijven
+`externalAuthenticity=NOT_VERIFIED`,
+`independentAssessment=NOT_PERFORMED` en
+`maySatisfyDecision=false`. De drie vereiste
+reviewerrollen blijven zonder authenticatie, autoriteit
+of onafhankelijkheidsattest. Zeven bestaande beslisvoorwaarden
+blijven `BLOCKED`. Acht niet-omzeilbare
+integriteit-, attestatie-, revocation-, reviewer-, replay-,
+audit-, besluit- en deploymentcontroles blijven
+`NOT_SATISFIED / approvalEffect=NONE`.
+Het contract kent **geen PASS-, APPROVED-, ACCEPTED- of
+ACTIVE-uitkomst**.
+
+Veiligheidsstatussen zijn permanent
+`decisionPolicy=DENY_ALL_UNTIL_SEPARATE_VERIFIED_AUTHORITIES`,
+`localClaimAuthority=NONE`,
+`externalVerificationService=NOT_CONFIGURED`,
+`humanDecisionService=NOT_CONFIGURED`,
+`signedDecision=NOT_AVAILABLE`,
+`decisionReceipt=NOT_AVAILABLE`,
+`reviewDossierDelivery=NOT_SENT`,
+`policyChangeExecution=PROHIBITED`,
+`issuerPromotion=PROHIBITED`,
+`algorithmPromotion=PROHIBITED`,
+`trustedIssuerCount=0`, `allowedAlgorithms=[]`,
+`keyMaterial=NOT_PRESENT`, `changeApplied=false`,
+`independentVerification=NOT_VERIFIED`,
+`releaseReadiness=NOT_READY`,
+`palacoOneHandoff=BLOCKED`,
+`palacoOneSession=NOT_CREATED`,
+`authorization=HOLD`, `accessDecision=DENY` en
+`issuance=NOT_AUTHORIZED`.
+
+De opt-in CLI `review_044_trust_change_decision_protocol_cli.py`
+vereist expliciet `--run` en opent anders geen bronbestanden.
+Zij verlangt de achttien oorspronkelijke bronparameters plus
+`--execution-plan`, `--observation-register`,
+`--evidence-intake`, `--review-handoff`,
+`--receipt-protocol`, `--verifier-blueprint`,
+`--trust-policy`, `--change-control`,
+`--review-dossier` en `--export`.
+Met `--run` wordt uitsluitend een **nieuw**
+ongetekend JSON-contract via create-only `xb` geschreven.
+Geen bestaande beleidsversie, sleutel of identiteit wordt
+gewijzigd.
+
+Het backofficepaneel **PP-RECOVERY-002 / Trust Change Decision
+Protocol — alles DENY** toont een lokaal JSON-contract van
+maximaal 64 KiB met de drie geblokkeerde fasen en acht
+niet-vervulde, niet-omzeilbare controles. De browser controleert
+alleen een herkenbare JSON-structuur en vaste DENY-statussen:
+geen oorspronkelijke bronbytes, echte reviewcredentials,
+cryptografische handtekeningen, trust-anchors of externe
+audit worden door de browser geverifieerd. Het statische
+script is toegevoegd aan de expliciete lokale server-allowlist.
+Er is geen uitvoerende API-route gecreëerd.
+
+**DRAFT / NOT_SENT / NOT_APPLIED / NOT_EXECUTED /
+NOT_VERIFIED / NOT_READY / HOLD / DENY / NOT_AUTHORIZED.**
+Geen tests, merge, release, deploy, trustpromotie,
+ondertekening of PALACO ONE-sessie uitgevoerd.
+
+### PP-RECOVERY-002 — Trust Decision Audit Contract (vereisten, geen audit)
+
+De pure module `review_044_trust_decision_audit_contract.py`
+bevat `prepare_trust_decision_audit_contract`. De bestaande
+volledige keten wordt opnieuw opgebouwd vanaf de achttien
+originele bytebronnen, Execution Plan, Observation Register,
+Evidence Intake, Review Handoff, Independent Receipt Protocol,
+Verifier Blueprint, Trust Policy, Change Control en Review Dossier.
+Het originele **Trust Change Decision Protocol** wordt uit
+deze inputs gereconstrueerd en vervolgens type-exact
+vergeleken met de aangeboden protocolbytes (maximaal 64 KiB).
+Bij mismatch geldt
+`PP_RECOVERY_002_TRUST_DECISION_AUDIT_CONTRACT_INVALID`.
+Het betreft uitsluitend **lokale contractconsistentie**;
+geen extern bewijsoordeel of cryptografische verificatie.
+
+Het contract
+`palaco.pp.recovery-002-trust-decision-audit-contract.v0`
+is exact via SHA-256 gebonden aan het Decision Protocol,
+Review Dossier, Change Control en Trust Policy.
+Het documenteert acht **nog ontbrekende** onafhankelijke
+auditbewijzen: exacte beslis- en wijzigingshashes; een getekend
+extern bewijsontvangstbewijs; revieweridentiteit, rol en
+intrekking; een canoniek getekend menselijk besluit; trusted
+time en single-use nonce-log; externe append-only
+inclusion/consistency proofs; sleutelrotatie-/revocationbewijs;
+en een afzonderlijk deployment-/rollbackbesluit.
+
+Acht reconstructiestappen zijn `NOT_PERFORMED / BLOCKED`.
+Drie scheidingen tussen lokaal claimniveau, onafhankelijke
+bewijscontrole, menselijke beslissing en uiteindelijke
+activering blijven zonder extern trustbewijs
+`crossing=PROHIBITED`. Acht mogelijke fouten (onder meer
+ontbrekende externe ontvangst, ongeldige handtekening,
+onbetrouwbare timestamp, replay, intrekking, auditlogfork,
+ontbrekende menselijke/deploymentbeslissing) blijven
+`decision=DENY`, `authorityEffect=NONE`.
+
+De altijd geldende output is
+`auditScope=FUTURE_EXTERNAL_AUDIT_REQUIREMENTS_NOT_EVIDENCE`,
+`signedAuditReceipt=NOT_AVAILABLE`,
+`externalAuditLog=NOT_CONFIGURED`,
+`trustedClock=NOT_CONFIGURED`,
+`auditVerification=NOT_PERFORMED`,
+`independentReviewerAuthority=NOT_ESTABLISHED`,
+`humanDecision=NOT_COMPLETED`,
+`deploymentDecision=NOT_AUTHORIZED`,
+`changeApplied=false`, `issuerPromotion=PROHIBITED`,
+`algorithmPromotion=PROHIBITED`,
+`trustedIssuerCount=0`, `allowedAlgorithms=[]`,
+`keyMaterial=NOT_PRESENT`,
+`independentVerification=NOT_VERIFIED`,
+`releaseReadiness=NOT_READY`,
+`palacoOneHandoff=BLOCKED`,
+`palacoOneSession=NOT_CREATED`,
+`authorization=HOLD`, `accessDecision=DENY`
+en `issuance=NOT_AUTHORIZED`. Geen lokaal rapport
+kan een audit- of vrijgavebesluit creëren.
+
+De opt-in CLI
+`review_044_trust_decision_audit_contract_cli.py`
+leest zonder `--run` geen bestanden. De latere handmatige
+uitvoer vereist alle achttien eerdere bronargumenten en
+`--execution-plan`, `--observation-register`,
+`--evidence-intake`, `--review-handoff`,
+`--receipt-protocol`, `--verifier-blueprint`,
+`--trust-policy`, `--change-control`,
+`--review-dossier`, `--decision-protocol` en
+`--export`. Een expliciete uitvoering schrijft
+uitsluitend een **nieuw** JSON-contract met create-only
+`xb`; er worden geen bestaande snapshots overschreven.
+
+Het backofficepaneel
+**PP-RECOVERY-002 / Trust Decision Audit Contract —
+geen extern auditbewijs** toont maximaal 64 KiB
+ongetekende JSON: acht ontbrekende bewijzen en acht
+geblokkeerde reconstructiestappen. Browserimport
+verifieert geen oorspronkelijke bronbyteketen, echte
+signatures, revieweridentiteit, auditlog of trusted clock.
+Het statische JavaScriptbestand is toegevoegd aan de
+expliciete server-allowlist. Geen nieuwe API of mutation.
+
+**DRAFT / NOT_SENT / NOT_APPLIED / NOT_EXECUTED /
+NOT_VERIFIED / NOT_READY / HOLD / DENY / NOT_AUTHORIZED.**
+Er zijn geen tests, merge, deployment, release,
+auditactie, cryptografische verificatie, autorisatie
+of PALACO ONE-sessie uitgevoerd.
+
+### PP-RECOVERY-002 — Audit Evidence Readiness Matrix (0/8, DENY-only)
+
+De pure module `review_044_audit_evidence_readiness_matrix.py`
+introduceert `prepare_audit_evidence_readiness_matrix`.
+Zij reconstrueert vanuit de achttien originele bronbytes en
+tien eerdere aanvullende contractartefacten (Execution Plan,
+Observation Register, Evidence Intake, Review Handoff,
+Independent Receipt Protocol, Verifier Blueprint, Trust Policy,
+Change Control, Review Dossier en Decision Protocol) het
+Trust Decision Audit Contract. De aangeleverde originele
+auditcontractbytes (maximaal 64 KiB) moeten **type-exact**
+overeenkomen met het opnieuw berekende contract.
+Afwijkingen worden afgewezen met
+`PP_RECOVERY_002_AUDIT_EVIDENCE_READINESS_INVALID`.
+Een interne bytebinding is geen onafhankelijke externe
+attestatie.
+
+De readinessmatrix bevat acht onveranderlijk geblokkeerde
+rijen `AUD-E01` tot en met `AUD-E08`.
+Iedere rij bevat het exacte bewijs-ID, de vereiste onafhankelijke
+rol, de nog ontbrekende externe bewijsvoorwaarde, een
+gespecificeerde externe verificatiestap en de enige
+voorbereidende vervolghandeling
+`REQUEST_EVIDENCE_FOR_EXTERNAL_REVIEW_ONLY`.
+Alle rijstatussen zijn `evidenceStatus=NOT_PROVIDED`,
+`signerAuthentication=NOT_ESTABLISHED`,
+`independentVerification=NOT_PERFORMED`,
+`blocker=MISSING_EXTERNALLY_ATTESTED_EVIDENCE`,
+`gate=BLOCKED` en `decision=DENY`.
+
+De acht vereiste externe bewijzen betreffen:
+(1) oorspronkelijke beleid-/beslisbyteattestatie,
+(2) externe getekende ontvangst en issueridentiteit,
+(3) onafhankelijk revieweridentiteit-, scope- en revocationbewijs,
+(4) afzonderlijk ondertekend menselijk besluit,
+(5) betrouwbare nonce-ledger en tijdanker,
+(6) signed externe log inclusion/consistency-bewijzen,
+(7) key-epoch en intrekkingsgeschiedenis, en
+(8) onafhankelijk deployment-/rollbackbesluit.
+De module **verzamelt geen van deze bewijzen**.
+
+De acht reconstructiestappen blijven
+`NOT_PERFORMED / BLOCKED`.
+Zeven stappen voor een latere onafhankelijke reviewer zijn
+`NOT_STARTED`, en acht foutscenario's blijven
+`DENY / authorityEffect=NONE`.
+De top-level statussen blijven:
+`matrixProvenance=UNSIGNED_LOCAL_REQUIREMENTS_NOT_EVIDENCE`,
+`requiredEvidenceCount=8`,
+`externallyVerifiedEvidenceCount=0`,
+`blockedEvidenceCount=8`,
+`auditEvidenceAcceptance=PROHIBITED`,
+`trustedAuditService=NOT_CONFIGURED`,
+`reviewerAuthority=NOT_ESTABLISHED`,
+`humanDecision=NOT_COMPLETED`,
+`deploymentDecision=NOT_AUTHORIZED`,
+`changeApplied=false`,
+`trustedIssuerCount=0`, `allowedAlgorithms=[]`,
+`keyMaterial=NOT_PRESENT`,
+`independentVerification=NOT_VERIFIED`,
+`releaseReadiness=NOT_READY`,
+`palacoOneHandoff=BLOCKED`,
+`palacoOneSession=NOT_CREATED`,
+`authorization=HOLD`, `accessDecision=DENY`
+en `issuance=NOT_AUTHORIZED`.
+
+De opt-in CLI
+`review_044_audit_evidence_readiness_matrix_cli.py`
+opent zonder `--run` geen bestanden. Voor een toekomstige
+handmatige export zijn de achttien oorspronkelijke
+bronparameters plus `--execution-plan`,
+`--observation-register`, `--evidence-intake`,
+`--review-handoff`, `--receipt-protocol`,
+`--verifier-blueprint`, `--trust-policy`,
+`--change-control`, `--review-dossier`,
+`--decision-protocol`, `--audit-contract` en
+`--export` vereist. Een expliciete `--run` maakt
+uitsluitend een **nieuw** ongetekend lokaal JSON-rapport
+aan met create-only `xb`. Er wordt geen test, audit,
+reviewercontrole, autorisatie of uitrol uitgevoerd.
+
+Het backofficepaneel
+**PP-RECOVERY-002 / Audit Evidence Readiness Matrix —
+0 van 8 geverifieerd** leest maximaal 64 KiB ongetekend
+lokaal JSON. Het toont acht ontbrekende bewijzen en zeven
+toekomstige stappen. De browser verifieert alleen vaste
+schema- en DENY-waarden, **niet** de originele bronketen,
+cryptografische handtekeningen, externe audit of reviewerrollen.
+Het statische script is opgenomen in de lokale server-allowlist.
+Er zijn geen nieuwe uitvoerende API-routes toegevoegd.
+
+**DRAFT / NOT_EXECUTED / NOT_VERIFIED / NOT_READY /
+HOLD / DENY / NOT_AUTHORIZED.** Geen tests, merge,
+deploy, sleutelimport, bewijsattestatie, autorisatie
+of PALACO ONE-sessie uitgevoerd.
+
+### PP-RECOVERY-002 — Audit Evidence Collection Plan (0/8 verzameld; geen verzending)
+
+De pure module `review_044_audit_evidence_collection_plan.py`
+biedt `prepare_audit_evidence_collection_plan`. Voor een
+toekomstige expliciete offline eigenaarssessie reconstrueert
+zij de eerdere bronketen uit de achttien originele
+byteartefacten en elf aanvullende contractbestanden:
+Execution Plan, Observation Register, Evidence Intake,
+Review Handoff, Independent Receipt Protocol, Verifier
+Blueprint, Trust Policy, Change Control, Review Dossier,
+Decision Protocol en Audit Contract. De meegeleverde
+Audit Evidence Readiness Matrix wordt uit deze bestanden
+herbouwd en vervolgens **type-exact** vergeleken met de
+werkelijke matrixbytes (maximaal 64 KiB). Bij mismatch
+wordt `PP_RECOVERY_002_AUDIT_EVIDENCE_COLLECTION_PLAN_INVALID`
+gemeld. De vergelijking geeft uitsluitend interne
+consistentie, geen extern vertrouwen of authentieke bron.
+
+Het schema
+`palaco.pp.recovery-002-audit-evidence-collection-plan.v0`
+is via SHA-256 aan de **exacte** readinessmatrix en het
+Audit Contract gebonden. De acht vaste rijen
+`AUD-E01` tot en met `AUD-E08` specificeren per
+ontbrekend auditbewijs een externe onafhankelijke
+custodianrol, de vereiste bewijsvoorwaarde, de
+bijbehorende verificatiestap, een gerichte
+toekomstige aanvraag en de enige toegestane actie:
+`PREPARE_EXTERNAL_REQUEST_ONLY`. Alle rijen behouden
+`evidenceBytes=NOT_COLLECTED`,
+`externalEvidenceReceipt=NOT_AVAILABLE`,
+`reviewerAuthentication=NOT_ESTABLISHED`,
+`evidenceProvenance=NOT_VERIFIED`,
+`requestState=NOT_SENT`, `gate=BLOCKED`
+en `decision=DENY`.
+
+Acht bewaarregels scheiden originele bewijsbytes van de
+lokale snapshot en verbieden private keys of secrets in
+exporten. Ze vereisen exacte hashbinding, cryptografisch
+ondertekend extern bewijs, een onafhankelijk geauthenticeerde
+reviewer met passende en niet-ingetrokken rol, trusted time,
+single-use nonce en replaycontrole, een controleerbaar extern
+auditanker en een afzonderlijke menselijke en
+deploymentautorisatie. **Geen van deze controles is in deze
+module geïmplementeerd of geverifieerd**.
+De bestaande zeven externe reviewstappen blijven
+`NOT_STARTED`.
+
+De top-level tellers blijven permanent
+`requiredCollectionCount=8`,
+`evidenceCollectedCount=0`,
+`externallyVerifiedEvidenceCount=0`,
+`blockedCollectionCount=8`.
+Verder gelden
+`collectionProvenance=UNSIGNED_LOCAL_REQUEST_PLAN_ONLY`,
+`evidenceCollection=NOT_EXECUTED`,
+`externalRequestDelivery=NOT_SENT`,
+`evidenceAcceptance=PROHIBITED`,
+`trustedAuditService=NOT_CONFIGURED`,
+`reviewerAuthority=NOT_ESTABLISHED`,
+`independentVerification=NOT_VERIFIED`,
+`humanDecision=NOT_COMPLETED`,
+`deploymentDecision=NOT_AUTHORIZED`,
+`changeApplied=false`, `trustedIssuerCount=0`,
+`allowedAlgorithms=[]`, `keyMaterial=NOT_PRESENT`,
+`releaseReadiness=NOT_READY`,
+`palacoOneHandoff=BLOCKED`,
+`palacoOneSession=NOT_CREATED`,
+`authorization=HOLD`, `accessDecision=DENY`
+en `issuance=NOT_AUTHORIZED`.
+
+De opt-in `review_044_audit_evidence_collection_plan_cli.py`
+opent zonder expliciet `--run` geen bestanden.
+Voor latere handmatige export zijn de achttien originele
+bronargumenten plus `--execution-plan`,
+`--observation-register`, `--evidence-intake`,
+`--review-handoff`, `--receipt-protocol`,
+`--verifier-blueprint`, `--trust-policy`,
+`--change-control`, `--review-dossier`,
+`--decision-protocol`, `--audit-contract`,
+`--readiness-matrix` en `--export` vereist.
+Een expliciete uitvoering creëert alleen een
+**nieuw ongetekend** JSON-bestand via `xb`.
+Er wordt geen bewijs ingezameld, request verzonden,
+cryptografische controle gestart of bevoegdheid toegekend.
+
+Het alleen-lezen backofficepaneel
+**PP-RECOVERY-002 / Audit Evidence Collection Plan —
+0 van 8 verzameld** toont maximaal 64 KiB lokaal JSON
+met acht voorbereidende aanvraagregels en acht
+bewaarvoorwaarden. De viewer controleert slechts
+de vaste JSON-structuur en alle DENY-velden, **niet**
+de originele bronbyteketen, externe handtekeningen,
+identiteit, auditbewijs of een trusted clock.
+De statische script-URL is aan de bestaande
+lokale server-allowlist toegevoegd;
+geen nieuwe uitvoerende API-route of mutatie.
+
+**DRAFT / NOT_SENT / NOT_EXECUTED / NOT_VERIFIED /
+NOT_READY / HOLD / DENY / NOT_AUTHORIZED.**
+Geen tests, merge, release, deploy, sleutelimport,
+bewijsacceptatie of PALACO ONE-sessie uitgevoerd.
+
+### PP-RECOVERY-002 — Audit Evidence Custody Contract (geen bewijs in bezit)
+
+De pure module `review_044_audit_evidence_custody_contract.py`
+bevat `prepare_audit_evidence_custody_contract`.
+De module reconstrueert de volledige voorafgaande keten uit
+achttien originele bytebronnen en twaalf aanvullend gebonden
+contractartefacten: Execution Plan, Observation Register,
+Evidence Intake, Review Handoff, Independent Receipt Protocol,
+Verifier Blueprint, Trust Policy, Change Control, Review Dossier,
+Decision Protocol, Audit Contract en Audit Evidence Readiness
+Matrix. Het originele **Audit Evidence Collection Plan**
+wordt met deze bronnen herbouwd en vervolgens type-exact
+vergeleken met de aangeboden collection-planbytes (maximaal
+64 KiB). Bij afwijking of onverwachte acceptatie- of
+vrijgaveclaims ontstaat
+`PP_RECOVERY_002_AUDIT_EVIDENCE_CUSTODY_CONTRACT_INVALID`.
+Een lokaal hashverband bewijst **geen** authentieke herkomst,
+bewaarketen of bevoegdheid van een externe partij.
+
+Het schema
+`palaco.pp.recovery-002-audit-evidence-custody-contract.v0`
+is via SHA-256 gebonden aan het exacte Collection Plan,
+de Readiness Matrix en het Audit Contract.
+Voor de acht posities `AUD-E01` tot en met `AUD-E08`
+bevat het de vereiste onafhankelijke custodianrol,
+de geplande externe bronaanvraag en de toekomstige
+verantwoordelijkheden. Er zijn **geen echte bewijsbytes,
+hashes van originele bewijsbestanden, persoonlijke
+toegangsclaims, tokens, private keys, credentials, of
+ondertekende ontvangstbewijzen** in het contract aanwezig.
+Iedere rij heeft
+`originalBytesLocation=EXTERNAL_CUSTODIAN_ONLY_NOT_ACCESSED`,
+`custodianAuthentication=NOT_ESTABLISHED`,
+`originalByteHash=NOT_AVAILABLE`,
+`integrityVerification=NOT_PERFORMED`,
+`accessGrant=NONE`,
+`custodyChain=NOT_ESTABLISHED`,
+`signedTransferReceipt=NOT_AVAILABLE`,
+`retentionApproval=NOT_ESTABLISHED`,
+`transferStatus=NOT_INITIATED`,
+`evidencePossession=NONE`,
+`gate=BLOCKED` en `decision=DENY`.
+
+Acht nog niet vervulde bewaarbeveiligingen specificeren:
+(1) onafhankelijke custodianidentiteit en scope;
+(2) authentieke byte-integriteit en getekende hashbinding;
+(3) versleuteling en onafhankelijk sleutelbeheer;
+(4) least privilege en scheiding van taken;
+(5) een onveranderlijke, extern controleerbare custodyketen;
+(6) ondertekende overdrachtsontvangst en nonce/audience-binding;
+(7) rechtmatig retentie- en verwijderingsbeleid;
+(8) intrekking en noodblokkering bij sleutelcompromis.
+Acht afzonderlijke overdrachtscontroles blijven
+`NOT_STARTED / BLOCKED`; acht foutscenario's houden
+`DENY / authorityEffect=NONE`.
+
+De vaste tellers zijn:
+`requiredCustodyCount=8`,
+`externallyHeldEvidenceCount=0`,
+`locallyReceivedEvidenceCount=0`,
+`transferredEvidenceCount=0`,
+`verifiedEvidenceCount=0`.
+Dit betekent dat **in deze module** geen externe possession
+wordt bevestigd, niet dat echte externe partijen
+nooit bewijzen kunnen bezitten.
+Andere verplichte statussen zijn
+`evidenceCustody=NOT_ESTABLISHED`,
+`evidenceTransfer=NOT_INITIATED`,
+`evidenceAcceptance=PROHIBITED`,
+`originalEvidenceStorage=NONE`,
+`credentialOrKeyStorage=NONE`,
+`externalCustodian=NOT_AUTHENTICATED`,
+`recipientAuthority=NOT_ESTABLISHED`,
+`trustedAuditService=NOT_CONFIGURED`,
+`independentVerification=NOT_VERIFIED`,
+`humanDecision=NOT_COMPLETED`,
+`deploymentDecision=NOT_AUTHORIZED`,
+`changeApplied=false`, `trustedIssuerCount=0`,
+`allowedAlgorithms=[]`,
+`releaseReadiness=NOT_READY`,
+`palacoOneHandoff=BLOCKED`,
+`palacoOneSession=NOT_CREATED`,
+`authorization=HOLD`, `accessDecision=DENY`
+en `issuance=NOT_AUTHORIZED`.
+
+De CLI `review_044_audit_evidence_custody_contract_cli.py`
+vereist een expliciete `--run` om überhaupt
+inputbestanden te lezen. Voor latere offline export
+zijn de achttien originele bronargumenten plus
+`--execution-plan`, `--observation-register`,
+`--evidence-intake`, `--review-handoff`,
+`--receipt-protocol`, `--verifier-blueprint`,
+`--trust-policy`, `--change-control`,
+`--review-dossier`, `--decision-protocol`,
+`--audit-contract`, `--readiness-matrix`,
+`--collection-plan` en `--export` vereist.
+Een expliciete opdracht schrijft uitsluitend
+een **nieuw** ongetekend JSON-contract met
+create-only `xb`, zonder bestaande bestanden
+te overschrijven. Geen bewijsopslag, netwerkrequest,
+sleutelimport of live mutatie.
+
+Het lokale alleen-lezen backofficepaneel
+**PP-RECOVERY-002 / Audit Evidence Custody Contract —
+nul bewijs in bezit** kan een JSON-contract tot
+64 KiB tonen, met acht bewaarposities en acht
+beveiligingsvoorwaarden. De browser controleert
+uitsluitend het herkenbare JSON-schema en
+vaste DENY-waarden: **geen originele bytes,
+signature, identiteitsbewijs, externe bewaarplaats,
+trusted clock of auditlog**.
+De statische JavaScriptviewer is toegevoegd aan
+de bestaande expliciete lokale server-allowlist.
+Er zijn geen nieuwe uitvoerende API-routes toegevoegd.
+
+**DRAFT / NOT_SENT / NOT_EXECUTED / NOT_VERIFIED /
+NOT_READY / HOLD / DENY / NOT_AUTHORIZED.**
+Er zijn geen tests, merge, release, deploy, auditactie,
+overdracht, evidence-acceptatie, authenticatie
+of PALACO ONE-sessie uitgevoerd.
+
+### PP-RECOVERY-002 — Custody Transfer Verification Protocol (0/8 overdrachten)
+
+De pure module `review_044_custody_transfer_verification_protocol.py`
+specificeert `prepare_custody_transfer_verification_protocol`.
+De volledige offline contractketen wordt opnieuw opgebouwd uit de
+achttien originele bronbytes en dertien bijkomende bestanden:
+Execution Plan, Observation Register, Evidence Intake, Review Handoff,
+Independent Receipt Protocol, Verifier Blueprint, Trust Policy,
+Change Control, Review Dossier, Decision Protocol, Audit Contract,
+Audit Evidence Readiness Matrix en Audit Evidence Collection Plan.
+Het originele Audit Evidence Custody Contract wordt vervolgens
+type-exact vergeleken met het opnieuw gegenereerde contract
+(maximaal 64 KiB). Afwijkingen en onjuiste vrijgaveclaims leiden
+tot `PP_RECOVERY_002_CUSTODY_TRANSFER_VERIFICATION_INVALID`.
+Dit is **interne bronconsistentie**, geen echte externe verificatie.
+
+Het contract
+`palaco.pp.recovery-002-custody-transfer-verification-protocol.v0`
+bindt via SHA-256 aan de exacte custodycontractbytes, het
+collectionplan en het auditcontract. Het bevat acht ongestarte
+overdrachtsposities (`AUD-E01` t/m `AUD-E08`), alle
+`senderAuthentication=NOT_ESTABLISHED`,
+`recipientAuthentication=NOT_ESTABLISHED`,
+`originalEvidenceDigest=NOT_AVAILABLE`,
+`signedEnvelope=NOT_PRESENT`,
+`recipientSignedAcknowledgement=NOT_AVAILABLE`,
+`nonceAndClockVerification=NOT_PERFORMED`,
+`keyRevocationVerification=NOT_PERFORMED`,
+`externalAuditReceipt=NOT_AVAILABLE`,
+`independentEvidenceAcceptance=NOT_PERFORMED`,
+`transfer=NOT_INITIATED`, `gate=BLOCKED`,
+`decision=DENY`. De module accepteert **geen echte
+bewijsbytes, credentials, private keys, ondertekeningsclaim
+of overdrachtsopdracht**.
+
+Veertien `MISSING` envelopevelden geven aan wat een
+toekomstige **door externe vertrouwde diensten gevalideerde**
+overdracht zou vereisen: protocolversie, exacte bytehashes,
+afzender- en ontvangeridentiteit met rolbereik,
+vertrouwde signing key/algoritme, purpose/audience,
+single-use nonce, trusted timestamps, sleutelintrekking
+en epoch, versleutelde verbinding, detached signature,
+onafhankelijk auditanker, getekende ontvangersbevestiging
+en een apart geautoriseerd menselijk acceptatiebesluit.
+Zes verificatiefasen en acht bewaarketenchecks blijven
+`NOT_PERFORMED / BLOCKED`. Veertien foutsituaties
+blijven onvoorwaardelijk `DENY / authorityEffect=NONE`.
+
+De tellers en statussen zijn altijd
+`requiredTransferCount=8`, `transfersInitiated=0`,
+`transfersAuthenticated=0`, `evidenceAccepted=0`,
+`senderTrust=NOT_ESTABLISHED`,
+`recipientTrust=NOT_ESTABLISHED`,
+`canonicalEnvelopeVerifier=NOT_IMPLEMENTED`,
+`signatureVerifier=NOT_CONFIGURED`,
+`trustedNonceLedger=NOT_CONFIGURED`,
+`auditVerifier=NOT_CONFIGURED`,
+`humanAcceptance=NOT_COMPLETED`,
+`evidenceTransfer=NOT_INITIATED`,
+`evidenceStorage=NONE`,
+`trustedIssuerCount=0`, `allowedAlgorithms=[]`,
+`independentVerification=NOT_VERIFIED`,
+`releaseReadiness=NOT_READY`,
+`palacoOneHandoff=BLOCKED`,
+`palacoOneSession=NOT_CREATED`,
+`authorization=HOLD`, `accessDecision=DENY`
+en `issuance=NOT_AUTHORIZED`.
+
+De opt-in CLI
+`review_044_custody_transfer_verification_protocol_cli.py`
+leest zonder `--run` geen lokale inputbestanden.
+Een latere handmatige export vereist alle achttien
+oorspronkelijke bronargumenten plus
+`--execution-plan`, `--observation-register`,
+`--evidence-intake`, `--review-handoff`,
+`--receipt-protocol`, `--verifier-blueprint`,
+`--trust-policy`, `--change-control`,
+`--review-dossier`, `--decision-protocol`,
+`--audit-contract`, `--readiness-matrix`,
+`--collection-plan`, `--custody-contract`
+en `--export`. Met expliciete `--run` wordt alleen
+een **nieuw** ongetekend JSON-contract via create-only
+`xb` geschreven, zonder originele bewijzen of
+sleutelbytes aan te raken.
+
+Het nieuwe backofficepaneel
+**PP-RECOVERY-002 / Custody Transfer Verification Protocol —
+geen overdracht** leest lokaal JSON tot 64 KiB en toont
+acht ongestarte bewijsposities plus veertien ontbrekende
+ondertekende envelopevelden. De browser verifieert slechts
+vaste schema- en DENY-velden: **geen echte bronbytes,
+handtekening, trusted timestamp, nonce-ledger,
+auditanker of menselijke bevoegdheid**.
+Het statische script is toegevoegd aan de bestaande
+server-allowlist. Er zijn geen nieuwe API-routes
+of uitvoerende overdrachtsmogelijkheden toegevoegd.
+
+**DRAFT / NOT_SENT / NOT_EXECUTED / NOT_VERIFIED /
+NOT_READY / HOLD / DENY / NOT_AUTHORIZED.**
+Geen tests, merge, productieuitrol, bewijsacceptatie,
+bewijsoverdracht, sleutelimport of PALACO ONE-sessie uitgevoerd.
+
+### PP-RECOVERY-002 — Transfer Receipt Reconciliation Contract (0/8, geen echte receipts)
+
+De pure module `review_044_transfer_receipt_reconciliation.py`
+specificeert `prepare_transfer_receipt_reconciliation_contract` voor
+een **toekomstige externe** vergelijking van een getekend verzendbewijs
+met een onafhankelijk getekende ontvangstbevestiging.
+De functie reconstrueert eerst de volledige bestaande
+bronketen uit achttien originele bytebronnen en veertien
+aanvullend gebonden contractartefacten: Execution Plan,
+Observation Register, Evidence Intake, Review Handoff,
+Independent Receipt Protocol, Verifier Blueprint, Trust Policy,
+Change Control, Review Dossier, Decision Protocol, Audit Contract,
+Audit Evidence Readiness Matrix, Audit Evidence Collection Plan
+en Audit Evidence Custody Contract.
+Het aangeleverde originele Custody Transfer Verification Protocol
+wordt type-exact vergeleken met het opnieuw afgeleide protocol
+(maximaal 64 KiB). Afwijkende of vrijgaveclaimende bronbestanden
+worden geweigerd met
+`PP_RECOVERY_002_TRANSFER_RECEIPT_RECONCILIATION_INVALID`.
+Dit bewijst alleen **interne consistentie**: geen externe echtheid.
+
+Het nieuwe schema
+`palaco.pp.recovery-002-transfer-receipt-reconciliation.v0`
+bindt via SHA-256 aan exacte Transfer Protocol-, Custody Contract-
+en Audit Contract-verwijzingen. Acht bewijsposities
+`AUD-E01` t/m `AUD-E08` bevatten alleen
+de verwachte onafhankelijke bewaarrol en ontbreken bij
+alle acht:
+`senderSignedReceipt=NOT_AVAILABLE`,
+`recipientSignedAcknowledgement=NOT_AVAILABLE`,
+`senderSignatureVerification=NOT_PERFORMED`,
+`recipientSignatureVerification=NOT_PERFORMED`,
+`exactEnvelopeDigestMatch=NOT_PERFORMED`,
+`exactEvidenceDigestMatch=NOT_PERFORMED`,
+`identityScopeAndRevocation=NOT_VERIFIED`,
+`trustedNonceAndTime=NOT_VERIFIED`,
+`externalAuditProof=NOT_AVAILABLE`,
+`reconciliation=NOT_PERFORMED`,
+`transfer=NOT_INITIATED`,
+`gate=BLOCKED` en `decision=DENY`.
+Er zijn **geen originele getekende receipts of bewijsbytes**
+aanwezig of geaccepteerd.
+
+Negen toekomstige vergelijkingsvereisten omvatten
+canonieke verzend- en ontvangstbewijsbytes met vertrouwde
+handtekeningen, exacte envelope- en bewijsbytehashes,
+identiteit/rolscope van beide partijen, purpose/audience
+en single-use nonce, trusted time, signersleutelrotatie
+en intrekking, externe append-only auditlog-inclusie,
+en een afzonderlijk bevoegd menselijk acceptatiebesluit.
+Acht externe reviewpoorten zijn `NOT_STARTED / DENY`.
+Acht specifieke mismatch- en fraudecondities geven altijd
+`DENY / authorityEffect=NONE`; een lokaal JSON-bestand
+kan niet tot reconciliation, acceptatie of autorisatie leiden.
+
+De top-level invarianten:
+`requiredReceiptPairs=8`,
+`senderReceiptsReceived=0`,
+`recipientAcknowledgementsReceived=0`,
+`reconciledReceiptPairs=0`,
+`senderAuthority=NOT_ESTABLISHED`,
+`recipientAuthority=NOT_ESTABLISHED`,
+`signatureVerification=NOT_CONFIGURED`,
+`trustedReplayLedger=NOT_CONFIGURED`,
+`auditAnchoring=NOT_CONFIGURED`,
+`independentReconciliation=NOT_VERIFIED`,
+`humanAcceptance=NOT_COMPLETED`,
+`evidenceTransfer=NOT_INITIATED`,
+`evidenceAcceptance=PROHIBITED`,
+`evidenceStorage=NONE`,
+`trustedIssuerCount=0`, `allowedAlgorithms=[]`,
+`releaseReadiness=NOT_READY`,
+`palacoOneHandoff=BLOCKED`,
+`palacoOneSession=NOT_CREATED`,
+`authorization=HOLD`,
+`accessDecision=DENY` en
+`issuance=NOT_AUTHORIZED`.
+
+De CLI `review_044_transfer_receipt_reconciliation_cli.py`
+leest zonder `--run` geen input. Een opt-in lokale
+export vereist de achttien originele bronargumenten
+en `--execution-plan`, `--observation-register`,
+`--evidence-intake`, `--review-handoff`,
+`--receipt-protocol`, `--verifier-blueprint`,
+`--trust-policy`, `--change-control`,
+`--review-dossier`, `--decision-protocol`,
+`--audit-contract`, `--readiness-matrix`,
+`--collection-plan`, `--custody-contract`,
+`--transfer-protocol` en `--export`.
+Na expliciet `--run` wordt alleen een **nieuw
+ongetekend** JSON-bestand aangemaakt met create-only
+`xb` zonder bestaand bestand te overschrijven.
+Geen receipt, originele bewijsbyte, credential,
+handtekening of externe audit wordt verwerkt.
+
+Het alleen-lezen backofficepaneel
+**PP-RECOVERY-002 / Transfer Receipt Reconciliation —
+0/8 vergeleken** toont lokaal JSON tot 64 KiB
+met acht ontbrekende verzend-/ontvangstbewijsparen
+en negen onvervulde vergelijkingsregels. Het
+statische script staat in de expliciete server-allowlist;
+er is **geen** uitvoerende receipt-intake of nieuwe
+API-route toegevoegd. De browser valideert alleen
+vaste JSON-schema- en DENY-waarden, geen echte
+ontvangst of externe bewijsherkomst.
+
+**DRAFT / NOT_SENT / NOT_EXECUTED / NOT_VERIFIED /
+NOT_READY / HOLD / DENY / NOT_AUTHORIZED.**
+Geen tests, merge, release, deploy, bewijsacceptatie,
+bewijsoverdracht, reviewerautorisatie, signing
+of PALACO ONE-sessie uitgevoerd.
+
+### PP-RECOVERY-002 — Receipt Conflict Resolution Protocol (geen conflictbeslechting)
+
+De pure module `review_044_receipt_conflict_resolution.py` introduceert
+`prepare_receipt_conflict_resolution_protocol`. Deze functie reconstrueert
+de volledige contractketen uit de achttien oorspronkelijke bronartefacten
+en vijftien voorafgaande bestanden: Execution Plan, Observation Register,
+Evidence Intake, Review Handoff, Independent Receipt Protocol,
+Verifier Blueprint, Trust Policy, Change Control, Review Dossier,
+Decision Protocol, Audit Contract, Readiness Matrix, Collection Plan,
+Custody Contract en Transfer Protocol. Daarna wordt het exacte
+`Transfer Receipt Reconciliation Contract` vergeleken met een volledig
+opnieuw opgebouwd contract (maximaal 64 KiB).
+Bij mismatch of ongeoorloofde vrijgaveclaims volgt
+`PP_RECOVERY_002_RECEIPT_CONFLICT_RESOLUTION_INVALID`.
+Dit bevestigt alleen lokale contractconsistentie, **geen** echtheid van
+verzonden of ontvangen bewijsstukken.
+
+Het schema `palaco.pp.recovery-002-receipt-conflict-resolution.v0`
+bevat de SHA-256-binding aan de reconciliation-, transferprotocol- en
+custodycontractbytes. Er zijn acht vaste bewijsposities `AUD-E01`
+tot `AUD-E08`. Omdat geen werkelijk ondertekend verzendbewijs of
+ontvangstbevestiging is aangeleverd, blijven alle posities
+`senderReceipt=NOT_RECEIVED`,
+`recipientAck=NOT_RECEIVED`,
+`conflictDetermination=NOT_PERFORMED`,
+`externalCaseCreation=NOT_STARTED`,
+`evidencePreservation=REQUIRED_NOT_EXECUTED`,
+`independentAdjudication=NOT_COMPLETED`,
+`disposition=UNRESOLVED_DENY`,
+`transfer=NOT_INITIATED`,
+`gate=BLOCKED`,
+`accessDecision=DENY`.
+Er wordt **geen conflict als werkelijk geconstateerd** geregistreerd.
+
+Acht mogelijke conflictklassen worden alleen als
+`POTENTIAL_CONFLICT_NOT_OBSERVED` gespecificeerd:
+ontbrekend/onvertrouwd verzendbewijs, ontbrekende/ongeldige
+ontvangstbevestiging, hashverschil, identiteit- of scopeverschil,
+audience/nonce/tijdverschil, ingetrokken of onbetrouwbare
+ondertekeningssleutel, niet-verifieerbaar auditbewijs en
+ontbrekend apart menselijk acceptatiebesluit. Elke mogelijke
+situatie houdt `DENY_PENDING_INDEPENDENT_REVIEW`.
+
+Het protocol specificeert acht onafhankelijke toekomstige
+stappen: originele stukken bij onafhankelijke custodian bewaren,
+acceptatie bevriezen, beide partijen authenticeren, getekende
+bytes en exacte hashes vergelijken, nonce/tijd/intrekking
+controleren, externe auditinclusie verifiëren, een separaat
+bevoegd menselijke review verkrijgen en een apart releasebesluit
+vereisen. De vier benodigde rollen zijn niet geauthenticeerd:
+independent evidence custodian, signature/revocation verifier,
+conflict reviewer en separate release authority. Zes niet-omzeilbare
+regels verbieden onder andere automatische acceptatie, replay,
+bewijsverandering, trust-on-first-use, zelfverklaarde bevoegdheid
+en uitrol louter op grond van een reviewuitkomst.
+
+De verplichte status blijft
+`requiredReceiptPairs=8`,
+`externallyAdjudicatedConflicts=0`,
+`acceptedReceiptPairs=0`,
+`conflictIntake=NOT_IMPLEMENTED`,
+`signedReceiptVerification=NOT_CONFIGURED`,
+`trustedReplayLedger=NOT_CONFIGURED`,
+`externalAudit=NOT_CONFIGURED`,
+`independentConflictReview=NOT_COMPLETED`,
+`humanDecision=NOT_COMPLETED`,
+`evidenceAcceptance=PROHIBITED`,
+`evidenceTransfer=NOT_INITIATED`,
+`evidenceStorage=NONE`,
+`trustedIssuerCount=0`,
+`allowedAlgorithms=[]`,
+`releaseReadiness=NOT_READY`,
+`palacoOneHandoff=BLOCKED`,
+`palacoOneSession=NOT_CREATED`,
+`authorization=HOLD`,
+`accessDecision=DENY`,
+`issuance=NOT_AUTHORIZED`.
+
+De opt-in CLI `review_044_receipt_conflict_resolution_cli.py`
+leest geen bestanden zonder `--run` en schrijft daarna uitsluitend
+een **nieuw ongetekend** rapport via `--export` en create-only `xb`.
+Naast de achttien oorspronkelijke bronargumenten vereist zij
+`--execution-plan`, `--observation-register`, `--evidence-intake`,
+`--review-handoff`, `--receipt-protocol`, `--verifier-blueprint`,
+`--trust-policy`, `--change-control`, `--review-dossier`,
+`--decision-protocol`, `--audit-contract`, `--readiness-matrix`,
+`--collection-plan`, `--custody-contract`, `--transfer-protocol`,
+`--reconciliation` en `--export`. De CLI ontvangt geen getekende
+disputen, bewijsbytes, ondertekeningssleutels of toegangstokens.
+
+Het alleen-lezen backofficepaneel
+**PP-RECOVERY-002 / Receipt Conflict Resolution Protocol —
+geen conflict beoordeeld** toont lokaal ongetekend JSON tot 64 KiB
+met acht bewijsposities en acht toekomstige onafhankelijke
+afhandelingsstappen. De browser bevestigt uitsluitend vaste
+schema- en DENY-statussen; originele documenten, externe
+signatures, rollen, revocation, nonce, trusted time of
+auditlogs worden **niet** gecontroleerd.
+De nieuwe JavaScriptviewer is toegevoegd aan de expliciete
+statische server-allowlist; er is geen uitvoerende
+disputenintake, nieuwe API of echte bewijsmutatie.
+
+**DRAFT / NOT_SENT / NOT_EXECUTED / NOT_VERIFIED /
+NOT_READY / HOLD / DENY / NOT_AUTHORIZED.**
+Geen tests, merge, deployment, bewijsontvangst,
+conflictbeslechting, autorisatie of PALACO ONE-sessie uitgevoerd.
+
+### PP-RECOVERY-002 — Conflict Resolution Evidence Dossier (0 waargenomen conflicten)
+
+De module `review_044_conflict_resolution_evidence_dossier.py`
+bevat `prepare_conflict_resolution_evidence_dossier`.
+Zij reconstrueert de oorspronkelijke achttien bronbyteartefacten
+en de zestien aanvullende contracten: Execution Plan,
+Observation Register, Evidence Intake, Review Handoff,
+Independent Receipt Protocol, Verifier Blueprint,
+Trust Policy, Change Control, Review Dossier,
+Decision Protocol, Audit Contract, Readiness Matrix,
+Collection Plan, Custody Contract, Transfer Protocol
+en Transfer Receipt Reconciliation. Het aangeleverde
+Receipt Conflict Resolution Protocol moet type-exact
+overeenkomen met het opnieuw uit deze byteketen
+gereconstrueerde protocol (maximaal 64 KiB).
+Afwijkingen en ongeoorloofde goedkeuringsclaims worden
+geweigerd met `PP_RECOVERY_002_CONFLICT_EVIDENCE_DOSSIER_INVALID`.
+Een lokale contractvergelijking is geen onafhankelijke
+bewijsverificatie.
+
+Het schema
+`palaco.pp.recovery-002-conflict-resolution-evidence-dossier.v0`
+bindt via SHA-256 aan exacte conflictprotocol-, reconciliation-
+en transferprotocolbytes. Acht hypothetische case-IDs
+`CR-E01` tot en met `CR-E08` zijn elk gekoppeld aan
+een mogelijke conflictklasse en een specifieke
+ontbrekende externe bewijssoort: originele getekende
+verzendreceipt, getekende ontvangersbevestiging,
+canonieke envelope- en bewijsbytehashes, identiteit-
+en scopeattestaties, signed nonce/replay/tijd-bewijs,
+key-epoch/revocationattestatie, extern append-only
+auditbewijs en afzonderlijk getekend menselijk besluit.
+
+**Geen van de acht conflicten is werkelijk waargenomen of
+extern aangemeld.** De klasse is altijd
+`POTENTIAL_CONFLICT_NOT_OBSERVED`. Per case zijn
+`originalEvidence=NOT_RECEIVED`,
+`sourceAuthenticity=NOT_VERIFIED`,
+`independentReviewerAuthority=NOT_ESTABLISHED`,
+`externalAuditProof=NOT_AVAILABLE`,
+`review=NOT_STARTED`,
+`decision=DENY`, met slechts
+`PREPARE_REQUEST_FOR_EXTERNAL_REVIEW_ONLY` als
+toegestane voorbereidingsactie.
+
+Acht checkpoints vereisen controle van oorspronkelijke
+byteketens, signing keys, revieweridentiteit,
+replay/nonce/tijd, auditlogs, bevoegd menselijk
+conflictbesluit en aparte releaseauthorisatie. De
+vier noodzakelijke reviewerrollen hebben geen
+geauthenticeerde identiteit of bevoegd scopebewijs.
+De acht onafhankelijke reviewstappen blijven
+`NOT_STARTED / BLOCKED` en zes
+niet-omzeilbare regels behouden `DENY_ONLY`.
+Geen lokale rolclaim is een extern attest.
+
+Vaste top-level velden:
+`potentialConflictCount=8`,
+`observedConflictCount=0`,
+`externalEvidenceReceivedCount=0`,
+`independentlyReviewedCount=0`,
+`externalRequestDelivery=NOT_SENT`,
+`evidenceIntake=NOT_IMPLEMENTED`,
+`conflictAdjudication=NOT_PERFORMED`,
+`independentConflictDecision=NOT_AVAILABLE`,
+`trustedAuditService=NOT_CONFIGURED`,
+`independentVerification=NOT_VERIFIED`,
+`humanDecision=NOT_COMPLETED`,
+`evidenceAcceptance=PROHIBITED`,
+`evidenceTransfer=NOT_INITIATED`,
+`evidenceStorage=NONE`,
+`trustedIssuerCount=0`, `allowedAlgorithms=[]`,
+`releaseReadiness=NOT_READY`,
+`palacoOneHandoff=BLOCKED`,
+`palacoOneSession=NOT_CREATED`,
+`authorization=HOLD`, `accessDecision=DENY`
+en `issuance=NOT_AUTHORIZED`.
+
+De opt-in CLI
+`review_044_conflict_resolution_evidence_dossier_cli.py`
+leest zonder `--run` geen bronnen. Een latere
+handmatige export verlangt de achttien oorspronkelijke
+bronargumenten, `--execution-plan`,
+`--observation-register`, `--evidence-intake`,
+`--review-handoff`, `--receipt-protocol`,
+`--verifier-blueprint`, `--trust-policy`,
+`--change-control`, `--review-dossier`,
+`--decision-protocol`, `--audit-contract`,
+`--readiness-matrix`, `--collection-plan`,
+`--custody-contract`, `--transfer-protocol`,
+`--reconciliation`, `--conflict-protocol`
+en `--export`. Met expliciete `--run` wordt
+uitsluitend een **nieuw ongetekend JSON-bestand**
+via create-only `xb` aangemaakt. Geen echte
+conflicten of bewijzen worden geüpload of verwerkt.
+
+Het alleen-lezen backofficepaneel
+**PP-RECOVERY-002 / Conflict Resolution Evidence Dossier —
+0 waargenomen conflicten** kan lokaal JSON tot 64 KiB
+indicatief tonen: acht hypothetische conflictvereisten en
+acht geblokkeerde checkpoints. De browser controleert
+uitsluitend de JSON-vorm en vaste DENY-waarden, niet
+de originele hashketen, externe digitale handtekeningen,
+reviewerbevoegdheden of auditankers.
+De statische JavaScriptviewer is aan de bestaande
+server-allowlist toegevoegd; geen nieuwe uitvoerende
+endpoint of mutatie is gemaakt.
+
+**DRAFT / NOT_SENT / NOT_EXECUTED / NOT_VERIFIED /
+NOT_READY / HOLD / DENY / NOT_AUTHORIZED.**
+Geen tests, merge, release, deployment,
+bewijsoverdracht, conflictbeslechting, ondertekening,
+autorisatie of PALACO ONE-sessie uitgevoerd.
