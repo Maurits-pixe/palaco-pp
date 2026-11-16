@@ -3197,3 +3197,110 @@ NOT_READY / HOLD / DENY / NOT_AUTHORIZED.**
 Geen tests, merge, release, deploy, bewijsacceptatie,
 bewijsoverdracht, reviewerautorisatie, signing
 of PALACO ONE-sessie uitgevoerd.
+
+### PP-RECOVERY-002 — Receipt Conflict Resolution Protocol (geen conflictbeslechting)
+
+De pure module `review_044_receipt_conflict_resolution.py` introduceert
+`prepare_receipt_conflict_resolution_protocol`. Deze functie reconstrueert
+de volledige contractketen uit de achttien oorspronkelijke bronartefacten
+en vijftien voorafgaande bestanden: Execution Plan, Observation Register,
+Evidence Intake, Review Handoff, Independent Receipt Protocol,
+Verifier Blueprint, Trust Policy, Change Control, Review Dossier,
+Decision Protocol, Audit Contract, Readiness Matrix, Collection Plan,
+Custody Contract en Transfer Protocol. Daarna wordt het exacte
+`Transfer Receipt Reconciliation Contract` vergeleken met een volledig
+opnieuw opgebouwd contract (maximaal 64 KiB).
+Bij mismatch of ongeoorloofde vrijgaveclaims volgt
+`PP_RECOVERY_002_RECEIPT_CONFLICT_RESOLUTION_INVALID`.
+Dit bevestigt alleen lokale contractconsistentie, **geen** echtheid van
+verzonden of ontvangen bewijsstukken.
+
+Het schema `palaco.pp.recovery-002-receipt-conflict-resolution.v0`
+bevat de SHA-256-binding aan de reconciliation-, transferprotocol- en
+custodycontractbytes. Er zijn acht vaste bewijsposities `AUD-E01`
+tot `AUD-E08`. Omdat geen werkelijk ondertekend verzendbewijs of
+ontvangstbevestiging is aangeleverd, blijven alle posities
+`senderReceipt=NOT_RECEIVED`,
+`recipientAck=NOT_RECEIVED`,
+`conflictDetermination=NOT_PERFORMED`,
+`externalCaseCreation=NOT_STARTED`,
+`evidencePreservation=REQUIRED_NOT_EXECUTED`,
+`independentAdjudication=NOT_COMPLETED`,
+`disposition=UNRESOLVED_DENY`,
+`transfer=NOT_INITIATED`,
+`gate=BLOCKED`,
+`accessDecision=DENY`.
+Er wordt **geen conflict als werkelijk geconstateerd** geregistreerd.
+
+Acht mogelijke conflictklassen worden alleen als
+`POTENTIAL_CONFLICT_NOT_OBSERVED` gespecificeerd:
+ontbrekend/onvertrouwd verzendbewijs, ontbrekende/ongeldige
+ontvangstbevestiging, hashverschil, identiteit- of scopeverschil,
+audience/nonce/tijdverschil, ingetrokken of onbetrouwbare
+ondertekeningssleutel, niet-verifieerbaar auditbewijs en
+ontbrekend apart menselijk acceptatiebesluit. Elke mogelijke
+situatie houdt `DENY_PENDING_INDEPENDENT_REVIEW`.
+
+Het protocol specificeert acht onafhankelijke toekomstige
+stappen: originele stukken bij onafhankelijke custodian bewaren,
+acceptatie bevriezen, beide partijen authenticeren, getekende
+bytes en exacte hashes vergelijken, nonce/tijd/intrekking
+controleren, externe auditinclusie verifiëren, een separaat
+bevoegd menselijke review verkrijgen en een apart releasebesluit
+vereisen. De vier benodigde rollen zijn niet geauthenticeerd:
+independent evidence custodian, signature/revocation verifier,
+conflict reviewer en separate release authority. Zes niet-omzeilbare
+regels verbieden onder andere automatische acceptatie, replay,
+bewijsverandering, trust-on-first-use, zelfverklaarde bevoegdheid
+en uitrol louter op grond van een reviewuitkomst.
+
+De verplichte status blijft
+`requiredReceiptPairs=8`,
+`externallyAdjudicatedConflicts=0`,
+`acceptedReceiptPairs=0`,
+`conflictIntake=NOT_IMPLEMENTED`,
+`signedReceiptVerification=NOT_CONFIGURED`,
+`trustedReplayLedger=NOT_CONFIGURED`,
+`externalAudit=NOT_CONFIGURED`,
+`independentConflictReview=NOT_COMPLETED`,
+`humanDecision=NOT_COMPLETED`,
+`evidenceAcceptance=PROHIBITED`,
+`evidenceTransfer=NOT_INITIATED`,
+`evidenceStorage=NONE`,
+`trustedIssuerCount=0`,
+`allowedAlgorithms=[]`,
+`releaseReadiness=NOT_READY`,
+`palacoOneHandoff=BLOCKED`,
+`palacoOneSession=NOT_CREATED`,
+`authorization=HOLD`,
+`accessDecision=DENY`,
+`issuance=NOT_AUTHORIZED`.
+
+De opt-in CLI `review_044_receipt_conflict_resolution_cli.py`
+leest geen bestanden zonder `--run` en schrijft daarna uitsluitend
+een **nieuw ongetekend** rapport via `--export` en create-only `xb`.
+Naast de achttien oorspronkelijke bronargumenten vereist zij
+`--execution-plan`, `--observation-register`, `--evidence-intake`,
+`--review-handoff`, `--receipt-protocol`, `--verifier-blueprint`,
+`--trust-policy`, `--change-control`, `--review-dossier`,
+`--decision-protocol`, `--audit-contract`, `--readiness-matrix`,
+`--collection-plan`, `--custody-contract`, `--transfer-protocol`,
+`--reconciliation` en `--export`. De CLI ontvangt geen getekende
+disputen, bewijsbytes, ondertekeningssleutels of toegangstokens.
+
+Het alleen-lezen backofficepaneel
+**PP-RECOVERY-002 / Receipt Conflict Resolution Protocol —
+geen conflict beoordeeld** toont lokaal ongetekend JSON tot 64 KiB
+met acht bewijsposities en acht toekomstige onafhankelijke
+afhandelingsstappen. De browser bevestigt uitsluitend vaste
+schema- en DENY-statussen; originele documenten, externe
+signatures, rollen, revocation, nonce, trusted time of
+auditlogs worden **niet** gecontroleerd.
+De nieuwe JavaScriptviewer is toegevoegd aan de expliciete
+statische server-allowlist; er is geen uitvoerende
+disputenintake, nieuwe API of echte bewijsmutatie.
+
+**DRAFT / NOT_SENT / NOT_EXECUTED / NOT_VERIFIED /
+NOT_READY / HOLD / DENY / NOT_AUTHORIZED.**
+Geen tests, merge, deployment, bewijsontvangst,
+conflictbeslechting, autorisatie of PALACO ONE-sessie uitgevoerd.
