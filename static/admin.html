@@ -34,6 +34,7 @@
   <script src="/review044-release-integrity.js" defer></script>
   <script src="/review044-release-evidence-matrix.js" defer></script>
   <script src="/review044-release-readiness-cockpit.js" defer></script>
+  <script src="/review044-release-execution-plan.js" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -703,6 +704,24 @@
             <h4>Negen openstaande releaseblokkades</h4>
             <ul id="admin-release-cockpit-blockers"></ul>
             <p class="auth-note">Geen goedkeuringsknoppen, migraties, authenticatie, attestaties of sessie-uitgifte. De browser leest alleen een lokaal ongetekend rapport en reconstrueert niet zelfstandig de zeventien originele bronbestanden. Alle statuspoorten BLOCKED; NOT_VERIFIED / NOT_READY / HOLD / DENY / NOT_AUTHORIZED.</p>
+          </section>
+          <section class="admin-bundle-panel" aria-labelledby="admin-execution-plan-title">
+            <h3 id="admin-execution-plan-title">PP-RECOVERY-002 / Verification Execution Plan — later handmatig uitvoeren</h3>
+            <p class="auth-note">Dit offline plan toont zeven procedurestappen en achttien verificatiechecks voor de zes releasepoorten. Het verzamelt of valideert geen bewijs en voert geen tests uit. Een toekomstige lokale observatie blijft onbevestigd totdat een onafhankelijke bevoegde reviewer haar extern beoordeelt.</p>
+            <div class="admin-review-grid"><div>
+              <label for="admin-execution-plan-file">Offline verificatieplan (.json, maximaal 32 KiB)</label>
+              <input id="admin-execution-plan-file" type="file" accept=".json,application/json">
+            </div></div>
+            <button id="admin-execution-plan-load" type="button" class="secondary">Toon niet-uitgevoerde verificatiechecks</button>
+            <p id="admin-execution-plan-status" class="admin-review-result" role="status" aria-live="polite">Geen Verification Execution Plan geladen. HOLD / DENY.</p>
+            <h4>Procedure in zeven stappen — allemaal NOT_STARTED</h4>
+            <ol id="admin-execution-plan-procedure"></ol>
+            <h4>Achttien bewijschecks — zonder PASS of autorisatie</h4>
+            <div class="admin-table-wrap admin-registry-rows"><table aria-label="Handmatige releaseverificatiechecks">
+              <thead><tr><th>Check-ID</th><th>Releasepoort</th><th>Extern bewijs</th><th>Uitvoering</th><th>Poort</th></tr></thead>
+              <tbody id="admin-execution-plan-rows"></tbody>
+            </table></div>
+            <p class="auth-note">De browser valideert slechts de ongetekende JSON-structuur, niet de achttien oorspronkelijke bronbestanden of externe handtekeningen. Alle checks NOT_STARTED / NOT_PERFORMED. Geen run, registratie van bewezen bevoegdheden, vrijgave, PALACO ONE-sessie, uitgifte of deploy. NOT_READY / HOLD / DENY / NOT_AUTHORIZED.</p>
           </section>
           <button id="admin-review044-registry-export" type="button" class="secondary" disabled>Download nieuw registersnapshot (.json)</button>
           <p class="auth-note">Controleer vóór gebruik altijd het originele dossier met de striktere Python-module. Deze browserregistratie is indicatief en bevat geen tijds- of identiteitsbewijs. Geen serveropslag of autorisatie.</p>
