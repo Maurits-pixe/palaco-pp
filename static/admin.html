@@ -33,6 +33,7 @@
   <script src="/review044-change-impact.js" defer></script>
   <script src="/review044-release-integrity.js" defer></script>
   <script src="/review044-release-evidence-matrix.js" defer></script>
+  <script src="/review044-release-readiness-cockpit.js" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -683,6 +684,25 @@
               <tbody id="admin-evidence-matrix-rows"></tbody>
             </table></div>
             <p class="auth-note">Browserimport controleert alleen de vaste JSON-structuur; de zestien originele bytes en externe bewijsherkomst worden niet geverifieerd. Alle poorten BLOCKED / DENY, alle bewijsstukken MISSING. Geen SBOM, softwarepakket, signing, tests, merge of uitrol. NOT_READY / HOLD / DENY / NOT_AUTHORIZED.</p>
+          </section>
+          <section class="admin-bundle-panel" aria-labelledby="admin-release-cockpit-title">
+            <h3 id="admin-release-cockpit-title">PP-RECOVERY-002 / Release Readiness Cockpit — alleen lezen</h3>
+            <p class="auth-note">Centraal offline overzicht van zes geblokkeerde releasepoorten, achttien ontbrekende onafhankelijke bewijsstukken, negen open releaseblokkades en vijf geblokkeerde oorspronkelijke beslispoorten. Dit is een ongetekend lokaal rapport en geen vrijgave.</p>
+            <div class="admin-review-grid"><div>
+              <label for="admin-release-cockpit-file">Offline release-cockpitrapport (.json, maximaal 32 KiB)</label>
+              <input id="admin-release-cockpit-file" type="file" accept=".json,application/json">
+            </div></div>
+            <button id="admin-release-cockpit-load" type="button" class="secondary">Toon geblokkeerde releasegereedheid</button>
+            <p id="admin-release-cockpit-status" class="admin-review-result" role="status" aria-live="polite">Geen Release Readiness Cockpit geladen. HOLD / DENY.</p>
+            <dl id="admin-release-cockpit-metrics" class="admin-registry-inspector"></dl>
+            <h4>Zes releasepoorten — alle bewijzen ontbreken</h4>
+            <div class="admin-table-wrap admin-registry-rows"><table aria-label="Release readiness en onafhankelijke verificatiebehoeften">
+              <thead><tr><th>Nr.</th><th>Releasepoort</th><th>Vereiste reviewerrol</th><th>Ontbrekende bewijzen</th><th>Uitkomst</th></tr></thead>
+              <tbody id="admin-release-cockpit-rows"></tbody>
+            </table></div>
+            <h4>Negen openstaande releaseblokkades</h4>
+            <ul id="admin-release-cockpit-blockers"></ul>
+            <p class="auth-note">Geen goedkeuringsknoppen, migraties, authenticatie, attestaties of sessie-uitgifte. De browser leest alleen een lokaal ongetekend rapport en reconstrueert niet zelfstandig de zeventien originele bronbestanden. Alle statuspoorten BLOCKED; NOT_VERIFIED / NOT_READY / HOLD / DENY / NOT_AUTHORIZED.</p>
           </section>
           <button id="admin-review044-registry-export" type="button" class="secondary" disabled>Download nieuw registersnapshot (.json)</button>
           <p class="auth-note">Controleer vóór gebruik altijd het originele dossier met de striktere Python-module. Deze browserregistratie is indicatief en bevat geen tijds- of identiteitsbewijs. Geen serveropslag of autorisatie.</p>
