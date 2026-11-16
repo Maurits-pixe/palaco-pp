@@ -2104,3 +2104,70 @@ toegevoegd; er zijn geen nieuwe API-routes geïmplementeerd.
 NOT_READY / HOLD / DENY / NOT_AUTHORIZED.**
 Geen tests, merge, deploy, autorisatie, ontvangstverklaring of
 PALACO ONE-sessie uitgevoerd.
+
+### PP-RECOVERY-002 — Independent Review Receipt Protocol (geen ontvangst uitgegeven)
+
+De module `review_044_independent_receipt_protocol.py` bevat
+`prepare_independent_review_receipt_protocol`. Zij valideert
+de achttien originele bytebronnen, het Execution Plan,
+het lokale observatieregister en de Evidence Intake via de
+bestaande Pythonketen. Het daaruit gereconstrueerde
+**Evidence Review Handoff** moet type-exact overeenkomen met het
+aangeleverde originele handoffbestand (maximaal 64 KiB).
+Een afwijking wordt geweigerd met
+`PP_RECOVERY_002_INDEPENDENT_RECEIPT_PROTOCOL_INVALID`.
+Interne overeenstemming bewijst geen externe herkomst.
+
+Het ontwerpcontract `palaco.pp.recovery-002-independent-review-receipt-protocol.v0`
+is uitsluitend een lijst van noodzakelijke voorwaarden.
+Het bevat twaalf ontbrekende receiptvelden: protocolversie,
+exacte handoffhash, uitgever/audience, reviewer subject en scope,
+onafhankelijkheidsattest, nonce en purpose, vertrouwde geldigheidstijden,
+ondertekende bewijssethash, extern auditanker, afzonderlijke
+reviewbeslissing, signing-key-identificatie en detached signature.
+Er is **geen cryptografisch algoritme of sleutelvertrouwensbron
+geconfigureerd**; `signatureVerification=NOT_IMPLEMENTED`.
+De acht onafhankelijke verificatiestappen eisen onder meer
+canonical byte-binding, signature checking, nonce/replay/expiry,
+reviewer-scope, sleutel-/rolintrekking, extern auditanker en
+een apart bevoegd menselijk besluit. Tien foutscenario's hebben
+altijd `DENY` en `authorityEffect=NONE`.
+
+De output vermeldt expliciet:
+`receiptBytes=NOT_PRESENT`, `signedReceipt=NOT_AVAILABLE`,
+`receiptSubmission=NOT_IMPLEMENTED`, `delivery=NOT_SENT`,
+`independentVerifier=NOT_CONFIGURED`,
+`trustedClock=NOT_CONFIGURED`, `revocationCheck=NOT_PERFORMED`,
+`auditAnchoring=NOT_IMPLEMENTED`,
+`reviewerAuthentication=NOT_ESTABLISHED`,
+`reviewerAuthority=NOT_ESTABLISHED`, `humanReview=NOT_COMPLETED`,
+`independentVerification=NOT_VERIFIED`,
+`releaseReadiness=NOT_READY`, `palacoOneHandoff=BLOCKED`,
+`palacoOneSession=NOT_CREATED`, `authorization=HOLD`,
+`accessDecision=DENY` en `issuance=NOT_AUTHORIZED`.
+Een ongetekend JSON-bestand of lokale rolclaim kan geen van deze
+statussen wijzigen.
+
+`review_044_independent_receipt_protocol_cli.py` vereist
+`--run`, leest alleen begrensde originele inputs en schrijft
+uitsluitend een **nieuw** JSON-bestand via `--export` met
+create-only `xb`. Er wordt niets verstuurd of ondertekend.
+Een later voorbeeld voor een handmatige eigenaarssessie:
+
+```powershell
+python .\review_044_independent_receipt_protocol_cli.py --run --dossier "PP_RECOVERY_DECISION_HOLD.json" --queue "PP_REVIEW_QUEUE_001.json" --intake "PP_REVIEW_INTAKE_001.json" --plan "PP_VERIFICATION_PLAN_HOLD.json" --observations "PP_OBSERVATION_001.json" --manifest "PP_HUMAN_REVIEW_HANDOFF_HOLD.json" --protocol "PP_REVIEW_PROTOCOL_001.json" --contract "PP_REVIEWER_AUTH_REQUIREMENTS_HOLD.json" --blueprint "PP_REVIEWER_SERVICE_BLUEPRINT_HOLD.json" --interfaces "PP_REVIEWER_INTERFACE_CONTRACT_HOLD.json" --transitions "PP_TRUST_TRANSITIONS_HOLD.json" --revocation "PP_REVOCATION_RECOVERY_HOLD.json" --assurance "PP_SECURITY_ASSURANCE_HOLD.json" --registry "PP_CONTRACT_COMPATIBILITY_HOLD.json" --impact "PP_CHANGE_IMPACT_HOLD.json" --integrity "PP_RELEASE_INTEGRITY_HOLD.json" --matrix "PP_RELEASE_EVIDENCE_MATRIX_HOLD.json" --cockpit "PP_RELEASE_READINESS_COCKPIT_HOLD.json" --execution-plan "PP_VERIFICATION_EXECUTION_PLAN_HOLD.json" --observation-register "PP_RELEASE_OBSERVATION_001_HOLD.json" --evidence-intake "PP_RELEASE_EVIDENCE_INTAKE_001_HOLD.json" --review-handoff "PP_EVIDENCE_REVIEW_HANDOFF_HOLD.json" --export "PP_INDEPENDENT_RECEIPT_PROTOCOL_HOLD.json"
+```
+
+Het lokale alleen-lezen paneel **PP-RECOVERY-002 / Independent
+Review Receipt Protocol — geen ontvangst** toont een JSON-contract
+van maximaal 64 KiB met de twaalf ontbrekende ontvangstvelden en
+acht nog niet uitgevoerde externe controles. De browser valideert
+alleen herkenbare schema- en blokkadevelden, **niet** de originele
+bronnen, cryptografische signatures, revieweridentiteit, vertrouwde
+klok of audit. Het script is toegevoegd aan de expliciete
+statische server-allowlist; geen uitvoerend endpoint.
+
+**DRAFT / NOT_SENT / NOT_EXECUTED / NOT_VERIFIED /
+NOT_READY / HOLD / DENY / NOT_AUTHORIZED.**
+Geen tests, merge, release, deployment, ondertekening, auditactie,
+autorisatie, ontvangstverklaring of PALACO ONE-sessie uitgevoerd.
