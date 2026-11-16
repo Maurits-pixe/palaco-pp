@@ -2333,3 +2333,77 @@ allowlist; er is geen nieuwe uitvoerende serverroute gemaakt.
 HOLD / DENY / NOT_AUTHORIZED.** Er zijn geen tests,
 merge, release, deploy, ondertekening, sleutelimport,
 auditactie, autorisatie of PALACO ONE-sessie uitgevoerd.
+
+### PP-RECOVERY-002 — Trust Policy Change Control (hypothetisch, DENY)
+
+De pure `review_044_trust_policy_change_control.py` reconstrueert het
+bestaande deny-all Trust Policy Register uit achttien originele
+bytebronnen en zes aanvullende contractartefacten: Execution Plan,
+Observation Register, Evidence Intake, Review Handoff,
+Independent Receipt Protocol en Verifier Blueprint. De aangeleverde
+exacte trustpolicybytes worden **type-exact** vergeleken met de
+opnieuw opgebouwde beleidsversie. Afwijkingen leveren
+`PP_RECOVERY_002_TRUST_POLICY_CHANGE_CONTROL_INVALID` op.
+Deze vergelijking is uitsluitend interne consistentie en geen
+extern bewijs van herkomst of bevoegdheid.
+
+`prepare_trust_policy_change_control` accepteert uitsluitend vier
+begrensde categorieën: `ISSUER_POLICY`, `ALGORITHM_POLICY`,
+`KEY_ROTATION_POLICY` of `REVOCATION_POLICY`, en een van vijf
+hypothetische wijzigingstypen: `PROPOSE_REQUIREMENT_REVISION`,
+`PROPOSE_NEW_TRUST_ROOT`, `PROPOSE_ALGORITHM_ALLOWLIST`,
+`PROPOSE_KEY_ROTATION` of `PROPOSE_REVOCATION_POLICY`.
+Er worden **geen voorgestelde sleutelbytes, uitgevers, rootpins of
+nieuwe algoritmen geaccepteerd of geïnstalleerd**. Het uitgebrachte
+ongetekende voorstel verwijst alleen naar de oorspronkelijke
+SHA-256 van de volledige trustpolicybytes.
+
+Per voorstel worden de vereisten uit de gekozen beleidscategorie
+gemarkeerd als `REASSESSMENT_REQUIRED`; alle vier categorieën
+vereisen conservatieve hercontrole. Negen release- en
+vertrouwenspoorten blijven `BLOCKED / NOT_PERFORMED`.
+Drie afzonderlijke rollen moeten later onafhankelijk worden
+geauthenticeerd en bevoegd bevonden:
+`INDEPENDENT_SECURITY_REVIEWER`,
+`AUTHORIZED_TRUST_POLICY_OWNER` en
+`INDEPENDENT_RELEASE_ATTESTOR`.
+Er zijn twaalf vaste afwijzingsredenen. Lokale rolclaims of
+een gegenereerd JSON-rapport mogen niet tot een nieuw
+vertrouwensanker of release-autorisatie leiden.
+
+Het contract `palaco.pp.recovery-002-trust-policy-change-control.v0`
+bevat de vaste velden `scope=UNSIGNED_HYPOTHETICAL_POLICY_PROPOSAL_ONLY`,
+`changeApplied=false`, `externalReview=NOT_STARTED`,
+`changeAuthorization=DENY`, `deploymentAuthorization=DENY`,
+`issuerPromotion=PROHIBITED`, `algorithmPromotion=PROHIBITED`,
+`trustedIssuerCount=0`, `allowedAlgorithms=[]`,
+`keyMaterial=NOT_PRESENT`, `independentVerification=NOT_VERIFIED`,
+`releaseReadiness=NOT_READY`, `palacoOneHandoff=BLOCKED`,
+`palacoOneSession=NOT_CREATED`, `authorization=HOLD`,
+`accessDecision=DENY` en `issuance=NOT_AUTHORIZED`.
+
+`review_044_trust_policy_change_control_cli.py` opent zonder
+`--run` geen originele bestanden en schrijft na expliciete
+opdracht alleen een **nieuwe** JSON-snapshot via
+`--export` met `xb`. Zij vereist de achttien originele
+bronparameters, `--execution-plan`, `--observation-register`,
+`--evidence-intake`, `--review-handoff`,
+`--receipt-protocol`, `--verifier-blueprint`,
+`--trust-policy`, `--change-category` en `--change-type`.
+Voor een latere handmatige illustratie van de laatste twee
+parameters: `--change-category KEY_ROTATION_POLICY
+--change-type PROPOSE_KEY_ROTATION`.
+
+De nieuwe alleen-lezen backofficeviewer
+**PP-RECOVERY-002 / Trust Policy Change Control — niet toegepast**
+toont een ongetekende JSON-snapshot tot 64 KiB. Deze browser
+controleert herkenbare vaste JSON- en DENY-structuren, maar
+verifieert niet de originele bronbytes, handtekening,
+revieweridentiteit of externe vertrouwensankers. De statische
+JavaScriptviewer is toegevoegd aan de lokale server-allowlist;
+geen nieuw uitvoerend API-endpoint of beleidsmutatie.
+
+**DRAFT / NOT_APPLIED / NOT_EXECUTED / NOT_VERIFIED /
+NOT_READY / HOLD / DENY / NOT_AUTHORIZED.** Geen tests,
+merge, release, deploy, sleutelimport, ondertekening,
+autorisatie of PALACO ONE-sessie uitgevoerd.
