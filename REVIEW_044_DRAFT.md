@@ -1979,3 +1979,69 @@ lokale allowlist. Er zijn geen nieuwe API-routes toegevoegd.
 **DRAFT / NOT_EXECUTED / NOT_VERIFIED / NOT_READY / HOLD /
 DENY / NOT_AUTHORIZED.** Geen tests, merge, deploy, sessie,
 uitgifte of automatische goedkeuring uitgevoerd.
+
+### PP-RECOVERY-002 — Verification Evidence Intake (niet-vertrouwde bewijsverwijzingen)
+
+De pure module `review_044_release_evidence_intake.py` definieert
+`append_release_evidence_intake`. Voor een **latere**
+handmatige eigenaarssessie reconstrueert zij het originele
+Verification Execution Plan op basis van de achttien
+byte-inputs, verifieert type-exact de opgegeven planbytes en
+controleert de volledige voorafgaande observation-eventketen.
+Het aangeleverde bewijsbestand moet byte-voor-byte dezelfde
+SHA-256 opleveren als de `evidenceSha256` van een
+**bestaande, specifiek geselecteerde** observatie.
+Een verkeerde hash, onbekend check-ID of afwijkende
+observatiereferentie wordt geweigerd met
+`PP_RECOVERY_002_RELEASE_EVIDENCE_INTAKE_INVALID`.
+
+Het append-only intakeregister accepteert maximaal
+64 bewijsreferenties, maximaal één per bestaande
+observatievolgnummer, en is gebonden aan de **exacte**
+plan- en observatieregisterbytes. Het intakesnapshot bevat
+uitsluitend bewijsmetadata: observatievolgnummer,
+observatie-eventhash, check-ID, releasepoort, bewijstype
+(`DOCUMENT`, `SCREENSHOT`, `LOG_EXCERPT`,
+`OTHER_UNTRUSTED`), SHA-256 van bewijsbytes,
+bestandsgrootte en een lokale hashketen met vorige recordhash.
+Bewijsbytes zelf worden **niet** opgeslagen.
+Per bewijsbestand geldt maximaal 64 KiB.
+
+De bronketen en het eerdere register worden in de Pythonlaag
+gecontroleerd. Geen lokaal bewijs wordt onafhankelijk
+geauthenticeerd: `UNSIGNED_LOCAL_UNTRUSTED`,
+`NOT_VERIFIED`, `NOT_PERFORMED`, `NOT_ESTABLISHED`,
+`BLOCKED`, `DENY` blijven op iedere referentie staan.
+De lokale hashketen is geen externe audit, handtekening,
+betrouwbare klok of garantie tegen volledige lokale herschrijving.
+
+De CLI `review_044_release_evidence_intake_cli.py`
+leest zonder expliciet `--run` geen bronbestanden;
+`--export` maakt uitsluitend een **nieuw** JSON-bestand aan
+(create-only `xb`). Na het bestaan van een daadwerkelijke,
+later door de eigenaar opgestelde observatiesnapshot met een
+bewijshash, kan de volgende soort opdracht handmatig worden gebruikt:
+
+```powershell
+python .\review_044_release_evidence_intake_cli.py --run --dossier "PP_RECOVERY_DECISION_HOLD.json" --queue "PP_REVIEW_QUEUE_001.json" --intake "PP_REVIEW_INTAKE_001.json" --plan "PP_VERIFICATION_PLAN_HOLD.json" --observations "PP_OBSERVATION_001.json" --manifest "PP_HUMAN_REVIEW_HANDOFF_HOLD.json" --protocol "PP_REVIEW_PROTOCOL_001.json" --contract "PP_REVIEWER_AUTH_REQUIREMENTS_HOLD.json" --blueprint "PP_REVIEWER_SERVICE_BLUEPRINT_HOLD.json" --interfaces "PP_REVIEWER_INTERFACE_CONTRACT_HOLD.json" --transitions "PP_TRUST_TRANSITIONS_HOLD.json" --revocation "PP_REVOCATION_RECOVERY_HOLD.json" --assurance "PP_SECURITY_ASSURANCE_HOLD.json" --registry "PP_CONTRACT_COMPATIBILITY_HOLD.json" --impact "PP_CHANGE_IMPACT_HOLD.json" --integrity "PP_RELEASE_INTEGRITY_HOLD.json" --matrix "PP_RELEASE_EVIDENCE_MATRIX_HOLD.json" --cockpit "PP_RELEASE_READINESS_COCKPIT_HOLD.json" --execution-plan "PP_VERIFICATION_EXECUTION_PLAN_HOLD.json" --observation-register "PP_RELEASE_OBSERVATION_001_HOLD.json" --observation-sequence 1 --kind SCREENSHOT --evidence "bewijs-screenshot.png" --export "PP_RELEASE_EVIDENCE_INTAKE_001_HOLD.json"
+```
+
+Voor een volgende bewijsverwijzing geldt
+`--previous-intake "PP_RELEASE_EVIDENCE_INTAKE_001_HOLD.json"`
+en een **nieuwe** `--export`-naam. Beide intakebestanden moeten
+van hetzelfde exacte observatieregister afkomstig zijn; een
+gewijzigd observatieregister vereist een apart, opnieuw
+beoordeeld intakepad.
+
+Het paneel **PP-RECOVERY-002 / Verification Evidence Intake**
+is uitsluitend leesbaar en toont maximaal 64 ongetekende
+bewijsverwijzingen uit een lokaal JSON-bestand tot 64 KiB.
+De browser controleert slechts vaste schema- en blokkadevelden
+en herberekent geen bewijsbytehash, recordhashketen,
+broncontracten of externe identiteit. Het statische script
+is op de expliciete lokale server-allowlist opgenomen.
+Er is geen nieuwe API-route, test, merge, uitrol,
+bewijsauthenticatie of vrijgave toegevoegd.
+
+**DRAFT / NOT_EXECUTED / NOT_VERIFIED / NOT_READY /
+HOLD / DENY / NOT_AUTHORIZED.**
