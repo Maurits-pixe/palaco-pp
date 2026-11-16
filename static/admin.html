@@ -47,6 +47,7 @@
   <script src="/review044-trust-decision-audit-contract.js" defer></script>
   <script src="/review044-audit-evidence-readiness-matrix.js" defer></script>
   <script src="/review044-audit-evidence-collection-plan.js" defer></script>
+  <script src="/review044-audit-evidence-custody-contract.js" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -937,6 +938,24 @@
             <h4>Acht bewaar- en verificatievoorwaarden — NOT_ESTABLISHED</h4>
             <ol id="admin-audit-collection-rules"></ol>
             <p class="auth-note">De browser toont alleen een ongetekend JSON-plan; originele bronbytes, reviewers, handtekeningen, nonce, auditlogs en externe rollen worden niet gecontroleerd. 0/8 bewijsbestanden verzameld; 0/8 geverifieerd; geen aanvragen verstuurd. NOT_EXECUTED / NOT_VERIFIED / NOT_READY / HOLD / DENY / NOT_AUTHORIZED.</p>
+          </section>
+          <section class="admin-bundle-panel" aria-labelledby="admin-audit-custody-title">
+            <h3 id="admin-audit-custody-title">PP-RECOVERY-002 / Audit Evidence Custody Contract — nul bewijs in bezit</h3>
+            <p class="auth-note">Uitsluitend ongetekend bewaarbeleid voor de acht openstaande auditbewijzen. Originele bytes horen bij een later geauthenticeerde externe bewaarder; deze applicatie verzamelt, bewaart, accepteert en verstuurt geen bewijzen of credentials.</p>
+            <div class="admin-review-grid"><div>
+              <label for="admin-audit-custody-file">Lokaal bewaarkontrakt (.json, maximaal 64 KiB)</label>
+              <input id="admin-audit-custody-file" type="file" accept=".json,application/json">
+            </div></div>
+            <button id="admin-audit-custody-load" type="button" class="secondary">Toon acht bewaarbeperkingen</button>
+            <p id="admin-audit-custody-status" class="admin-review-result" role="status" aria-live="polite">Geen Audit Evidence Custody Contract geladen. HOLD / DENY.</p>
+            <h4>Acht evidence-posities — NOT_INITIATED / DENY</h4>
+            <div class="admin-table-wrap admin-registry-rows"><table aria-label="Auditbewijs bewaarverantwoordelijkheid">
+              <thead><tr><th>ID</th><th>Bewijs</th><th>Vereiste custodianrol</th><th>Bewaarstatus</th><th>Overdracht</th><th>Besluit</th></tr></thead>
+              <tbody id="admin-audit-custody-rows"></tbody>
+            </table></div>
+            <h4>Acht vereiste bewaarbeveiligingen — NOT_ESTABLISHED</h4>
+            <ol id="admin-audit-custody-controls"></ol>
+            <p class="auth-note">De browser valideert alleen ongetekende JSON-structuur en vaste DENY-statussen. Geen originele bewijsbytes, vertrouwensankers, bewaarderidentiteit, signatures, auditlog, toegangscontrole of externe overdracht worden geverifieerd. 0/8 ontvangen, 0/8 overgedragen, 0/8 geverifieerd. NOT_READY / HOLD / DENY / NOT_AUTHORIZED.</p>
           </section>
           <button id="admin-review044-registry-export" type="button" class="secondary" disabled>Download nieuw registersnapshot (.json)</button>
           <p class="auth-note">Controleer vóór gebruik altijd het originele dossier met de striktere Python-module. Deze browserregistratie is indicatief en bevat geen tijds- of identiteitsbewijs. Geen serveropslag of autorisatie.</p>
