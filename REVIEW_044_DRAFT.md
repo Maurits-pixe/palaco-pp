@@ -2045,3 +2045,62 @@ bewijsauthenticatie of vrijgave toegevoegd.
 
 **DRAFT / NOT_EXECUTED / NOT_VERIFIED / NOT_READY /
 HOLD / DENY / NOT_AUTHORIZED.**
+
+### PP-RECOVERY-002 — Evidence Review Handoff (uitsluitend lokaal, NIET VERSTUURD)
+
+De pure module `review_044_release_evidence_review_handoff.py`
+bevat `prepare_release_evidence_review_handoff` voor de
+**achttien originele bytebronnen**, het Verification Execution Plan,
+de volledige lokale observatieketen en het exacte Evidence Intake-bestand.
+Het plan wordt uit de bronbytes gereconstrueerd en type-exact vergeleken;
+de volledige observatiehashketen en de intakeketen worden met de
+bestaande strikte Pythonvalidators opnieuw gecontroleerd.
+Ontbrekende, inconsistente of afwijkende gekoppelde bronnen worden
+geweigerd met `PP_RECOVERY_002_RELEASE_EVIDENCE_HANDOFF_INVALID`.
+Deze lokale overeenstemming is geen externe authenticiteit.
+
+Per bestaande intakereferentie toont het ongetekende dossier check-ID,
+releasepoort, vereist onafhankelijk reviewerprofiel, bewijs-ID,
+eventhash, byte-SHA-256, bestandsgrootte en bewijstype.
+**De originele bewijsbestanden blijven buiten het handoffbestand.**
+Het handoffcontract omvat zeven verplichte externe checks:
+revieweridentiteit, onafhankelijke rol/scope, revocation en
+separation-of-duties, originele bewijsbytes en provenance,
+ondertekende ontvangst met exacte binding aan de handoff,
+onafhankelijk auditanker en vertrouwde tijd, en een afzonderlijk
+bevoegd menselijk besluit. Alle checks staan `NOT_STARTED`;
+alle zes releasepoorten blijven `BLOCKED / DENY`.
+
+De statussen `handoffProvenance=UNSIGNED_LOCAL_REQUEST_NOT_SENT`,
+`delivery=NOT_SENT`, `recipientAuthentication=NOT_ESTABLISHED`,
+`reviewerAuthority=NOT_ESTABLISHED`, `signedReceipt=NOT_AVAILABLE`,
+`externalAudit=NOT_VERIFIED`, `humanReview=NOT_COMPLETED`,
+`releaseReadiness=NOT_READY`, `palacoOneHandoff=BLOCKED`,
+`palacoOneSession=NOT_CREATED`, `authorization=HOLD`,
+`accessDecision=DENY` en `issuance=NOT_AUTHORIZED`
+worden **nooit** opgewaardeerd door lokale bytes, hashes of claims.
+Er is geen bericht verzonden en geen werkelijk ontvangstbewijs aanwezig.
+
+`review_044_release_evidence_review_handoff_cli.py`
+is een opt-in offline export: zonder `--run` worden geen
+bestanden geopend; `--export` schrijft uitsluitend een nieuw
+JSON-bestand via `xb`, zonder bestaande data te overschrijven.
+Een latere handmatige eigenaarssessie kan de volgende opdracht
+gebruiken wanneer alle bronbestanden en lokale registers bestaan:
+
+```powershell
+python .\review_044_release_evidence_review_handoff_cli.py --run --dossier "PP_RECOVERY_DECISION_HOLD.json" --queue "PP_REVIEW_QUEUE_001.json" --intake "PP_REVIEW_INTAKE_001.json" --plan "PP_VERIFICATION_PLAN_HOLD.json" --observations "PP_OBSERVATION_001.json" --manifest "PP_HUMAN_REVIEW_HANDOFF_HOLD.json" --protocol "PP_REVIEW_PROTOCOL_001.json" --contract "PP_REVIEWER_AUTH_REQUIREMENTS_HOLD.json" --blueprint "PP_REVIEWER_SERVICE_BLUEPRINT_HOLD.json" --interfaces "PP_REVIEWER_INTERFACE_CONTRACT_HOLD.json" --transitions "PP_TRUST_TRANSITIONS_HOLD.json" --revocation "PP_REVOCATION_RECOVERY_HOLD.json" --assurance "PP_SECURITY_ASSURANCE_HOLD.json" --registry "PP_CONTRACT_COMPATIBILITY_HOLD.json" --impact "PP_CHANGE_IMPACT_HOLD.json" --integrity "PP_RELEASE_INTEGRITY_HOLD.json" --matrix "PP_RELEASE_EVIDENCE_MATRIX_HOLD.json" --cockpit "PP_RELEASE_READINESS_COCKPIT_HOLD.json" --execution-plan "PP_VERIFICATION_EXECUTION_PLAN_HOLD.json" --observation-register "PP_RELEASE_OBSERVATION_001_HOLD.json" --evidence-intake "PP_RELEASE_EVIDENCE_INTAKE_001_HOLD.json" --export "PP_EVIDENCE_REVIEW_HANDOFF_HOLD.json"
+```
+
+Het nieuwe **alleen-lezen backofficepaneel** voor Evidence Review Handoff
+leest maximaal 64 KiB lokaal JSON, toont de voorbereide bewijsverwijzingen
+en zeven externe reviewvereisten. De browser valideert de
+herkenbare ongetekende structuur, **niet** de oorspronkelijke
+bronbytes, hashketens, revieweridentiteit of externe audit.
+Het statische script is aan de bestaande lokale server-allowlist
+toegevoegd; er zijn geen nieuwe API-routes geïmplementeerd.
+
+**DRAFT / NOT_SENT / NOT_EXECUTED / NOT_VERIFIED /
+NOT_READY / HOLD / DENY / NOT_AUTHORIZED.**
+Geen tests, merge, deploy, autorisatie, ontvangstverklaring of
+PALACO ONE-sessie uitgevoerd.
