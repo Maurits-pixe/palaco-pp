@@ -2171,3 +2171,86 @@ statische server-allowlist; geen uitvoerend endpoint.
 NOT_READY / HOLD / DENY / NOT_AUTHORIZED.**
 Geen tests, merge, release, deployment, ondertekening, auditactie,
 autorisatie, ontvangstverklaring of PALACO ONE-sessie uitgevoerd.
+
+### PP-RECOVERY-002 — Independent Receipt Verification Blueprint (geen runtime)
+
+De pure module `review_044_independent_receipt_verifier_blueprint.py`
+bevat `prepare_independent_receipt_verifier_blueprint` voor
+een toekomstig **extern vertrouwd** verificatiesysteem.
+De achttien originele bytebronnen, het Execution Plan,
+de observatie- en intakeketen, het Review Handoff en het
+Independent Review Receipt Protocol worden in de bestaande
+strikte Pythonketen herbouwd. De originele protocolbytes
+worden type-exact met het verwachte contract vergeleken.
+Afwijkingen of ongeoorloofde vrijgaveclaims worden geweigerd
+met `PP_RECOVERY_002_RECEIPT_VERIFIER_BLUEPRINT_INVALID`.
+Dat bewijst **uitsluitend interne consistentie**, geen echte
+handtekening, revieweridentiteit of betrouwbare ontvangst.
+
+De blueprint definieert negen afgeschermde componenten:
+receiptformaat, exacte handoffbinding, extern trust-anchorregister,
+cryptografische signature validator, key lifecycle en rotatie,
+een atomische replay-ledger, onafhankelijke reviewercontrole,
+auditanker en een **apart** menselijk beslissysteem.
+Zeven key-lifecycle-eisen omvatten issuer root-pinning,
+key-ID/issuer/audience-binding, algorithm allowlisting,
+rotatie-overlap, sleutelgeldigheid, ondertekende revocationfeeds
+en compromisrespons. Zes replay-eisen bevatten single-use
+cryptografische nonce, koppeling aan handoff/purpose,
+vertrouwde tijd met beperkte afwijking, **atomische**
+consume-once opslag, fail-closed uitval en afwijzing van
+expiry/mismatch/replay. Zes auditeisen bevatten signed logs,
+onafhankelijke inclusion/consistency proofs, trusted timestamps,
+fail-closed uitval, least privilege en dataminimalisatie.
+
+Vijf expliciete trust boundaries verhinderen dat ongetekende
+lokale bewijsclaims, technisch gevalideerde ontvangst of
+een viewer zonder afzonderlijke bevoegdheidscontrole als
+releaseautorisatie gelden. De oorspronkelijke acht
+verificatievoorwaarden en tien afwijzingsscenario's blijven
+`NOT_PERFORMED / BLOCKED` respectievelijk
+`DENY / authorityEffect=NONE`.
+
+**Geen component is geïmplementeerd of geconfigureerd als
+werkelijk verificatiesysteem.** Het JSON-contract bevat
+`signingKeyMaterial=NOT_PRESENT`,
+`trustedIssuers=NOT_CONFIGURED`,
+`signatureValidation=NOT_IMPLEMENTED`,
+`nonceLedger=NOT_CONFIGURED`,
+`trustedClock=NOT_CONFIGURED`,
+`auditService=NOT_CONFIGURED`,
+`independentVerifier=NOT_DEPLOYED`,
+`receiptAcceptance=NOT_PERFORMED`,
+`receiptDelivery=NOT_SENT`,
+`reviewerAuthority=NOT_ESTABLISHED`,
+`independentVerification=NOT_VERIFIED`,
+`releaseReadiness=NOT_READY`,
+`palacoOneHandoff=BLOCKED`,
+`palacoOneSession=NOT_CREATED`,
+`authorization=HOLD`,
+`accessDecision=DENY` en `issuance=NOT_AUTHORIZED`.
+
+De CLI `review_044_independent_receipt_verifier_blueprint_cli.py`
+opent zonder expliciet `--run` geen inputbestanden.
+Met `--export` wordt alleen een **nieuw** JSON-contract
+geschreven via create-only `xb`; er worden geen keys
+aangemaakt, cryptografische handtekeningen gevalideerd,
+externe diensten aangeroepen of credentials uitgegeven.
+
+```powershell
+python .\review_044_independent_receipt_verifier_blueprint_cli.py --run --dossier "PP_RECOVERY_DECISION_HOLD.json" --queue "PP_REVIEW_QUEUE_001.json" --intake "PP_REVIEW_INTAKE_001.json" --plan "PP_VERIFICATION_PLAN_HOLD.json" --observations "PP_OBSERVATION_001.json" --manifest "PP_HUMAN_REVIEW_HANDOFF_HOLD.json" --protocol "PP_REVIEW_PROTOCOL_001.json" --contract "PP_REVIEWER_AUTH_REQUIREMENTS_HOLD.json" --blueprint "PP_REVIEWER_SERVICE_BLUEPRINT_HOLD.json" --interfaces "PP_REVIEWER_INTERFACE_CONTRACT_HOLD.json" --transitions "PP_TRUST_TRANSITIONS_HOLD.json" --revocation "PP_REVOCATION_RECOVERY_HOLD.json" --assurance "PP_SECURITY_ASSURANCE_HOLD.json" --registry "PP_CONTRACT_COMPATIBILITY_HOLD.json" --impact "PP_CHANGE_IMPACT_HOLD.json" --integrity "PP_RELEASE_INTEGRITY_HOLD.json" --matrix "PP_RELEASE_EVIDENCE_MATRIX_HOLD.json" --cockpit "PP_RELEASE_READINESS_COCKPIT_HOLD.json" --execution-plan "PP_VERIFICATION_EXECUTION_PLAN_HOLD.json" --observation-register "PP_RELEASE_OBSERVATION_001_HOLD.json" --evidence-intake "PP_RELEASE_EVIDENCE_INTAKE_001_HOLD.json" --review-handoff "PP_EVIDENCE_REVIEW_HANDOFF_HOLD.json" --receipt-protocol "PP_INDEPENDENT_RECEIPT_PROTOCOL_HOLD.json" --export "PP_RECEIPT_VERIFIER_BLUEPRINT_HOLD.json"
+```
+
+Het nieuwe alleen-lezen backofficepaneel
+**PP-RECOVERY-002 / Independent Receipt Verification Blueprint**
+toont een lokaal JSON-contract tot 64 KiB met negen componenten
+en negentien niet-geconfigureerde controles. Browserimport
+verifieert geen oorspronkelijke bewijsbytes, externe sleutel,
+signature, trusted clock, nonce-ledger of audit. Het statische
+JavaScriptbestand is expliciet opgenomen in de bestaande
+lokale server-allowlist; er is geen nieuw uitvoerend endpoint.
+
+**DRAFT / NOT_SENT / NOT_EXECUTED / NOT_VERIFIED /
+NOT_READY / HOLD / DENY / NOT_AUTHORIZED.**
+Geen tests, merge, release, deployment, ondertekening,
+auditactie, autorisatie of PALACO ONE-sessie uitgevoerd.
