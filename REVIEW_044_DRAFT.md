@@ -2983,3 +2983,105 @@ NOT_READY / HOLD / DENY / NOT_AUTHORIZED.**
 Er zijn geen tests, merge, release, deploy, auditactie,
 overdracht, evidence-acceptatie, authenticatie
 of PALACO ONE-sessie uitgevoerd.
+
+### PP-RECOVERY-002 — Custody Transfer Verification Protocol (0/8 overdrachten)
+
+De pure module `review_044_custody_transfer_verification_protocol.py`
+specificeert `prepare_custody_transfer_verification_protocol`.
+De volledige offline contractketen wordt opnieuw opgebouwd uit de
+achttien originele bronbytes en dertien bijkomende bestanden:
+Execution Plan, Observation Register, Evidence Intake, Review Handoff,
+Independent Receipt Protocol, Verifier Blueprint, Trust Policy,
+Change Control, Review Dossier, Decision Protocol, Audit Contract,
+Audit Evidence Readiness Matrix en Audit Evidence Collection Plan.
+Het originele Audit Evidence Custody Contract wordt vervolgens
+type-exact vergeleken met het opnieuw gegenereerde contract
+(maximaal 64 KiB). Afwijkingen en onjuiste vrijgaveclaims leiden
+tot `PP_RECOVERY_002_CUSTODY_TRANSFER_VERIFICATION_INVALID`.
+Dit is **interne bronconsistentie**, geen echte externe verificatie.
+
+Het contract
+`palaco.pp.recovery-002-custody-transfer-verification-protocol.v0`
+bindt via SHA-256 aan de exacte custodycontractbytes, het
+collectionplan en het auditcontract. Het bevat acht ongestarte
+overdrachtsposities (`AUD-E01` t/m `AUD-E08`), alle
+`senderAuthentication=NOT_ESTABLISHED`,
+`recipientAuthentication=NOT_ESTABLISHED`,
+`originalEvidenceDigest=NOT_AVAILABLE`,
+`signedEnvelope=NOT_PRESENT`,
+`recipientSignedAcknowledgement=NOT_AVAILABLE`,
+`nonceAndClockVerification=NOT_PERFORMED`,
+`keyRevocationVerification=NOT_PERFORMED`,
+`externalAuditReceipt=NOT_AVAILABLE`,
+`independentEvidenceAcceptance=NOT_PERFORMED`,
+`transfer=NOT_INITIATED`, `gate=BLOCKED`,
+`decision=DENY`. De module accepteert **geen echte
+bewijsbytes, credentials, private keys, ondertekeningsclaim
+of overdrachtsopdracht**.
+
+Veertien `MISSING` envelopevelden geven aan wat een
+toekomstige **door externe vertrouwde diensten gevalideerde**
+overdracht zou vereisen: protocolversie, exacte bytehashes,
+afzender- en ontvangeridentiteit met rolbereik,
+vertrouwde signing key/algoritme, purpose/audience,
+single-use nonce, trusted timestamps, sleutelintrekking
+en epoch, versleutelde verbinding, detached signature,
+onafhankelijk auditanker, getekende ontvangersbevestiging
+en een apart geautoriseerd menselijk acceptatiebesluit.
+Zes verificatiefasen en acht bewaarketenchecks blijven
+`NOT_PERFORMED / BLOCKED`. Veertien foutsituaties
+blijven onvoorwaardelijk `DENY / authorityEffect=NONE`.
+
+De tellers en statussen zijn altijd
+`requiredTransferCount=8`, `transfersInitiated=0`,
+`transfersAuthenticated=0`, `evidenceAccepted=0`,
+`senderTrust=NOT_ESTABLISHED`,
+`recipientTrust=NOT_ESTABLISHED`,
+`canonicalEnvelopeVerifier=NOT_IMPLEMENTED`,
+`signatureVerifier=NOT_CONFIGURED`,
+`trustedNonceLedger=NOT_CONFIGURED`,
+`auditVerifier=NOT_CONFIGURED`,
+`humanAcceptance=NOT_COMPLETED`,
+`evidenceTransfer=NOT_INITIATED`,
+`evidenceStorage=NONE`,
+`trustedIssuerCount=0`, `allowedAlgorithms=[]`,
+`independentVerification=NOT_VERIFIED`,
+`releaseReadiness=NOT_READY`,
+`palacoOneHandoff=BLOCKED`,
+`palacoOneSession=NOT_CREATED`,
+`authorization=HOLD`, `accessDecision=DENY`
+en `issuance=NOT_AUTHORIZED`.
+
+De opt-in CLI
+`review_044_custody_transfer_verification_protocol_cli.py`
+leest zonder `--run` geen lokale inputbestanden.
+Een latere handmatige export vereist alle achttien
+oorspronkelijke bronargumenten plus
+`--execution-plan`, `--observation-register`,
+`--evidence-intake`, `--review-handoff`,
+`--receipt-protocol`, `--verifier-blueprint`,
+`--trust-policy`, `--change-control`,
+`--review-dossier`, `--decision-protocol`,
+`--audit-contract`, `--readiness-matrix`,
+`--collection-plan`, `--custody-contract`
+en `--export`. Met expliciete `--run` wordt alleen
+een **nieuw** ongetekend JSON-contract via create-only
+`xb` geschreven, zonder originele bewijzen of
+sleutelbytes aan te raken.
+
+Het nieuwe backofficepaneel
+**PP-RECOVERY-002 / Custody Transfer Verification Protocol —
+geen overdracht** leest lokaal JSON tot 64 KiB en toont
+acht ongestarte bewijsposities plus veertien ontbrekende
+ondertekende envelopevelden. De browser verifieert slechts
+vaste schema- en DENY-velden: **geen echte bronbytes,
+handtekening, trusted timestamp, nonce-ledger,
+auditanker of menselijke bevoegdheid**.
+Het statische script is toegevoegd aan de bestaande
+server-allowlist. Er zijn geen nieuwe API-routes
+of uitvoerende overdrachtsmogelijkheden toegevoegd.
+
+**DRAFT / NOT_SENT / NOT_EXECUTED / NOT_VERIFIED /
+NOT_READY / HOLD / DENY / NOT_AUTHORIZED.**
+Geen tests, merge, productieuitrol, bewijsacceptatie,
+bewijsoverdracht, sleutelimport of PALACO ONE-sessie uitgevoerd.
