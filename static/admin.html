@@ -43,6 +43,7 @@
   <script src="/review044-verifier-trust-policy.js" defer></script>
   <script src="/review044-trust-policy-change-control.js" defer></script>
   <script src="/review044-trust-change-review-dossier.js" defer></script>
+  <script src="/review044-trust-change-decision-protocol.js" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -864,6 +865,21 @@
             <h4>Zeven beslisvoorwaarden — allemaal BLOCKED</h4>
             <ol id="admin-change-dossier-gates"></ol>
             <p class="auth-note">Het scherm controleert alleen de vaste JSON-structuur en niet de originele bronbytes, revieweridentiteit, cryptografische attestaties of externe audit. Geen ontvangst, besluit, vertrouwde sleutel, algoritmewijziging of productieautorisatie. NOT_SENT / NOT_VERIFIED / NOT_READY / HOLD / DENY / NOT_AUTHORIZED.</p>
+          </section>
+          <section class="admin-bundle-panel" aria-labelledby="admin-trust-decision-title">
+            <h3 id="admin-trust-decision-title">PP-RECOVERY-002 / Trust Change Decision Protocol — alles DENY</h3>
+            <p class="auth-note">Een strikt gescheiden, uitsluitend ongetekend besliscontract. Een lokaal verzoek is geen bewijs; onafhankelijke technische verificatie is geen menselijke autorisatie; een menselijk besluit alleen geeft geen productieuitrol vrij.</p>
+            <div class="admin-review-grid"><div>
+              <label for="admin-trust-decision-file">Offline trustchange-beslisprotocol (.json, maximaal 64 KiB)</label>
+              <input id="admin-trust-decision-file" type="file" accept=".json,application/json">
+            </div></div>
+            <button id="admin-trust-decision-load" type="button" class="secondary">Toon geblokkeerde beslisfasen</button>
+            <p id="admin-trust-decision-status" class="admin-review-result" role="status" aria-live="polite">Geen Trust Change Decision Protocol geladen. HOLD / DENY.</p>
+            <h4>Drie onafhankelijke beslisfasen — allemaal BLOCKED</h4>
+            <ol id="admin-trust-decision-stages"></ol>
+            <h4>Acht niet-omzeilbare controles — NOT_SATISFIED</h4>
+            <ul id="admin-trust-decision-guards"></ul>
+            <p class="auth-note">Geen bewijsverificatie, vertrouwde identiteit, ondertekend besluit, automatische goedkeuring of sleutelpromotie. De browser presenteert alleen vaste JSON-structuur en verifieert geen externe handtekeningen of originele bronketen. NOT_VERIFIED / NOT_READY / HOLD / DENY / NOT_AUTHORIZED.</p>
           </section>
           <button id="admin-review044-registry-export" type="button" class="secondary" disabled>Download nieuw registersnapshot (.json)</button>
           <p class="auth-note">Controleer vóór gebruik altijd het originele dossier met de striktere Python-module. Deze browserregistratie is indicatief en bevat geen tijds- of identiteitsbewijs. Geen serveropslag of autorisatie.</p>
