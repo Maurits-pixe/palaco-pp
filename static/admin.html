@@ -36,6 +36,7 @@
   <script src="/review044-release-readiness-cockpit.js" defer></script>
   <script src="/review044-release-execution-plan.js" defer></script>
   <script src="/review044-release-observation-register.js" defer></script>
+  <script src="/review044-release-evidence-intake.js" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -739,6 +740,22 @@
               <tbody id="admin-release-observation-rows"></tbody>
             </table></div>
             <p class="auth-note">De browser verifieert geen originele bronbestanden, digestberekening, hashketen, handtekening of reviewerbevoegdheid. Een toekomstig nieuw rapport vereist de opt-in offline CLI; geen opslag of goedkeuring via deze viewer. NOT_VERIFIED / NOT_READY / HOLD / DENY / NOT_AUTHORIZED.</p>
+          </section>
+          <section class="admin-bundle-panel" aria-labelledby="admin-release-intake-title">
+            <h3 id="admin-release-intake-title">PP-RECOVERY-002 / Verification Evidence Intake — ongetekende bewijsverwijzingen</h3>
+            <p class="auth-note">De toekomstige offline intake koppelt lokaal aangeleverde bewijsbytes met exact overeenkomende SHA-256 aan een reeds geregistreerde waarneming. Alleen een hash en metadata komen in het intakebestand. Een hashmatch bewijst geen herkomst, handtekening, identiteit of onafhankelijke beoordeling.</p>
+            <div class="admin-review-grid"><div>
+              <label for="admin-release-intake-file">Offline evidence-intakesnapshot (.json, maximaal 64 KiB)</label>
+              <input id="admin-release-intake-file" type="file" accept=".json,application/json">
+            </div></div>
+            <button id="admin-release-intake-load" type="button" class="secondary">Toon onbevestigde bewijsverwijzingen</button>
+            <p id="admin-release-intake-status" class="admin-review-result" role="status" aria-live="polite">Geen Verification Evidence Intake geladen. HOLD / DENY.</p>
+            <h4>Append-only bewijsverwijzingen — maximaal 64</h4>
+            <div class="admin-table-wrap admin-registry-rows"><table aria-label="Onbevestigde releasebewijsverwijzingen">
+              <thead><tr><th>Nr.</th><th>Check-ID</th><th>Observatie</th><th>Bewijstype</th><th>SHA-256 (verkort)</th><th>Status</th></tr></thead>
+              <tbody id="admin-release-intake-rows"></tbody>
+            </table></div>
+            <p class="auth-note">De browser controleert alleen vaste schema- en blokkadevelden; hij berekent geen originele hashes of hashketen opnieuw en controleert geen externe reviewerbevoegdheden. Nieuwe snapshots kunnen uitsluitend via de opt-in offline CLI worden opgesteld. NOT_VERIFIED / NOT_READY / HOLD / DENY / NOT_AUTHORIZED.</p>
           </section>
           <button id="admin-review044-registry-export" type="button" class="secondary" disabled>Download nieuw registersnapshot (.json)</button>
           <p class="auth-note">Controleer vóór gebruik altijd het originele dossier met de striktere Python-module. Deze browserregistratie is indicatief en bevat geen tijds- of identiteitsbewijs. Geen serveropslag of autorisatie.</p>
