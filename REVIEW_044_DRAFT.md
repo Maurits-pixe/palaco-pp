@@ -2254,3 +2254,82 @@ lokale server-allowlist; er is geen nieuw uitvoerend endpoint.
 NOT_READY / HOLD / DENY / NOT_AUTHORIZED.**
 Geen tests, merge, release, deployment, ondertekening,
 auditactie, autorisatie of PALACO ONE-sessie uitgevoerd.
+
+### PP-RECOVERY-002 — Verifier Trust Policy Register (DENY-ALL, geen sleutels)
+
+De pure module `review_044_verifier_trust_policy.py` introduceert
+`prepare_verifier_trust_policy_register`. De functie reconstrueert
+opnieuw de volledige voorafgaande contractketen uit achttien originele
+bytebronnen, Execution Plan, Observation Register, Evidence Intake,
+Review Handoff en Independent Receipt Protocol. De aangeleverde
+verifier-blueprintbytes moeten **type-exact** overeenkomen met de
+opnieuw opgebouwde blueprint. Bij afwijkingen geldt
+`PP_RECOVERY_002_VERIFIER_TRUST_POLICY_INVALID`; een geslaagde
+interne vergelijking is nog geen externe authenticiteitsgarantie.
+
+De v0-policy heeft uitdrukkelijk **nul** vertrouwde uitgevers en
+**nul** toegestane algoritmen. Er worden geen echte issuer-ID's,
+trust roots, key fingerprints, private/public keys, endpoints,
+credentials of secret bytes opgeslagen of ingeladen. Geen standaard
+algoritme wordt als geaccepteerd voorgesteld totdat een apart
+bevoegd proces een extern controleerbaar beleid goedkeurt.
+
+Het beleid specificeert 22 nog niet geconfigureerde controles:
+vijf voor issuer-identiteit en externe root-attestatie, vijf voor
+algoritmetoelating en downgradepreventie, zes voor sleutelrotatie
+en sleutelgeldigheid, zes voor getekende revocationfeeds en
+compromisafhandeling. Twaalf expliciete foutcondities, waaronder
+onbekende issuer, ontbrekende rootpin, ongeldige signing key,
+stale revocationfeeds, afwezige trusted clock, replay-store
+failure, onbekende reviewer en ontbrekende menselijke review
+zijn onvoorwaardelijk `DENY` met `authorityEffect=NONE`.
+
+Een toekomstig werkelijk trustplatform moet minimaal een
+extern beheerde issuer authority, publiek vertrouwde
+keymaterialen met pinned roots, key-ID/issuer/audience-binding,
+gecontroleerde algorithm allowlist, rotatie-epochs en overlap,
+onafhankelijke signature verificatie, actueel
+ondertekend revocationbeleid en menselijke goedkeuring hebben.
+Deze versie implementeert geen van deze diensten.
+
+De verplichte statussen omvatten
+`policyMode=DENY_ALL_UNTIL_EXTERNAL_TRUST_CONFIGURED_AND_VERIFIED`,
+`trustAnchorImport=PROHIBITED_IN_THIS_MODULE`,
+`keyMaterial=NOT_PRESENT`,
+`issuerOnboarding=NOT_IMPLEMENTED`,
+`signatureVerification=NOT_IMPLEMENTED`,
+`keyRotation=NOT_IMPLEMENTED`,
+`revocationFeed=NOT_CONFIGURED`,
+`independentVerifier=NOT_DEPLOYED`,
+`independentVerification=NOT_VERIFIED`,
+`releaseReadiness=NOT_READY`,
+`palacoOneHandoff=BLOCKED`,
+`palacoOneSession=NOT_CREATED`,
+`authorization=HOLD`, `accessDecision=DENY`
+en `issuance=NOT_AUTHORIZED`.
+
+Met `review_044_verifier_trust_policy_cli.py` kan **later**
+een lokaal, ongetekend `JSON`-overzicht worden opgesteld.
+Zonder `--run` worden geen bestanden geopend en
+`--export` maakt uitsluitend een nieuw bestand aan
+(create-only `xb`). De parameters omvatten de achttien
+originele CLI-bronnen en aanvullend
+`--execution-plan`, `--observation-register`,
+`--evidence-intake`, `--review-handoff`,
+`--receipt-protocol`, `--verifier-blueprint`
+en `--export`. De optionele latere eigenaarssessie
+mag dit uitsluitend als beleidssnapshot beschouwen.
+
+In het backofficepaneel **PP-RECOVERY-002 / Verifier Trust
+Policy Register — standaard DENY** kan maximaal 64 KiB
+ongetekend JSON indicatief worden bekeken.
+De viewer toont de 22 niet-geconfigureerde beleidsvereisten
+en twaalf afwijzingsscenario's. Zij verifieert geen sleutel,
+issuer, signature, auditanker of reviewerbevoegdheid.
+De statische JavaScriptviewer is toegevoegd aan de lokale
+allowlist; er is geen nieuwe uitvoerende serverroute gemaakt.
+
+**DRAFT / NOT_EXECUTED / NOT_VERIFIED / NOT_READY /
+HOLD / DENY / NOT_AUTHORIZED.** Er zijn geen tests,
+merge, release, deploy, ondertekening, sleutelimport,
+auditactie, autorisatie of PALACO ONE-sessie uitgevoerd.
