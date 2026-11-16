@@ -2862,3 +2862,124 @@ geen nieuwe uitvoerende API-route of mutatie.
 NOT_READY / HOLD / DENY / NOT_AUTHORIZED.**
 Geen tests, merge, release, deploy, sleutelimport,
 bewijsacceptatie of PALACO ONE-sessie uitgevoerd.
+
+### PP-RECOVERY-002 — Audit Evidence Custody Contract (geen bewijs in bezit)
+
+De pure module `review_044_audit_evidence_custody_contract.py`
+bevat `prepare_audit_evidence_custody_contract`.
+De module reconstrueert de volledige voorafgaande keten uit
+achttien originele bytebronnen en twaalf aanvullend gebonden
+contractartefacten: Execution Plan, Observation Register,
+Evidence Intake, Review Handoff, Independent Receipt Protocol,
+Verifier Blueprint, Trust Policy, Change Control, Review Dossier,
+Decision Protocol, Audit Contract en Audit Evidence Readiness
+Matrix. Het originele **Audit Evidence Collection Plan**
+wordt met deze bronnen herbouwd en vervolgens type-exact
+vergeleken met de aangeboden collection-planbytes (maximaal
+64 KiB). Bij afwijking of onverwachte acceptatie- of
+vrijgaveclaims ontstaat
+`PP_RECOVERY_002_AUDIT_EVIDENCE_CUSTODY_CONTRACT_INVALID`.
+Een lokaal hashverband bewijst **geen** authentieke herkomst,
+bewaarketen of bevoegdheid van een externe partij.
+
+Het schema
+`palaco.pp.recovery-002-audit-evidence-custody-contract.v0`
+is via SHA-256 gebonden aan het exacte Collection Plan,
+de Readiness Matrix en het Audit Contract.
+Voor de acht posities `AUD-E01` tot en met `AUD-E08`
+bevat het de vereiste onafhankelijke custodianrol,
+de geplande externe bronaanvraag en de toekomstige
+verantwoordelijkheden. Er zijn **geen echte bewijsbytes,
+hashes van originele bewijsbestanden, persoonlijke
+toegangsclaims, tokens, private keys, credentials, of
+ondertekende ontvangstbewijzen** in het contract aanwezig.
+Iedere rij heeft
+`originalBytesLocation=EXTERNAL_CUSTODIAN_ONLY_NOT_ACCESSED`,
+`custodianAuthentication=NOT_ESTABLISHED`,
+`originalByteHash=NOT_AVAILABLE`,
+`integrityVerification=NOT_PERFORMED`,
+`accessGrant=NONE`,
+`custodyChain=NOT_ESTABLISHED`,
+`signedTransferReceipt=NOT_AVAILABLE`,
+`retentionApproval=NOT_ESTABLISHED`,
+`transferStatus=NOT_INITIATED`,
+`evidencePossession=NONE`,
+`gate=BLOCKED` en `decision=DENY`.
+
+Acht nog niet vervulde bewaarbeveiligingen specificeren:
+(1) onafhankelijke custodianidentiteit en scope;
+(2) authentieke byte-integriteit en getekende hashbinding;
+(3) versleuteling en onafhankelijk sleutelbeheer;
+(4) least privilege en scheiding van taken;
+(5) een onveranderlijke, extern controleerbare custodyketen;
+(6) ondertekende overdrachtsontvangst en nonce/audience-binding;
+(7) rechtmatig retentie- en verwijderingsbeleid;
+(8) intrekking en noodblokkering bij sleutelcompromis.
+Acht afzonderlijke overdrachtscontroles blijven
+`NOT_STARTED / BLOCKED`; acht foutscenario's houden
+`DENY / authorityEffect=NONE`.
+
+De vaste tellers zijn:
+`requiredCustodyCount=8`,
+`externallyHeldEvidenceCount=0`,
+`locallyReceivedEvidenceCount=0`,
+`transferredEvidenceCount=0`,
+`verifiedEvidenceCount=0`.
+Dit betekent dat **in deze module** geen externe possession
+wordt bevestigd, niet dat echte externe partijen
+nooit bewijzen kunnen bezitten.
+Andere verplichte statussen zijn
+`evidenceCustody=NOT_ESTABLISHED`,
+`evidenceTransfer=NOT_INITIATED`,
+`evidenceAcceptance=PROHIBITED`,
+`originalEvidenceStorage=NONE`,
+`credentialOrKeyStorage=NONE`,
+`externalCustodian=NOT_AUTHENTICATED`,
+`recipientAuthority=NOT_ESTABLISHED`,
+`trustedAuditService=NOT_CONFIGURED`,
+`independentVerification=NOT_VERIFIED`,
+`humanDecision=NOT_COMPLETED`,
+`deploymentDecision=NOT_AUTHORIZED`,
+`changeApplied=false`, `trustedIssuerCount=0`,
+`allowedAlgorithms=[]`,
+`releaseReadiness=NOT_READY`,
+`palacoOneHandoff=BLOCKED`,
+`palacoOneSession=NOT_CREATED`,
+`authorization=HOLD`, `accessDecision=DENY`
+en `issuance=NOT_AUTHORIZED`.
+
+De CLI `review_044_audit_evidence_custody_contract_cli.py`
+vereist een expliciete `--run` om überhaupt
+inputbestanden te lezen. Voor latere offline export
+zijn de achttien originele bronargumenten plus
+`--execution-plan`, `--observation-register`,
+`--evidence-intake`, `--review-handoff`,
+`--receipt-protocol`, `--verifier-blueprint`,
+`--trust-policy`, `--change-control`,
+`--review-dossier`, `--decision-protocol`,
+`--audit-contract`, `--readiness-matrix`,
+`--collection-plan` en `--export` vereist.
+Een expliciete opdracht schrijft uitsluitend
+een **nieuw** ongetekend JSON-contract met
+create-only `xb`, zonder bestaande bestanden
+te overschrijven. Geen bewijsopslag, netwerkrequest,
+sleutelimport of live mutatie.
+
+Het lokale alleen-lezen backofficepaneel
+**PP-RECOVERY-002 / Audit Evidence Custody Contract —
+nul bewijs in bezit** kan een JSON-contract tot
+64 KiB tonen, met acht bewaarposities en acht
+beveiligingsvoorwaarden. De browser controleert
+uitsluitend het herkenbare JSON-schema en
+vaste DENY-waarden: **geen originele bytes,
+signature, identiteitsbewijs, externe bewaarplaats,
+trusted clock of auditlog**.
+De statische JavaScriptviewer is toegevoegd aan
+de bestaande expliciete lokale server-allowlist.
+Er zijn geen nieuwe uitvoerende API-routes toegevoegd.
+
+**DRAFT / NOT_SENT / NOT_EXECUTED / NOT_VERIFIED /
+NOT_READY / HOLD / DENY / NOT_AUTHORIZED.**
+Er zijn geen tests, merge, release, deploy, auditactie,
+overdracht, evidence-acceptatie, authenticatie
+of PALACO ONE-sessie uitgevoerd.
