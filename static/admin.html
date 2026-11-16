@@ -42,6 +42,7 @@
   <script src="/review044-independent-receipt-verifier-blueprint.js" defer></script>
   <script src="/review044-verifier-trust-policy.js" defer></script>
   <script src="/review044-trust-policy-change-control.js" defer></script>
+  <script src="/review044-trust-change-review-dossier.js" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -845,6 +846,24 @@
             <h4>Drie vereiste onafhankelijke bevoegdheden — niet vastgesteld</h4>
             <ul id="admin-trust-change-reviewers"></ul>
             <p class="auth-note">Negen releaseherbeoordelingen blijven BLOCKED en twaalf afwijzingsredenen DENY. De browser reconstrueert geen bronbestanden en voert geen echte review, sleutelrotatie, policy-update of uitrol uit. NOT_VERIFIED / NOT_READY / HOLD / DENY / NOT_AUTHORIZED.</p>
+          </section>
+          <section class="admin-bundle-panel" aria-labelledby="admin-change-dossier-title">
+            <h3 id="admin-change-dossier-title">PP-RECOVERY-002 / Trust Change Review Dossier — niet verzonden</h3>
+            <p class="auth-note">Ongetekend beoordelingsdossier voor een hypothetische wijziging van het deny-all-vertrouwensbeleid. Alle externe bewijsstukken ontbreken, reviewerbevoegdheden zijn onbevestigd en alle beslisvoorwaarden blijven geblokkeerd.</p>
+            <div class="admin-review-grid"><div>
+              <label for="admin-change-dossier-file">Offline trust change reviewdossier (.json, maximaal 64 KiB)</label>
+              <input id="admin-change-dossier-file" type="file" accept=".json,application/json">
+            </div></div>
+            <button id="admin-change-dossier-load" type="button" class="secondary">Toon openstaande beoordelingseisen</button>
+            <p id="admin-change-dossier-status" class="admin-review-result" role="status" aria-live="polite">Geen Trust Change Review Dossier geladen. HOLD / DENY.</p>
+            <h4>Negen onafhankelijke bewijsvereisten — NOT_PROVIDED</h4>
+            <div class="admin-table-wrap admin-registry-rows"><table aria-label="Externe bewijsvereisten voor trust policy wijziging">
+              <thead><tr><th>Nr.</th><th>Bewijsvereiste</th><th>Onafhankelijke rol</th><th>Status</th></tr></thead>
+              <tbody id="admin-change-dossier-evidence"></tbody>
+            </table></div>
+            <h4>Zeven beslisvoorwaarden — allemaal BLOCKED</h4>
+            <ol id="admin-change-dossier-gates"></ol>
+            <p class="auth-note">Het scherm controleert alleen de vaste JSON-structuur en niet de originele bronbytes, revieweridentiteit, cryptografische attestaties of externe audit. Geen ontvangst, besluit, vertrouwde sleutel, algoritmewijziging of productieautorisatie. NOT_SENT / NOT_VERIFIED / NOT_READY / HOLD / DENY / NOT_AUTHORIZED.</p>
           </section>
           <button id="admin-review044-registry-export" type="button" class="secondary" disabled>Download nieuw registersnapshot (.json)</button>
           <p class="auth-note">Controleer vóór gebruik altijd het originele dossier met de striktere Python-module. Deze browserregistratie is indicatief en bevat geen tijds- of identiteitsbewijs. Geen serveropslag of autorisatie.</p>
