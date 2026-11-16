@@ -37,6 +37,7 @@
   <script src="/review044-release-execution-plan.js" defer></script>
   <script src="/review044-release-observation-register.js" defer></script>
   <script src="/review044-release-evidence-intake.js" defer></script>
+  <script src="/review044-release-evidence-review-handoff.js" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -756,6 +757,24 @@
               <tbody id="admin-release-intake-rows"></tbody>
             </table></div>
             <p class="auth-note">De browser controleert alleen vaste schema- en blokkadevelden; hij berekent geen originele hashes of hashketen opnieuw en controleert geen externe reviewerbevoegdheden. Nieuwe snapshots kunnen uitsluitend via de opt-in offline CLI worden opgesteld. NOT_VERIFIED / NOT_READY / HOLD / DENY / NOT_AUTHORIZED.</p>
+          </section>
+          <section class="admin-bundle-panel" aria-labelledby="admin-review-handoff-title">
+            <h3 id="admin-review-handoff-title">PP-RECOVERY-002 / Evidence Review Handoff — niet verstuurd</h3>
+            <p class="auth-note">Een lokaal overdrachtsvoorstel voor onafhankelijke beoordeling van eerder vastgelegde bewijsverwijzingen. Dit paneel is alleen leesbaar: geen ontvangstclaim, identiteitsbevestiging, bewijsacceptatie of releasegoedkeuring.</p>
+            <div class="admin-review-grid"><div>
+              <label for="admin-review-handoff-file">Offline reviewhandoff (.json, maximaal 64 KiB)</label>
+              <input id="admin-review-handoff-file" type="file" accept=".json,application/json">
+            </div></div>
+            <button id="admin-review-handoff-load" type="button" class="secondary">Toon nog niet verstuurde overdracht</button>
+            <p id="admin-review-handoff-status" class="admin-review-result" role="status" aria-live="polite">Geen Evidence Review Handoff geladen. HOLD / DENY.</p>
+            <h4>Bewijsverwijzingen — review NOT_STARTED</h4>
+            <div class="admin-table-wrap admin-registry-rows"><table aria-label="Onbevestigde evidence handoff">
+              <thead><tr><th>Nr.</th><th>Check-ID</th><th>Bewijstype</th><th>SHA-256 (verkort)</th><th>Status</th></tr></thead>
+              <tbody id="admin-review-handoff-rows"></tbody>
+            </table></div>
+            <h4>Zeven vereiste onafhankelijke reviewcontroles</h4>
+            <ol id="admin-review-handoff-checks"></ol>
+            <p class="auth-note">Deze browser controleert alleen de vaste JSON-structuur, niet originele bronbytes, revieweridentiteit, handtekening of externe audit. Delivery NOT_SENT, receipt NOT_AVAILABLE, human review NOT_COMPLETED. NOT_VERIFIED / NOT_READY / HOLD / DENY / NOT_AUTHORIZED.</p>
           </section>
           <button id="admin-review044-registry-export" type="button" class="secondary" disabled>Download nieuw registersnapshot (.json)</button>
           <p class="auth-note">Controleer vóór gebruik altijd het originele dossier met de striktere Python-module. Deze browserregistratie is indicatief en bevat geen tijds- of identiteitsbewijs. Geen serveropslag of autorisatie.</p>
