@@ -1918,3 +1918,64 @@ nieuwe uitvoerende API-routes, authenticaties of reviews gebouwd.
 
 **DRAFT / NOT_EXECUTED / NOT_VERIFIED / NOT_READY /
 HOLD / DENY / NOT_AUTHORIZED.**
+
+### PP-RECOVERY-002 — afzonderlijk Release Observation Register (uitsluitend claims)
+
+De pure module `review_044_release_observation_register.py`
+definieert `append_release_observation` voor een **latere**
+handmatige eigenaarssessie, nadrukkelijk niet voor automatische tests.
+Zij ontvangt de achttien oorspronkelijke bytebestanden van het
+Verification Execution Plan, de originele planbytes en optioneel
+de voorafgaande registersnapshot. De gehele planinhoud wordt uit
+de achttien originele bronnen opnieuw gereconstrueerd en type-exact
+geverifieerd voordat de aangeleverde snapshot wordt geaccepteerd.
+
+Iedere geregistreerde waarneming verwijst naar een bestaande
+`RG01-E01` tot `RG06-E03` check-ID en is beperkt tot:
+`OBSERVATION_REPORTED`, `BLOCKER_REPORTED` of
+`RECHECK_REQUESTED`. De opgegeven rol is uitsluitend
+`OWNER_CLAIMED`, `REVIEWER_CLAIMED` of `SOURCE_CLAIMED`;
+dit zijn **nooit geauthenticeerde identiteiten**.
+Een notitie is maximaal 500 tekens, en een optioneel
+bewijsbestand is maximaal 64 KiB. Het bestand zelf wordt niet in
+het register opgenomen: alleen de SHA-256 van de exacte bytes.
+Dit vormt geen bewijs van origine of onafhankelijke verificatie.
+
+De module controleert in de Pythonlaag de maximaal 128 bestaande
+events, de volgorde, check- en gatebinding, vaste DENY-statussen
+en de lokale SHA-256-hashketen inclusief voorgaande eventhash.
+De hashketen is **geen digitale handtekening, geen vertrouwde tijd
+en geen tamperproof extern auditlog**; een aanvaller met volledige
+schrijftoegang kan een nieuwe lokale keten produceren.
+Er zijn geen PASS-markeringen, wijzigingen van bestaande
+events, bevoegdheidsbesluiten of uitvoering van checks mogelijk.
+
+De opt-in CLI `review_044_release_observation_register_cli.py`
+leest niets zonder `--run` en schrijft een nieuwe snapshot met
+`--export` via uitsluitend create-only `xb`. Voor een latere
+eigenaarssessie kan bijvoorbeeld de eerste check als
+**zelf-gerapporteerde observatie** worden geregistreerd:
+
+```powershell
+python .\review_044_release_observation_register_cli.py --run --dossier "PP_RECOVERY_DECISION_HOLD.json" --queue "PP_REVIEW_QUEUE_001.json" --intake "PP_REVIEW_INTAKE_001.json" --plan "PP_VERIFICATION_PLAN_HOLD.json" --observations "PP_OBSERVATION_001.json" --manifest "PP_HUMAN_REVIEW_HANDOFF_HOLD.json" --protocol "PP_REVIEW_PROTOCOL_001.json" --contract "PP_REVIEWER_AUTH_REQUIREMENTS_HOLD.json" --blueprint "PP_REVIEWER_SERVICE_BLUEPRINT_HOLD.json" --interfaces "PP_REVIEWER_INTERFACE_CONTRACT_HOLD.json" --transitions "PP_TRUST_TRANSITIONS_HOLD.json" --revocation "PP_REVOCATION_RECOVERY_HOLD.json" --assurance "PP_SECURITY_ASSURANCE_HOLD.json" --registry "PP_CONTRACT_COMPATIBILITY_HOLD.json" --impact "PP_CHANGE_IMPACT_HOLD.json" --integrity "PP_RELEASE_INTEGRITY_HOLD.json" --matrix "PP_RELEASE_EVIDENCE_MATRIX_HOLD.json" --cockpit "PP_RELEASE_READINESS_COCKPIT_HOLD.json" --execution-plan "PP_VERIFICATION_EXECUTION_PLAN_HOLD.json" --check-id RG01-E01 --mark OBSERVATION_REPORTED --role-claim OWNER_CLAIMED --note "Lokale waarneming; geen onafhankelijke bevestiging" --export "PP_RELEASE_OBSERVATION_001_HOLD.json"
+```
+
+Om later een tweede event toe te voegen, wordt bovendien
+`--previous-register "PP_RELEASE_OBSERVATION_001_HOLD.json"`
+meegegeven en een **andere nieuwe** `--export`-naam gekozen.
+Een optioneel `--evidence "pad\\naar\\bewijsbestand"` voegt
+alleen de byte-SHA-256 toe. Geen daadwerkelijk bewijs wordt
+vertrouwd of geaccepteerd op basis van deze lokale input.
+
+Het backofficepaneel **PP-RECOVERY-002 / Release Observation
+Register — onbevestigde lokale waarnemingen** leest maximaal
+128 KiB JSON en toont per event het check-ID, markering,
+zelf-geclaimde rol en eventuele hashvingerafdruk. De browser
+controleert alleen een herkenbare structuur, **niet** de
+SHA-256-hashketen, oorspronkelijke negentien bronnen of externe
+authenticiteit. De statische script-URL staat op de bestaande
+lokale allowlist. Er zijn geen nieuwe API-routes toegevoegd.
+
+**DRAFT / NOT_EXECUTED / NOT_VERIFIED / NOT_READY / HOLD /
+DENY / NOT_AUTHORIZED.** Geen tests, merge, deploy, sessie,
+uitgifte of automatische goedkeuring uitgevoerd.
