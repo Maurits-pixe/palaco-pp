@@ -50,6 +50,7 @@
   <script src="/review044-audit-evidence-custody-contract.js" defer></script>
   <script src="/review044-custody-transfer-verification-protocol.js" defer></script>
   <script src="/review044-transfer-receipt-reconciliation.js" defer></script>
+  <script src="/review044-receipt-conflict-resolution.js" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -994,6 +995,24 @@
             <h4>Negen externe vergelijkingsvereisten — NOT_PERFORMED</h4>
             <ol id="admin-receipt-reconcile-checks"></ol>
             <p class="auth-note">Dit scherm vergelijkt geen echte receipts, sleutelhandtekeningen, bytehashes, personen, nonce of auditlogs. De JSON-viewer toetst uitsluitend vaste DENY-waarden. 0 van 8 receiptparen gereconcilieerd; geen uitrol of autorisatie. NOT_VERIFIED / NOT_READY / HOLD / DENY / NOT_AUTHORIZED.</p>
+          </section>
+          <section class="admin-bundle-panel" aria-labelledby="admin-conflict-resolution-title">
+            <h3 id="admin-conflict-resolution-title">PP-RECOVERY-002 / Receipt Conflict Resolution Protocol — geen conflict beoordeeld</h3>
+            <p class="auth-note">Een ongetekend protocol voor mogelijke tegenstrijdige verzend- en ontvangstclaims. Ontbrekende receipts of een mismatch zijn redenen voor een toekomstige onafhankelijke review, niet voor automatische acceptatie. Deze lokale module ontvangt, onderzoekt of beslecht geen echte disputen.</p>
+            <div class="admin-review-grid"><div>
+              <label for="admin-conflict-resolution-file">Lokaal conflictprotocol (.json, maximaal 64 KiB)</label>
+              <input id="admin-conflict-resolution-file" type="file" accept=".json,application/json">
+            </div></div>
+            <button id="admin-conflict-resolution-load" type="button" class="secondary">Toon geblokkeerde conflictprocedures</button>
+            <p id="admin-conflict-resolution-status" class="admin-review-result" role="status" aria-live="polite">Geen Receipt Conflict Resolution Protocol geladen. HOLD / DENY.</p>
+            <h4>Acht bewijsposities — geen receipts ontvangen of conflict vastgesteld</h4>
+            <div class="admin-table-wrap admin-registry-rows"><table aria-label="Onafhankelijke afhandeling van potentiële ontvangstconflicten">
+              <thead><tr><th>ID</th><th>Bewijs</th><th>Vereiste externe custodianrol</th><th>Receipts</th><th>Vaststelling</th><th>Status</th></tr></thead>
+              <tbody id="admin-conflict-resolution-rows"></tbody>
+            </table></div>
+            <h4>Acht onafhankelijke afhandelingsstappen — NOT_STARTED</h4>
+            <ol id="admin-conflict-resolution-steps"></ol>
+            <p class="auth-note">De viewer valideert uitsluitend een ongetekend JSON-contract met vaste DENY-statussen; geen bronbytes, signatures, identiteit, replay-ledger of externe audit worden gecontroleerd. Nul echte conflicten beoordeeld; alle mogelijke gevallen blijven geblokkeerd. NOT_VERIFIED / NOT_READY / HOLD / DENY / NOT_AUTHORIZED.</p>
           </section>
           <button id="admin-review044-registry-export" type="button" class="secondary" disabled>Download nieuw registersnapshot (.json)</button>
           <p class="auth-note">Controleer vóór gebruik altijd het originele dossier met de striktere Python-module. Deze browserregistratie is indicatief en bevat geen tijds- of identiteitsbewijs. Geen serveropslag of autorisatie.</p>
