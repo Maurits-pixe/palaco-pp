@@ -40,6 +40,7 @@
   <script src="/review044-release-evidence-review-handoff.js" defer></script>
   <script src="/review044-independent-receipt-protocol.js" defer></script>
   <script src="/review044-independent-receipt-verifier-blueprint.js" defer></script>
+  <script src="/review044-verifier-trust-policy.js" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -807,6 +808,24 @@
             <h4>Negentien vereiste sleutel-, replay- en auditcontroles — NOT_CONFIGURED</h4>
             <ul id="admin-receipt-verifier-controls"></ul>
             <p class="auth-note">De browser presenteert alleen een lokaal ongetekend JSON-contract. Geen cryptografische handtekening, externe sleutelregistratie, trusted clock, atomische nonce-ledger, auditanker of menselijke reviewerbevoegdheid wordt gevalideerd. Alle trust boundaries DENY; onafhankelijke verificatie NOT_VERIFIED; release NOT_READY; HOLD / DENY / NOT_AUTHORIZED.</p>
+          </section>
+          <section class="admin-bundle-panel" aria-labelledby="admin-trust-policy-title">
+            <h3 id="admin-trust-policy-title">PP-RECOVERY-002 / Verifier Trust Policy Register — standaard DENY</h3>
+            <p class="auth-note">Ontwerpregister voor vertrouwde uitgevers, algoritmen, sleutelrotatie en intrekking. Initiële toestand: nul vertrouwde uitgevers, nul toegestane algoritmen, geen sleutelimport of externe verificatie. Een statisch rapport kan nooit vertrouwen of autorisatie verlenen.</p>
+            <div class="admin-review-grid"><div>
+              <label for="admin-trust-policy-file">Offline trustpolicy-register (.json, maximaal 64 KiB)</label>
+              <input id="admin-trust-policy-file" type="file" accept=".json,application/json">
+            </div></div>
+            <button id="admin-trust-policy-load" type="button" class="secondary">Toon geblokkeerd vertrouwensbeleid</button>
+            <p id="admin-trust-policy-status" class="admin-review-result" role="status" aria-live="polite">Geen Verifier Trust Policy Register geladen. HOLD / DENY.</p>
+            <h4>22 formele beleidsvereisten — NOT_CONFIGURED</h4>
+            <div class="admin-table-wrap admin-registry-rows"><table aria-label="Vertrouwensbeleid voor externe verifier">
+              <thead><tr><th>Categorie</th><th>Vereiste</th><th>Status</th></tr></thead>
+              <tbody id="admin-trust-policy-rows"></tbody>
+            </table></div>
+            <h4>Twaalf afwijzingscondities — altijd DENY</h4>
+            <ul id="admin-trust-policy-denials"></ul>
+            <p class="auth-note">Deze viewer verifieert geen echte issuer root, keyset, signature, revocationfeed, revieweridentiteit of trusted clock. Het ontvangt geen sleutels, accepteert geen issuer en schakelt niets vrij. NOT_VERIFIED / NOT_READY / HOLD / DENY / NOT_AUTHORIZED.</p>
           </section>
           <button id="admin-review044-registry-export" type="button" class="secondary" disabled>Download nieuw registersnapshot (.json)</button>
           <p class="auth-note">Controleer vóór gebruik altijd het originele dossier met de striktere Python-module. Deze browserregistratie is indicatief en bevat geen tijds- of identiteitsbewijs. Geen serveropslag of autorisatie.</p>
