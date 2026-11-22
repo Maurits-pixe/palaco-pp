@@ -392,3 +392,28 @@ No source identity is authenticated by this check. No authority,
 P.P. issuance, account binding, merge or deployment occurs.
 Tests have not been independently executed in this round.
 **HOLD / DENY / NOT_AUTHORIZED**.
+
+
+## Canonical global-blocker enforcement (draft v16, 22 November 2026)
+
+The release boundary now requires **all six global blocker codes
+in their canonical order**, matching the existing
+`review_044_release_readiness.py` producer. Nonempty arbitrary lists
+are no longer accepted. This includes rejection of omitted, fake,
+extra, repeated and reordered blocker claims.
+
+The expected tuple is a deliberate fail-closed mirror in the minimal
+release boundary, avoiding a dependency on the producer's deeper
+module imports. A producer contract change will require deliberate
+review and update rather than silently weakening the check.
+The synthetic boundary fixture now includes the producer's six
+codes; a new regression method tests incomplete and forged lists.
+
+```powershell
+python -m unittest -v test_review_044_release_boundary_snapshot
+python pp_recovery_strict_ci_runner.py
+```
+
+Changes were committed on the draft branch only. No independent
+runtime test PASS is claimed; no merge or release occurred.
+**HOLD / DENY / NOT_AUTHORIZED**.
