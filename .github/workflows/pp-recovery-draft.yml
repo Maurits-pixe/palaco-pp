@@ -10,6 +10,8 @@ on:
       - "pp_recovery_strict_ci_runner.py"
       - "pp_recovery_ci_inventory.py"
       - "test_pp_recovery_ci_inventory.py"
+      - "pp_recovery_ci_receipt.py"
+      - "test_pp_recovery_ci_receipt.py"
       - "test_pp_recovery_strict_ci_runner.py"
       - ".github/workflows/pp-recovery-draft.yml"
   pull_request:
@@ -19,6 +21,8 @@ on:
       - "pp_recovery_strict_ci_runner.py"
       - "pp_recovery_ci_inventory.py"
       - "test_pp_recovery_ci_inventory.py"
+      - "pp_recovery_ci_receipt.py"
+      - "test_pp_recovery_ci_receipt.py"
       - "test_pp_recovery_strict_ci_runner.py"
       - ".github/workflows/pp-recovery-draft.yml"
   workflow_dispatch:
@@ -54,6 +58,7 @@ jobs:
       - name: Install optional signature-verification backend
         run: python -m pip install "cryptography>=43,<47"
       - name: Compile recovery modules and tests
+        id: syntax
         run: |
           python - <<'PY'
           import ast
@@ -62,16 +67,19 @@ jobs:
               ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
           for path in sorted(Path(".").glob("test_review_044_*.py")):
               ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
-          for name in ("pp_recovery_strict_ci_runner.py", "test_pp_recovery_strict_ci_runner.py", "pp_recovery_ci_inventory.py", "test_pp_recovery_ci_inventory.py"):
+          for name in ("pp_recovery_strict_ci_runner.py", "test_pp_recovery_strict_ci_runner.py", "pp_recovery_ci_inventory.py", "test_pp_recovery_ci_inventory.py", "pp_recovery_ci_receipt.py", "test_pp_recovery_ci_receipt.py"):
               ast.parse(Path(name).read_text(encoding="utf-8"), filename=name)
           print("Synthetic recovery source syntax: OK")
           PY
-      - name: Verify fail-closed CI runner and scoped inventory
-        run: python -m unittest -v test_pp_recovery_strict_ci_runner test_pp_recovery_ci_inventory
+      - name: Verify fail-closed CI runner, inventory and receipt
+        id: policy
+        run: python -m unittest -v test_pp_recovery_strict_ci_runner test_pp_recovery_ci_inventory test_pp_recovery_ci_receipt
       - name: Run offline synthetic recovery regression suites
+        id: regressions
         run: |
           python pp_recovery_strict_ci_runner.py
       - name: Confirm gate remains blocked
+        id: boundary
         run: |
           python - <<'PY'
           from review_044_release_boundary_snapshot import review_boundary_snapshot
@@ -83,3 +91,26 @@ jobs:
           assert report["deployment"] == "BLOCKED"
           print("Release boundary remains HOLD / DENY / NOT_AUTHORIZED / BLOCKED")
           PY
+      - name: Write unsigned execution receipt
+        if: ${{ always() }}
+        env:
+          PP_PYTHON_VERSION: ${{ matrix.python-version }}
+          PP_SYNTAX_OUTCOME: ${{ steps.syntax.outcome }}
+          PP_POLICY_OUTCOME: ${{ steps.policy.outcome }}
+          PP_REGRESSIONS_OUTCOME: ${{ steps.regressions.outcome }}
+          PP_BOUNDARY_OUTCOME: ${{ steps.boundary.outcome }}
+        run: |
+          python pp_recovery_ci_receipt.py \
+            --output pp-recovery-ci-receipt.json \
+            --syntax "${PP_SYNTAX_OUTCOME:-unknown}" \
+            --policy "${PP_POLICY_OUTCOME:-unknown}" \
+            --regressions "${PP_REGRESSIONS_OUTCOME:-unknown}" \
+            --boundary "${PP_BOUNDARY_OUTCOME:-unknown}"
+      - name: Upload unsigned execution receipt
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: pp-recovery-receipt-py${{ matrix.python-version }}
+          path: pp-recovery-ci-receipt.json
+          if-no-files-found: warn
+          retention-days: 7
