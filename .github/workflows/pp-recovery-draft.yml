@@ -8,6 +8,8 @@ on:
       - "review_044_*.py"
       - "test_review_044_*.py"
       - "pp_recovery_strict_ci_runner.py"
+      - "pp_recovery_ci_inventory.py"
+      - "test_pp_recovery_ci_inventory.py"
       - "test_pp_recovery_strict_ci_runner.py"
       - ".github/workflows/pp-recovery-draft.yml"
   pull_request:
@@ -15,6 +17,8 @@ on:
       - "review_044_*.py"
       - "test_review_044_*.py"
       - "pp_recovery_strict_ci_runner.py"
+      - "pp_recovery_ci_inventory.py"
+      - "test_pp_recovery_ci_inventory.py"
       - "test_pp_recovery_strict_ci_runner.py"
       - ".github/workflows/pp-recovery-draft.yml"
   workflow_dispatch:
@@ -58,12 +62,12 @@ jobs:
               ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
           for path in sorted(Path(".").glob("test_review_044_*.py")):
               ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
-          for name in ("pp_recovery_strict_ci_runner.py", "test_pp_recovery_strict_ci_runner.py"):
+          for name in ("pp_recovery_strict_ci_runner.py", "test_pp_recovery_strict_ci_runner.py", "pp_recovery_ci_inventory.py", "test_pp_recovery_ci_inventory.py"):
               ast.parse(Path(name).read_text(encoding="utf-8"), filename=name)
           print("Synthetic recovery source syntax: OK")
           PY
-      - name: Verify fail-closed CI runner behavior
-        run: python -m unittest -v test_pp_recovery_strict_ci_runner
+      - name: Verify fail-closed CI runner and scoped inventory
+        run: python -m unittest -v test_pp_recovery_strict_ci_runner test_pp_recovery_ci_inventory
       - name: Run offline synthetic recovery regression suites
         run: |
           python pp_recovery_strict_ci_runner.py
