@@ -17,6 +17,16 @@ REQUIRED_DENIALS = {
     "issuance": "NOT_AUTHORIZED",
 }
 EXPECTED_READINESS = "NOT_READY"
+# Mirror the fixed gap-analysis contract without importing its dependency
+# chain. If the producer changes, this gate fails closed until reviewed.
+EXPECTED_GLOBAL_BLOCKERS = (
+    "ORIGINAL_SOURCE_ATTESTATION_ABSENT",
+    "SUBMITTER_AUTHENTICATION_ABSENT",
+    "REVIEWER_IDENTITY_AND_AUTHORITY_ABSENT",
+    "CROSS_SOURCE_SUBJECT_BINDING_ABSENT",
+    "INDEPENDENT_HUMAN_REVIEW_NOT_COMPLETED",
+    "IMMUTABLE_AUDIT_PROVENANCE_ABSENT",
+)
 
 
 class BoundaryInputError(ValueError):
@@ -74,12 +84,11 @@ def review_boundary_snapshot(report_bytes: bytes) -> dict:
     for key, expected in required_missing.items():
         if type(source.get(key)) is not str or source[key] != expected:
             raise BoundaryInputError("PP_BOUNDARY_INVALID")
-    if (type(source.get("globalBlockers")) is not list
-            or not source["globalBlockers"]
-            or len(source["globalBlockers"]) > 32
-            or any(type(item) is not str or not item or len(item) > 128
-                   for item in source["globalBlockers"])
-            or len(set(source["globalBlockers"])) != len(source["globalBlockers"])):
+    blockers = source.get("globalBlockers")
+    if (type(blockers) is not list
+            or len(blockers) != len(EXPECTED_GLOBAL_BLOCKERS)
+            or any(type(item) is not str for item in blockers)
+            or tuple(blockers) != EXPECTED_GLOBAL_BLOCKERS):
         raise BoundaryInputError("PP_BOUNDARY_INVALID")
     if (source.get("overallReadiness") != EXPECTED_READINESS
             or source.get("palacoOneHandoff") != "BLOCKED"
