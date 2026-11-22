@@ -87,7 +87,8 @@ class RecoveryContractParityTests(unittest.TestCase):
             '"SOURCE_ATTESTATION", "Independent attestation',
             '"SOURCE_AUTHENTICATION", "Independent attestation', 1,
         )
-        self.assertFalse(verify_parity(changed))
+        with self.assertRaises(ValueError):
+            verify_parity(changed)
 
     def test_changed_check_id_is_detected(self):
         changed = dict(self.sources)
