@@ -16,6 +16,7 @@ SUITES = (
     "test_review_044_detached_signature_inspection",
     "test_review_044_trust_anchor_preflight",
     "test_review_044_proposed_key_binding",
+    "test_review_044_unsigned_revocation_notice",
 )
 
 
