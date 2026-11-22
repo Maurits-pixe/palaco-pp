@@ -305,3 +305,32 @@ Testing remains **NOT VERIFIED**: the local container still cannot
 resolve github.com for a clone, and no successful CI status was
 observed for this round. No release, merge, key promotion or P.P.
 registration changes. HOLD / DENY / NOT_AUTHORIZED.
+
+
+## Unsigned key-revocation claim inspection (draft v13, 22 November 2026)
+
+`review_044_unsigned_revocation_notice.py` checks an unsigned
+revocation **claim** against the existing pending trust-anchor
+proposal. The notice must use the exact expected schema and declare
+the same issuer ID, candidate key ID, and SHA-256 public-key
+fingerprint. JSON with duplicate keys, unknown fields, malformed or
+oversized data, mismatched subjects, or a misleading `ACTIVE` or
+`NOT_REVOKED` claim is rejected.
+
+The output is only an untrusted, privacy-minimized observation:
+`REVOKED_UNTRUSTED`, `NOT_VERIFIED`, `HOLD`, `DENY` and
+`NOT_AUTHORIZED`. The module never asserts that the key is
+safe, imports a trust anchor, applies revocation, re-enables a key,
+or changes a real account. Absence of a notice is **not** proof
+of non-revocation. Trusted issuer signatures, trusted time and
+revocation-feed freshness require independent infrastructure.
+
+Six synthetic unittest methods are included in the strict CI runner.
+
+```powershell
+python -m unittest -v test_review_044_unsigned_revocation_notice
+python pp_recovery_strict_ci_runner.py
+```
+
+**Build state:** committed to the draft branch only. Runtime PASS
+has not been verified; release remains **HOLD / DENY**.
