@@ -43,3 +43,25 @@ or authorization to deploy.
 the draft branch; automated execution in the working environment could not
 be completed because GitHub host name resolution failed while cloning.
 Test status is **NOT EXECUTED**, not PASS. Owner review remains HOLD.
+
+
+## Recovery boundary reconciliation (draft v3, 22 November 2026)
+
+`review_044_boundary_reconciliation.py` compares two **untrusted** boundary
+snapshots. It enforces the precise v1 snapshot field allowlist, denial states,
+valid lowercase SHA-256 digest shape, and a positive integer blocked-gate
+count. It compares the reported source digest and gate count, returning
+`MATCH_UNTRUSTED` or `MISMATCH`. **Even a match is not evidence of two
+independent reviews**, as anyone can copy an unsigned snapshot. No
+authenticated PALACO ONE session, P.P. issuance, recovery permission or
+release authority results from either outcome.
+
+Manual synthetic-only regression command (execution not yet verified):
+
+```powershell
+python -m unittest -v test_review_044_release_boundary_snapshot test_review_044_release_boundary_snapshot_cli test_review_044_boundary_reconciliation
+```
+
+Code and tests committed to the existing draft branch; maintain
+**HOLD / DENY / NOT_AUTHORIZED** pending independently observed execution
+and authorized human review.
