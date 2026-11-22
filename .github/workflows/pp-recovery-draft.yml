@@ -7,11 +7,13 @@ on:
     paths:
       - "review_044_*.py"
       - "test_review_044_*.py"
+      - "pp_recovery_strict_ci_runner.py"
       - ".github/workflows/pp-recovery-draft.yml"
   pull_request:
     paths:
       - "review_044_*.py"
       - "test_review_044_*.py"
+      - "pp_recovery_strict_ci_runner.py"
       - ".github/workflows/pp-recovery-draft.yml"
   workflow_dispatch:
 
@@ -54,16 +56,12 @@ jobs:
               ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
           for path in sorted(Path(".").glob("test_review_044_*.py")):
               ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+          ast.parse(Path("pp_recovery_strict_ci_runner.py").read_text(encoding="utf-8"), filename="pp_recovery_strict_ci_runner.py")
           print("Synthetic recovery source syntax: OK")
           PY
       - name: Run offline synthetic recovery regression suites
         run: |
-          python -m unittest -v \
-            test_review_044_release_boundary_snapshot \
-            test_review_044_release_boundary_snapshot_cli \
-            test_review_044_boundary_reconciliation \
-            test_review_044_evidence_manifest \
-            test_review_044_detached_signature_inspection
+          python pp_recovery_strict_ci_runner.py
       - name: Confirm gate remains blocked
         run: |
           python - <<'PY'
