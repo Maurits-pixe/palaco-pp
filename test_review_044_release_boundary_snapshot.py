@@ -7,7 +7,7 @@ import json
 import unittest
 
 from review_044_release_boundary_snapshot import (
-    BoundaryInputError, EXPECTED_GLOBAL_BLOCKERS, review_boundary_snapshot,
+    BoundaryInputError, EXPECTED_GLOBAL_BLOCKERS, EXPECTED_GATES,\n    EXPECTED_CHECK_IDS, review_boundary_snapshot,
 )
 
 
@@ -28,10 +28,26 @@ def valid_report():
         "palacoOneSession": "NOT_CREATED",
         "independentVerification": "NOT_VERIFIED",
         "humanReview": "NOT_COMPLETED",
-        "blockedGateCount": 2,
+        "blockedGateCount": len(EXPECTED_GATES),
         "gateReadiness": [
-            {"gate": "BLOCKED", "readiness": "NOT_READY"},
-            {"gate": "BLOCKED", "readiness": "NOT_READY"},
+            {
+                "requirementId": name,
+                "description": description,
+                "missingChecks": [
+                    {
+                        "checkOrder": order,
+                        "checkId": EXPECTED_CHECK_IDS[order - 1],
+                        "status": "NOT_STARTED",
+                        "verification": "NOT_VERIFIED",
+                    }
+                    for order in orders
+                ],
+                "missingCount": len(orders),
+                "nextManualAction": next_action,
+                "gate": "BLOCKED",
+                "readiness": "NOT_READY",
+            }
+            for name, description, orders, next_action in EXPECTED_GATES
         ],
     }
 
@@ -48,7 +64,7 @@ class RecoveryBoundaryTests(unittest.TestCase):
         self.assertEqual("NOT_AUTHORIZED", result["issuance"])
         self.assertEqual("BLOCKED", result["deployment"])
         self.assertEqual("BLOCKED", result["palacoOneHandoff"])
-        self.assertEqual(2, result["blockedGateCount"])
+        self.assertEqual(len(EXPECTED_GATES), result["blockedGateCount"])
 
     def test_privacy_no_identifiers_copied(self):
         report = valid_report()
@@ -123,6 +139,52 @@ class RecoveryBoundaryTests(unittest.TestCase):
             with self.subTest(blockers=blockers):
                 report = valid_report()
                 report["globalBlockers"] = blockers
+                with self.assertRaises(BoundaryInputError):
+                    review_boundary_snapshot(encode(report))
+
+    def test_reject_missing_reordered_or_duplicated_gate(self):
+        for mutation in ("missing", "reordered", "duplicate", "count"):
+            with self.subTest(mutation=mutation):
+                report = valid_report()
+                gates = report["gateReadiness"]
+                if mutation == "missing":
+                    report["gateReadiness"] = gates[:-1]
+                    report["blockedGateCount"] -= 1
+                elif mutation == "reordered":
+                    gates[0], gates[1] = gates[1], gates[0]
+                elif mutation == "duplicate":
+                    gates[1] = dict(gates[0])
+                else:
+                    report["blockedGateCount"] = 2
+                with self.assertRaises(BoundaryInputError):
+                    review_boundary_snapshot(encode(report))
+
+    def test_reject_forged_gate_check_or_status(self):
+        for field, value in (
+            ("checkOrder", 2),
+            ("checkId", "FAKE_CHECK"),
+            ("status", "COMPLETED"),
+            ("verification", "VERIFIED"),
+        ):
+            with self.subTest(field=field):
+                report = valid_report()
+                report["gateReadiness"][0]["missingChecks"][0][field] = value
+                with self.assertRaises(BoundaryInputError):
+                    review_boundary_snapshot(encode(report))
+
+    def test_reject_missing_gate_metadata_and_wrong_counts(self):
+        for mode in ("missingCount", "description", "action", "unknownField"):
+            with self.subTest(mode=mode):
+                report = valid_report()
+                gate = report["gateReadiness"][0]
+                if mode == "missingCount":
+                    gate["missingCount"] = True
+                elif mode == "description":
+                    gate["description"] = "synthetic-fake"
+                elif mode == "action":
+                    gate["nextManualAction"] = "AUTO_APPROVE"
+                else:
+                    gate["extra"] = "APPROVED"
                 with self.assertRaises(BoundaryInputError):
                     review_boundary_snapshot(encode(report))
 
