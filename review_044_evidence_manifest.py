@@ -98,7 +98,7 @@ def validate_evidence_manifest(manifest_bytes: bytes) -> dict:
     """Check strict manifest structure and hash chain without trusting it."""
     if type(manifest_bytes) is not bytes or not (1 <= len(manifest_bytes) <= MAX_TOTAL_BYTES):
         raise BoundaryInputError("PP_MANIFEST_INVALID")
-    source = _parse_json(manifest_bytes)
+    source = _parse_json(manifest_bytes, max_bytes=MAX_TOTAL_BYTES)
     expected_keys = {
         "schema", "reference", "scope", "entryCount", "entries",
         "headRecordSha256", "sourceAuthenticity", "independentVerification",
