@@ -10,6 +10,7 @@ import unittest
 
 SUITES = (
     "test_review_044_contract_parity",
+    "test_review_044_recovery_chain_e2e",
     "test_review_044_release_boundary_snapshot",
     "test_review_044_release_boundary_snapshot_cli",
     "test_review_044_boundary_reconciliation",
