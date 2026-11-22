@@ -23,3 +23,23 @@ The tests cover malformed JSON, duplicate keys, over-size input, privilege escal
 5. **Do not** expose this function as a production recovery endpoint or use it as an authentication, trust-anchor or approval service.
 
 This component is a defensive audit aid. Source authenticity, independent human verification, safe deployment and PALACO One integration remain outside this scope.
+
+
+## Offline CLI (explicit opt-in)
+
+```powershell
+python .\\review_044_release_boundary_snapshot_cli.py --run --report .\\readiness.json
+python .\\review_044_release_boundary_snapshot_cli.py --run --report .\\readiness.json --export .\\boundary-snapshot.json
+python -m unittest -v test_review_044_release_boundary_snapshot test_review_044_release_boundary_snapshot_cli
+```
+
+The CLI refuses to run without `--run`, limits source reads to 64 KiB,
+rejects symlink inputs, and creates exports exclusively (no overwrite).
+It does not read the P.P. database. The CLI returns a structural inspection,
+not trusted verification, identity recovery, an approved account binding,
+or authorization to deploy.
+
+**Execution note (22 November 2026):** source and tests were committed to
+the draft branch; automated execution in the working environment could not
+be completed because GitHub host name resolution failed while cloning.
+Test status is **NOT EXECUTED**, not PASS. Owner review remains HOLD.
