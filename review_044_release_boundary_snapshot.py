@@ -62,6 +62,25 @@ def review_boundary_snapshot(report_bytes: bytes) -> dict:
     for key, value in REQUIRED_DENIALS.items():
         if type(source.get(key)) is not str or source[key] != value:
             raise BoundaryInputError("PP_BOUNDARY_INVALID")
+    # The canonical readiness producer always emits these explicit missing
+    # prerequisites. Reject omitted or promoted trust claims, even when
+    # the top-level authorization fields still say HOLD / DENY.
+    required_missing = {
+        "manualDecision": "REQUIRED_OUTSIDE_THIS_MODULE",
+        "sourceAuthenticity": "NOT_ESTABLISHED",
+        "subjectBinding": "NOT_ESTABLISHED",
+        "reviewerAuthority": "NOT_ESTABLISHED",
+    }
+    for key, expected in required_missing.items():
+        if type(source.get(key)) is not str or source[key] != expected:
+            raise BoundaryInputError("PP_BOUNDARY_INVALID")
+    if (type(source.get("globalBlockers")) is not list
+            or not source["globalBlockers"]
+            or len(source["globalBlockers"]) > 32
+            or any(type(item) is not str or not item or len(item) > 128
+                   for item in source["globalBlockers"])
+            or len(set(source["globalBlockers"])) != len(source["globalBlockers"])):
+        raise BoundaryInputError("PP_BOUNDARY_INVALID")
     if (source.get("overallReadiness") != EXPECTED_READINESS
             or source.get("palacoOneHandoff") != "BLOCKED"
             or source.get("palacoOneSession") != "NOT_CREATED"
