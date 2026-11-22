@@ -197,3 +197,29 @@ The CLI test runner does not deploy anything, trust keys,
 promote identities or connect PALACO ONE. GitHub commits
 do **not** constitute proof of CI execution: inspect the Actions
 conclusion and logs. Review / merge / production remain HOLD.
+
+
+## Trust-anchor proposal preflight v9 (22 November 2026)
+
+`review_044_trust_anchor_preflight.py` checks an **untrusted**
+issuer/key-fingerprint proposal with an explicit 16 KiB input cap,
+strict schema, fixed purpose, fixed Ed25519 algorithm and
+`PENDING_INDEPENDENT_REVIEW` state. The proposal contains only
+a public-key SHA-256 fingerprint, not a key or cryptographic proof
+of possession. Structural acceptance means **no key enrollment**
+and **zero trusted issuers**. This is not issuer identity
+verification, revocation verification, reviewer authorization,
+or trust-anchor configuration.
+
+`test_review_044_trust_anchor_preflight.py` adds synthetic negative
+and privacy tests. The strict CI runner includes the suite.
+
+```powershell
+python -m unittest -v test_review_044_trust_anchor_preflight
+python pp_recovery_strict_ci_runner.py
+```
+
+The branch remains DRAFT. GitHub commits have been confirmed,
+but CI success and independent review have not been confirmed.
+No release, trust promotion, registration change or merge.
+**HOLD / DENY / NOT_AUTHORIZED.**
