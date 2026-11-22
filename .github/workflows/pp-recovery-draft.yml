@@ -14,6 +14,8 @@ on:
       - "test_pp_recovery_ci_receipt.py"
       - "pp_recovery_ci_receipt_pair.py"
       - "test_pp_recovery_ci_receipt_pair.py"
+      - "pp_recovery_ci_matrix_gate.py"
+      - "test_pp_recovery_ci_matrix_gate.py"
       - "test_pp_recovery_strict_ci_runner.py"
       - ".github/workflows/pp-recovery-draft.yml"
   pull_request:
@@ -27,6 +29,8 @@ on:
       - "test_pp_recovery_ci_receipt.py"
       - "pp_recovery_ci_receipt_pair.py"
       - "test_pp_recovery_ci_receipt_pair.py"
+      - "pp_recovery_ci_matrix_gate.py"
+      - "test_pp_recovery_ci_matrix_gate.py"
       - "test_pp_recovery_strict_ci_runner.py"
       - ".github/workflows/pp-recovery-draft.yml"
   workflow_dispatch:
@@ -71,13 +75,13 @@ jobs:
               ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
           for path in sorted(Path(".").glob("test_review_044_*.py")):
               ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
-          for name in ("pp_recovery_strict_ci_runner.py", "test_pp_recovery_strict_ci_runner.py", "pp_recovery_ci_inventory.py", "test_pp_recovery_ci_inventory.py", "pp_recovery_ci_receipt.py", "test_pp_recovery_ci_receipt.py", "pp_recovery_ci_receipt_pair.py", "test_pp_recovery_ci_receipt_pair.py"):
+          for name in ("pp_recovery_strict_ci_runner.py", "test_pp_recovery_strict_ci_runner.py", "pp_recovery_ci_inventory.py", "test_pp_recovery_ci_inventory.py", "pp_recovery_ci_receipt.py", "test_pp_recovery_ci_receipt.py", "pp_recovery_ci_receipt_pair.py", "test_pp_recovery_ci_receipt_pair.py", "pp_recovery_ci_matrix_gate.py", "test_pp_recovery_ci_matrix_gate.py"):
               ast.parse(Path(name).read_text(encoding="utf-8"), filename=name)
           print("Synthetic recovery source syntax: OK")
           PY
       - name: Verify fail-closed CI runner, inventory and receipt
         id: policy
-        run: python -m unittest -v test_pp_recovery_strict_ci_runner test_pp_recovery_ci_inventory test_pp_recovery_ci_receipt test_pp_recovery_ci_receipt_pair
+        run: python -m unittest -v test_pp_recovery_strict_ci_runner test_pp_recovery_ci_inventory test_pp_recovery_ci_receipt test_pp_recovery_ci_receipt_pair test_pp_recovery_ci_matrix_gate
       - name: Run offline synthetic recovery regression suites
         id: regressions
         run: |
@@ -118,3 +122,32 @@ jobs:
           path: pp-recovery-ci-receipt.json
           if-no-files-found: warn
           retention-days: 7
+
+  recovery-matrix-verification:
+    name: Verify both unsigned Python receipts (never authorize)
+    needs: recovery-security-regressions
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - name: Checkout exact workflow commit without persisted credentials
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          ref: ${{ github.sha }}
+      - name: Set up Python for offline pair verification
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Retrieve both matrix receipts from this workflow run
+        uses: actions/download-artifact@v4
+        with:
+          pattern: pp-recovery-receipt-py*
+          path: matrix-receipts
+          merge-multiple: false
+      - name: Fail closed on incomplete or mismatched matrix
+        run: |
+          python pp_recovery_ci_matrix_gate.py --artifacts matrix-receipts
