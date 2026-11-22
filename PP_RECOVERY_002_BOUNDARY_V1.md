@@ -128,3 +128,29 @@ these controls are provided by the new module.
 verified. GitHub DNS resolution failed from the local execution
 container on 22 November 2026. Merge, issuance and deployment remain
 **HOLD / DENY**.
+
+
+## Parser size-bound correction (draft v6, 22 November 2026)
+
+Previously the manifest validator checked for a maximum of 512 KiB
+and then passed data to the shared 64-KiB JSON parser. The shared
+parser now accepts a bounded, explicit `max_bytes` parameter,
+which the manifest validator sets to `MAX_TOTAL_BYTES` (512 KiB).
+Other callers retain the original 64-KiB default. Invalid size-limit
+types including bool, limits greater than 512 KiB, duplicate JSON
+keys and oversized inputs fail closed.
+
+Two synthetic regression methods were added in
+`test_review_044_evidence_manifest.py`. They exercise the parser
+boundary directly; they do not imply that a large arbitrary JSON
+object passes the manifest's stricter document schema.
+
+Run explicitly:
+
+```powershell
+python -m unittest -v test_review_044_evidence_manifest test_review_044_release_boundary_snapshot test_review_044_detached_signature_inspection
+```
+
+**Execution status:** code and test changes committed. Automated
+runtime test results have not yet been observed for v6. No merge,
+production rollout or authorization granted. HOLD / DENY.
