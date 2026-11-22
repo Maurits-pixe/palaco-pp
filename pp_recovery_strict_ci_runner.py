@@ -8,6 +8,8 @@ from __future__ import annotations
 import sys
 import unittest
 
+from pp_recovery_ci_inventory import audit_security_inventory
+
 SUITES = (
     "test_review_044_contract_parity",
     "test_review_044_recovery_chain_e2e",
@@ -28,6 +30,15 @@ def run(argv: list[str] | None = None) -> int:
     if arguments:
         print("PP_CI_INVALID_ARGUMENTS / HOLD / DENY")
         return 2
+    try:
+        inventory = audit_security_inventory(SUITES)
+    except (ValueError, OSError, SyntaxError) as exc:
+        print(f"PP_CI_INVENTORY_FAILED: {type(exc).__name__} / HOLD / DENY")
+        return 1
+    if (inventory["authorization"] != "HOLD"
+            or inventory["accessDecision"] != "DENY"):
+        print("PP_CI_INVENTORY_AUTHORIZATION_INVALID / HOLD / DENY")
+        return 1
     loader = unittest.defaultTestLoader
     combined = unittest.TestSuite()
     for name in SUITES:
