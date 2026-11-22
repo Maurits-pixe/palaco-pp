@@ -155,6 +155,15 @@ def validate_evidence_manifest(manifest_bytes: bytes) -> dict:
         if key in seen or first > second:
             raise BoundaryInputError("PP_MANIFEST_INVALID")
         seen.add(key)
+        # Identical raw snapshot bytes necessarily imply identical source
+        # content and blocked-gate counts. Reject impossible statements,
+        # even if an attacker has recomputed the unsigned hash chain.
+        if first == second and (
+            record["sourceDigestMatch"] is not True
+            or record["blockedGateCountMatch"] is not True
+            or record["comparison"] != "MATCH_UNTRUSTED"
+        ):
+            raise BoundaryInputError("PP_MANIFEST_INVALID")
         if (type(record["index"]) is not int or record["index"] != i
                 or type(record["sourceDigestMatch"]) is not bool
                 or type(record["blockedGateCountMatch"]) is not bool
