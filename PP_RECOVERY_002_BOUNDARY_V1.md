@@ -334,3 +334,35 @@ python pp_recovery_strict_ci_runner.py
 
 **Build state:** committed to the draft branch only. Runtime PASS
 has not been verified; release remains **HOLD / DENY**.
+
+
+## Mathematical revocation signature inspection (draft v14, 22 November 2026)
+
+`review_044_revocation_signature_inspection.py` extends the untrusted
+revocation-claim reader with exact-byte, domain-separated Ed25519
+mathematical verification. The public key must match the pending
+candidate's SHA-256 fingerprint; a wrong key, invalid signature or
+signature copied from another domain is rejected. Seven synthetic
+test methods were added in
+`test_review_044_revocation_signature_inspection.py` and included
+in the strict CI runner (skipped cryptographic tests cause CI failure).
+
+The signing key is supplied by the caller and remains **untrusted**.
+A caller can self-sign a notice. No authentic issuer has been
+established, no authoritative revocation feed has been checked and
+no timestamp, replay ledger, independent review or trust root is
+configured. Therefore even mathematical success returns
+`VALID_UNTRUSTED_KEY`, `NOT_VERIFIED`, `HOLD`,
+`DENY`, `NOT_AUTHORIZED` and `BLOCKED`.
+
+Manual synthetic-only checks:
+
+```powershell
+python -m unittest -v test_review_044_revocation_signature_inspection
+python pp_recovery_strict_ci_runner.py
+```
+
+GitHub changes are committed to the **draft** branch. Test
+execution has not been independently verified. No merge,
+number issuance, trusted key enrollment, identity recovery or
+production deployment.
