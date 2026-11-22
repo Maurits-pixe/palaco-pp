@@ -154,3 +154,26 @@ python -m unittest -v test_review_044_evidence_manifest test_review_044_release_
 **Execution status:** code and test changes committed. Automated
 runtime test results have not yet been observed for v6. No merge,
 production rollout or authorization granted. HOLD / DENY.
+
+
+## Automated regression workflow v7 (2026-11-22)
+
+Added `.github/workflows/pp-recovery-draft.yml` for branch pushes,
+relevant pull-request changes, and manual dispatch. Jobs run on
+Python 3.11 and 3.12 with read-only repository permission. They
+install the optional cryptography verifier, parse the review module
+syntax, run the five synthetic unittest modules for recovery
+boundary, CLI, reconciliation, evidence manifest and detached
+signature inspection, and assert the release boundary remains
+HOLD / DENY / NOT_AUTHORIZED / BLOCKED.
+
+The workflow has **no** merge, artifact upload, privileged secret
+access, production deployment, trust-root enrollment or account
+mutation step. Synthetic test success does not constitute a
+security audit or release authorization.
+
+At the time this change was committed, commit-status and
+PR-associated workflow-run queries returned no entries. Therefore
+execution remains **NOT VERIFIED**, not PASS. A maintainer must
+confirm GitHub Actions is enabled and inspect the actual run
+conclusions and logs before recording tests as verified.
