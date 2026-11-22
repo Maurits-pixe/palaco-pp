@@ -575,3 +575,40 @@ python pp_recovery_strict_ci_runner.py
 No successful GitHub Actions run has been independently observed by
 this documentation change. Production and authorization remain
 **HOLD / DENY / NOT_AUTHORIZED**.
+
+
+## Python matrix receipt-pair inspection (draft v22, 22 November 2026)
+
+`pp_recovery_ci_receipt_pair.py` provides an **offline and
+non-authorizing** comparison of two unsigned per-version JSON
+execution receipts. It strictly parses their fixed schema and
+reconstructs the exact allowed receipt claims. It requires one
+Python 3.11 receipt and one Python 3.12 receipt with the same
+nonempty, format-valid Git commit SHA and workflow run ID. It
+rejects inconsistent metadata, forged success/authorization
+claims, duplicate JSON keys and malformed or oversized inputs.
+
+Only two explicitly successful sets of recorded steps produce
+`BOTH_RECORDED_SUCCESS_UNTRUSTED`. Any recorded failure,
+skipped, cancelled or unknown step produces
+`INCOMPLETE_OR_FAILED`. Both outputs retain
+`externalCIConclusion: NOT_INDEPENDENTLY_VERIFIED`,
+`HOLD`, `DENY` and `NOT_AUTHORIZED`. This is consistency
+inspection, **not** proof that either receipt came from GitHub.
+
+Eight synthetic regression methods in
+`test_pp_recovery_ci_receipt_pair.py` cover accepted
+denial-preserving pairs and manipulated inputs. GitHub Actions
+includes these regression tests in its policy stage on both
+Python versions. Pair inspection is not an automatic release
+gate and does not fetch artifacts itself: a separate evidence
+reviewer must obtain the two artifacts and independently
+verify the actual GitHub run.
+
+```powershell
+python -m unittest -v test_pp_recovery_ci_receipt_pair
+```
+
+No production execution, trust promotion, merge or P.P.
+issuance. No GitHub Actions PASS is claimed.
+**HOLD / DENY / NOT_AUTHORIZED**.
