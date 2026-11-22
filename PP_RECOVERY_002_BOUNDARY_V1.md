@@ -223,3 +223,31 @@ The branch remains DRAFT. GitHub commits have been confirmed,
 but CI success and independent review have not been confirmed.
 No release, trust promotion, registration change or merge.
 **HOLD / DENY / NOT_AUTHORIZED.**
+
+
+## Candidate-key binding v10 (22 November 2026)
+
+`review_044_proposed_key_binding.py` joins the existing *untrusted*
+trust-anchor preflight to detached Ed25519 mathematical verification:
+the SHA-256 fingerprint declared in a candidate proposal must match
+the exact 32-byte public key used to verify the domain-separated
+manifest signature. A mismatched fingerprint, malformed proposal,
+altered signature or altered manifest fails closed.
+
+**No trust decision:** a caller can generate its own key and proposal.
+`FINGERPRINT_MATCH_UNTRUSTED` is only a consistency observation and
+never authenticates an issuer, reviewer or owner. Key revocation,
+independent trust anchors, replay protection, PALACO ONE handoff,
+issuance and deployment remain unimplemented or BLOCKED.
+
+Six synthetic test methods in
+`test_review_044_proposed_key_binding.py` are included in the
+strict CI suite (skips cause CI failure). No actual run result has
+been established in this development round; manual test command:
+
+```powershell
+python -m unittest -v test_review_044_proposed_key_binding
+python pp_recovery_strict_ci_runner.py
+```
+
+Release status: **HOLD / DENY / NOT_AUTHORIZED**. No merge.
