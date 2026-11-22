@@ -7,7 +7,7 @@ import json
 import unittest
 
 from review_044_release_boundary_snapshot import (
-    BoundaryInputError, review_boundary_snapshot,
+    BoundaryInputError, EXPECTED_GLOBAL_BLOCKERS, review_boundary_snapshot,
 )
 
 
@@ -23,7 +23,7 @@ def valid_report():
         "sourceAuthenticity": "NOT_ESTABLISHED",
         "subjectBinding": "NOT_ESTABLISHED",
         "reviewerAuthority": "NOT_ESTABLISHED",
-        "globalBlockers": ["SOURCE_ATTESTATION_MISSING", "REVIEWER_AUTHORITY_MISSING"],
+        "globalBlockers": list(EXPECTED_GLOBAL_BLOCKERS),
         "palacoOneHandoff": "BLOCKED",
         "palacoOneSession": "NOT_CREATED",
         "independentVerification": "NOT_VERIFIED",
@@ -105,6 +105,20 @@ class RecoveryBoundaryTests(unittest.TestCase):
     def test_reject_empty_duplicate_or_fake_global_blockers(self):
         for blockers in (
             [], ["DUPLICATE", "DUPLICATE"], [True], "NOT_A_LIST",
+        ):
+            with self.subTest(blockers=blockers):
+                report = valid_report()
+                report["globalBlockers"] = blockers
+                with self.assertRaises(BoundaryInputError):
+                    review_boundary_snapshot(encode(report))
+
+    def test_reject_incomplete_or_forged_blocker_list(self):
+        for blockers in (
+            list(EXPECTED_GLOBAL_BLOCKERS[:-1]),
+            list(EXPECTED_GLOBAL_BLOCKERS[1:]),
+            list(EXPECTED_GLOBAL_BLOCKERS) + ["EXTRA_FAKE_BLOCKER"],
+            list(reversed(EXPECTED_GLOBAL_BLOCKERS)),
+            ["FAKE_BLOCKER"] * len(EXPECTED_GLOBAL_BLOCKERS),
         ):
             with self.subTest(blockers=blockers):
                 report = valid_report()
