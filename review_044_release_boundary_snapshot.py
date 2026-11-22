@@ -29,6 +29,29 @@ EXPECTED_GLOBAL_BLOCKERS = (
 )
 
 
+# Fixed producer contract: decision gates must not be silently renamed,
+# omitted, duplicated, reordered or represented by empty placeholder gates.
+EXPECTED_GATES = (
+    ("SOURCE_ATTESTATION", "Independent attestation of input origin",
+     (1, 2), "OBTAIN_INDEPENDENT_SOURCE_ATTESTATION"),
+    ("CROSS_SOURCE_SUBJECT", "Independent common-subject evidence",
+     (1, 2, 3, 5), "ESTABLISH_INDEPENDENT_SUBJECT_BINDING"),
+    ("OWNER_AUTHORITY", "Authenticated owner authority review",
+     (3, 4, 5), "AUTHENTICATE_OWNER_AND_REVIEWER_SEPARATELY"),
+    ("RUNTIME_EXECUTION", "Independent execution provenance",
+     (1, 2, 6), "ATTEST_ORIGINAL_RUNTIME_EXECUTION"),
+    ("HUMAN_REVIEW", "Recorded authorized human review",
+     (1, 2, 3, 4, 5, 6), "COMPLETE_AUTHORIZED_HUMAN_REVIEW_OUTSIDE_THIS_MODULE"),
+)
+EXPECTED_CHECK_IDS = (
+    "ORIGINAL_EVIDENCE_BYTES_NOT_RECHECKED",
+    "SOURCE_PROVENANCE_NOT_ATTESTED",
+    "SUBMITTER_IDENTITY_NOT_AUTHENTICATED",
+    "REVIEWER_AUTHORITY_NOT_ESTABLISHED",
+    "SUBJECT_BINDING_NOT_ESTABLISHED",
+    "INDEPENDENT_REVIEW_NOT_COMPLETED",
+)
+
 class BoundaryInputError(ValueError):
     """An invalid, ambiguous or privilege-escalating review report."""
 
@@ -96,14 +119,39 @@ def review_boundary_snapshot(report_bytes: bytes) -> dict:
             or source.get("independentVerification") != "NOT_VERIFIED"
             or source.get("humanReview") != "NOT_COMPLETED"
             or type(source.get("blockedGateCount")) is not int
-            or source["blockedGateCount"] < 1
+            or source["blockedGateCount"] != len(EXPECTED_GATES)
             or type(source.get("gateReadiness")) is not list
             or len(source["gateReadiness"]) != source["blockedGateCount"]):
         raise BoundaryInputError("PP_BOUNDARY_INVALID")
-    for gate in source["gateReadiness"]:
-        if (type(gate) is not dict or gate.get("gate") != "BLOCKED"
-                or gate.get("readiness") != "NOT_READY"):
+    for gate, (name, description, check_orders, next_action) in zip(
+        source["gateReadiness"], EXPECTED_GATES
+    ):
+        if (type(gate) is not dict
+                or set(gate) != {
+                    "requirementId", "description", "missingChecks",
+                    "missingCount", "nextManualAction", "gate", "readiness",
+                }
+                or gate["requirementId"] != name
+                or gate["description"] != description
+                or gate["nextManualAction"] != next_action
+                or gate["gate"] != "BLOCKED"
+                or gate["readiness"] != "NOT_READY"
+                or type(gate["missingCount"]) is not int
+                or gate["missingCount"] != len(check_orders)
+                or type(gate["missingChecks"]) is not list
+                or len(gate["missingChecks"]) != len(check_orders)):
             raise BoundaryInputError("PP_BOUNDARY_INVALID")
+        for check, order in zip(gate["missingChecks"], check_orders):
+            if (type(check) is not dict
+                    or set(check) != {
+                        "checkOrder", "checkId", "status", "verification",
+                    }
+                    or type(check["checkOrder"]) is not int
+                    or check["checkOrder"] != order
+                    or check["checkId"] != EXPECTED_CHECK_IDS[order - 1]
+                    or check["status"] != "NOT_STARTED"
+                    or check["verification"] != "NOT_VERIFIED"):
+                raise BoundaryInputError("PP_BOUNDARY_INVALID")
     return {
         "schema": SCHEMA,
         "reference": "PP-RECOVERY-002",
