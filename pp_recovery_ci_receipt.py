@@ -7,7 +7,6 @@ identity or grants permission. Create-only export prevents overwrite.
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
 import os
 import re
@@ -71,7 +70,7 @@ def encode_receipt(receipt: dict) -> bytes:
 
 def write_receipt(target: Path, payload: bytes) -> None:
     """Create only, never overwrite a prior or symlinked receipt."""
-    if (type(target) is not Path or type(payload) is not bytes
+    if (not isinstance(target, Path) or type(payload) is not bytes
             or len(payload) > 8192):
         raise ValueError("PP_CI_RECEIPT_INVALID")
     with target.open("xb") as stream:
