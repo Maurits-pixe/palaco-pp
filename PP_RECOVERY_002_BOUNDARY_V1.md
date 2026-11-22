@@ -279,3 +279,29 @@ python pp_recovery_strict_ci_runner.py
 
 **Status:** code and regression tests committed; GitHub CI PASS
 not yet independently established. HOLD / DENY / NOT_AUTHORIZED.
+
+
+## Logical self-consistency of evidence (draft v12, 22 November 2026)
+
+The evidence-manifest verifier now rejects impossible comparison claims
+for entries with **identical raw snapshot digests**. In that case, a
+reported mismatch in source digest, blocked-gate count or comparison
+is contradictory, regardless of whether the unsigned hash chain has
+been recalculated. Two regression methods explicitly recompute the
+record hash after modifying the flags and require rejection.
+
+This is a narrow consistency safeguard, not proof of identity, origin,
+independent signatures, freshness or chain-of-custody. Nonidentical
+snapshot digests still cannot establish trusted equality or inequality
+of underlying subject identity without source documents.
+
+Manual command:
+```powershell
+python -m unittest -v test_review_044_evidence_manifest
+python pp_recovery_strict_ci_runner.py
+```
+
+Testing remains **NOT VERIFIED**: the local container still cannot
+resolve github.com for a clone, and no successful CI status was
+observed for this round. No release, merge, key promotion or P.P.
+registration changes. HOLD / DENY / NOT_AUTHORIZED.
