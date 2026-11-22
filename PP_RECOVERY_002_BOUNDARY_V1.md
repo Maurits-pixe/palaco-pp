@@ -476,3 +476,33 @@ python pp_recovery_strict_ci_runner.py
 **Evidence limitation:** A code commit is not evidence that CI ran.
 No successful CI outcome has been established by this update.
 Production and authorization remain **HOLD / DENY / NOT_AUTHORIZED**.
+
+
+## Synthetic end-to-end recovery-chain regression (draft v19, 22 November 2026)
+
+`test_review_044_recovery_chain_e2e.py` now links the release
+boundary, reconciled snapshots, evidence manifest, candidate-key
+Ed25519 binding, and domain-separated revocation observation in one
+**synthetic-only** unittest suite. Six test methods cover the
+all-gates-blocked path, false reviewer authority, manifest tampering,
+cross-protocol signature replay, unrelated signing keys, and the
+inability of self-signed evidence to establish issuer authority.
+
+All keys are ephemeral and generated only inside the tests. The
+suite is registered with `pp_recovery_strict_ci_runner.py`, which
+fails on skipped tests and exceptions. Neither the suite nor
+the recovery code enrolls identities, changes P.P. numbers, connects
+to a telecom provider or writes to a production database.
+
+Run in a Python environment with `cryptography` available:
+
+```powershell
+python -m unittest -v test_review_044_recovery_chain_e2e
+python pp_recovery_strict_ci_runner.py
+```
+
+**Important:** an end-to-end synthetic test is not live end-to-end
+identity verification. Independent source authenticity, trust anchors,
+human authority, freshness and replay storage remain unresolved.
+Committing tests is not proof of their execution; inspect GitHub
+Actions before claiming PASS. **HOLD / DENY / NOT_AUTHORIZED.**
