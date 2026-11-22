@@ -57,11 +57,20 @@ def build_evidence_manifest(pairs: tuple[tuple[bytes, bytes], ...]) -> dict:
                 or comparison.get("accessDecision") != "DENY"
                 or comparison.get("issuance") != "NOT_AUTHORIZED"):
             raise BoundaryInputError("PP_MANIFEST_INVALID")
-        # Hashes refer to raw snapshots, not authenticated people or events.
+        # Reject semantically identical pairs even when JSON whitespace or
+        # object key order differs. Raw byte digests remain in the manifest
+        # for exact-input traceability. Neither digest authenticates a source.
         pair_key = tuple(sorted(comparison[key] for key in DIGEST_KEYS))
-        if pair_key in seen:
+        try:
+            semantic_pair_key = tuple(sorted(
+                hashlib.sha256(_canonical(_parse_json(raw))).hexdigest()
+                for raw in (first, second)
+            ))
+        except (BoundaryInputError, TypeError, ValueError) as exc:
+            raise BoundaryInputError("PP_MANIFEST_INVALID") from exc
+        if semantic_pair_key in seen:
             raise BoundaryInputError("PP_MANIFEST_DUPLICATE")
-        seen.add(pair_key)
+        seen.add(semantic_pair_key)
         record = {
             "index": index,
             "firstSnapshotSha256": pair_key[0],
