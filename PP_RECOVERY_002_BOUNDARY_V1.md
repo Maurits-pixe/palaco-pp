@@ -251,3 +251,31 @@ python pp_recovery_strict_ci_runner.py
 ```
 
 Release status: **HOLD / DENY / NOT_AUTHORIZED**. No merge.
+
+
+## Semantic duplicate-evidence hardening (draft v11, 22 November 2026)
+
+Previously the manifest builder deduplicated pairs using SHA-256 of
+the **raw serialized** snapshot bytes. Two identical snapshot objects
+with different JSON whitespace or object-key ordering could bypass
+the duplicate check. The builder now computes an internal pair key
+from each strictly parsed, canonicalized JSON object. It recognizes
+identical content regardless of formatting and pair order, while
+retaining raw snapshot SHA-256 values in output for exact-byte
+traceability. Two additional synthetic regression methods cover
+these cases.
+
+`validate_evidence_manifest` cannot independently reconstruct
+semantic deduplication from only raw snapshot hashes. Therefore
+**validation of a standalone unsigned manifest does not establish
+that its underlying source documents are unique**. External evidence
+availability and trusted auditing are still required.
+
+Manual regression command:
+```powershell
+python -m unittest -v test_review_044_evidence_manifest
+python pp_recovery_strict_ci_runner.py
+```
+
+**Status:** code and regression tests committed; GitHub CI PASS
+not yet independently established. HOLD / DENY / NOT_AUTHORIZED.
