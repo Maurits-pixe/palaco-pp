@@ -540,3 +540,38 @@ python pp_recovery_strict_ci_runner.py
 Code committed on a non-production draft branch. An external CI
 PASS has not been verified and no authorization, registration,
 merge or deployment occurs. **HOLD / DENY / NOT_AUTHORIZED.**
+
+
+## Machine-readable, non-authorizing CI receipt (draft v21, 22 November 2026)
+
+`pp_recovery_ci_receipt.py` accepts explicit GitHub Actions outcomes
+for four synthetic steps: source syntax, runner/inventory policy,
+security regressions and blocked authorization boundary. It exports
+a bounded, create-only JSON receipt with the commit SHA, run ID,
+Python version, and step outcomes (success/failure/cancelled/skipped/
+unknown). A receipt says `ALL_RECORDED_STEPS_SUCCESS` **only** if
+all four are explicitly `success`; every other combination says
+`INCOMPLETE_OR_FAILED`. Neither state implies verified provenance,
+human authorization, identity recovery, or deployment.
+
+Six regression methods in `test_pp_recovery_ci_receipt.py` cover
+failure/skip/cancelled/unknown states, malformed metadata, missing
+steps, write-once export and denial invariants.
+
+The GitHub Actions matrix now writes one unsigned JSON artifact per
+Python version using `if: always()`, with 7-day retention.
+Artifacts are **not** signed attestations. A failed checkout or a
+failed receipt writer can leave no artifact; the workflow result
+and logs still need external inspection. The workflow currently
+does not independently assert a successful run or establish a
+trusted CI identity.
+
+Manual checks:
+```powershell
+python -m unittest -v test_pp_recovery_ci_receipt
+python pp_recovery_strict_ci_runner.py
+```
+
+No successful GitHub Actions run has been independently observed by
+this documentation change. Production and authorization remain
+**HOLD / DENY / NOT_AUTHORIZED**.
