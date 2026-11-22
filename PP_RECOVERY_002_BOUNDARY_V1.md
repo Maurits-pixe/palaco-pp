@@ -506,3 +506,37 @@ identity verification. Independent source authenticity, trust anchors,
 human authority, freshness and replay storage remain unresolved.
 Committing tests is not proof of their execution; inspect GitHub
 Actions before claiming PASS. **HOLD / DENY / NOT_AUTHORIZED.**
+
+
+## Scoped CI inventory fail-closed guard (draft v20, 22 November 2026)
+
+The newly added `pp_recovery_ci_inventory.py` checks the exact
+**explicitly scoped** PALACO-PP recovery security surface before
+the strict test runner starts. It requires nine critical source
+modules, their nine matching regression suites, and the two
+integration suites (contract parity and synthetic end-to-end).
+Missing/duplicate/extra suite registrations, missing files or a
+test file without test methods block the run, while preserving
+HOLD/DENY. It parses test files without importing or executing them.
+
+`test_pp_recovery_ci_inventory.py` adds six synthetic policy checks.
+The GitHub Actions workflow checks syntax and executes these
+tests on Python 3.11 and 3.12 before the strict regression
+suite. The new source/test files are included in workflow path
+filters to ensure future changes trigger CI.
+
+**Scope limitation:** This inventory enforces the named security
+modules, not every historical repository test or an automatic
+glob over arbitrary new modules. New critical modules must be
+registered explicitly and reviewed; these checks do not prove
+independent source or reviewer authenticity.
+
+Manual commands:
+```powershell
+python -m unittest -v test_pp_recovery_ci_inventory test_pp_recovery_strict_ci_runner
+python pp_recovery_strict_ci_runner.py
+```
+
+Code committed on a non-production draft branch. An external CI
+PASS has not been verified and no authorization, registration,
+merge or deployment occurs. **HOLD / DENY / NOT_AUTHORIZED.**
