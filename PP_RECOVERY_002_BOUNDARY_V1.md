@@ -65,3 +65,31 @@ python -m unittest -v test_review_044_release_boundary_snapshot test_review_044_
 Code and tests committed to the existing draft branch; maintain
 **HOLD / DENY / NOT_AUTHORIZED** pending independently observed execution
 and authorized human review.
+
+
+## Unsigned evidence inventory / hash-chain v4 (22 November 2026)
+
+The added `review_044_evidence_manifest.py` composes up to 32
+bounded, structurally inspected pairs of comparison snapshots into a
+deterministic in-memory manifest. Each record includes a SHA-256 digest
+of its predecessor. Input duplication is rejected including reversed
+pair order. `validate_evidence_manifest` checks the hash chain,
+a strict key allowlist, required denial states, SHA-256 digest syntax
+and recorded comparisons.
+
+The hash chain does **not** make a local file tamper-proof; anyone who
+controls the file can regenerate all its digests. The result explicitly
+remains `STRUCTURALLY_CONSISTENT_UNTRUSTED`, `HOLD`, `DENY` and
+`NOT_AUTHORIZED`. It grants no issuer/reviewer authority and never
+identifies the owner.
+
+New manual synthetic-only regression command:
+
+```powershell
+python -m unittest -v test_review_044_evidence_manifest
+```
+
+**Execution status:** GitHub writes succeeded; runtime test execution
+has not been observed. Direct repository cloning from this execution
+environment failed on DNS lookup for github.com. Consequently no
+PASS claim is made. Production / merging remains HOLD.
