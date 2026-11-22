@@ -32,6 +32,36 @@ class EvidenceManifestTests(unittest.TestCase):
         with self.assertRaises(BoundaryInputError):
             build_evidence_manifest(((a, b), (b, a)))
 
+    def test_reject_semantic_duplicate_with_different_json_encoding(self):
+        # Same snapshot object, but different whitespace and property order.
+        original = snapshot()
+        changed_encoding = json.dumps(
+            json.loads(original), sort_keys=True, indent=2
+        ).encode("utf-8")
+        self.assertNotEqual(original, changed_encoding)
+        with self.assertRaisesRegex(BoundaryInputError, "PP_MANIFEST_DUPLICATE"):
+            build_evidence_manifest((
+                (original, original),
+                (changed_encoding, changed_encoding),
+            ))
+
+    def test_reject_semantic_duplicate_reversed_with_reformatting(self):
+        first = snapshot()
+        report = valid_report()
+        report["synthetic"] = "different-source"
+        second = snapshot(report)
+        reformatted_first = json.dumps(
+            json.loads(first), sort_keys=True, indent=2
+        ).encode("utf-8")
+        reformatted_second = json.dumps(
+            json.loads(second), sort_keys=True, indent=2
+        ).encode("utf-8")
+        with self.assertRaisesRegex(BoundaryInputError, "PP_MANIFEST_DUPLICATE"):
+            build_evidence_manifest((
+                (first, second),
+                (reformatted_second, reformatted_first),
+            ))
+
     def test_reject_privilege_escalation(self):
         manifest = build_evidence_manifest(((snapshot(), snapshot()),))
         manifest["authorization"] = "ALLOW"
