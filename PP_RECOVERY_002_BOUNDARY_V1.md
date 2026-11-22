@@ -612,3 +612,41 @@ python -m unittest -v test_pp_recovery_ci_receipt_pair
 No production execution, trust promotion, merge or P.P.
 issuance. No GitHub Actions PASS is claimed.
 **HOLD / DENY / NOT_AUTHORIZED**.
+
+
+## Post-matrix CI receipt verification (draft v23, 22 November 2026)
+
+`pp_recovery_ci_matrix_gate.py` now reads only the two expected
+artifact paths for Python 3.11 and Python 3.12. It verifies the pair
+using the existing strict receipt schema, requires identical
+workflow run ID and commit SHA, and additionally matches both
+against the current GitHub Actions environment. Missing, symlinked,
+oversized, stale, cross-run or incomplete receipts fail closed.
+The module is read-only and never creates trust or authorizes
+identity recovery.
+
+Six synthetic regression test methods in
+`test_pp_recovery_ci_matrix_gate.py` cover valid-but-untrusted
+pairs, missing artifacts, failed/skipped/cancelled/unknown checks,
+cross-run or cross-commit evidence, mismatching current-run context
+and oversized/symlinked files.
+
+A new independent `recovery-matrix-verification` GitHub Actions
+job runs with `if: always()` after the two-version matrix,
+downloads this run's unsigned artifacts, and executes the fail-closed
+post-matrix gate. It requires read-only repository and Actions
+permissions; it never enables release, signs a receipt or deploys.
+If the first matrix job fails or artifacts are missing, this
+verification job is still scheduled and should fail rather than
+creating a false PASS.
+
+Manual synthetic verification:
+```powershell
+python -m unittest -v test_pp_recovery_ci_matrix_gate
+```
+
+The receipt artifacts and the comparison result remain **unsigned**
+and are not independent provenance attestations. A successful
+GitHub Actions job also does not establish owner/reviewer authority,
+trusted identity binding or telecom permissions. No CI PASS has
+been verified in this turn. **HOLD / DENY / NOT_AUTHORIZED**.
