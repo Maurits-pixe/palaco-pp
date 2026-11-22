@@ -366,3 +366,29 @@ GitHub changes are committed to the **draft** branch. Test
 execution has not been independently verified. No merge,
 number issuance, trusted key enrollment, identity recovery or
 production deployment.
+
+
+## Explicit trust-prerequisite denial (draft v15, 22 November 2026)
+
+The release boundary previously checked top-level HOLD/DENY and
+blocked gate states, but did not validate the *canonical* readiness
+producer's additional trust fields. A conflicting report could
+therefore claim `sourceAuthenticity: VERIFIED` or
+`reviewerAuthority: ESTABLISHED` while retaining HOLD/DENY.
+
+The boundary now requires:
+- `manualDecision: REQUIRED_OUTSIDE_THIS_MODULE`
+- `sourceAuthenticity: NOT_ESTABLISHED`
+- `subjectBinding: NOT_ESTABLISHED`
+- `reviewerAuthority: NOT_ESTABLISHED`
+- a nonempty bounded list of unique string `globalBlockers`
+
+These fields are already emitted by the existing
+`review_044_release_readiness.py` producer. The synthetic fixture
+has been updated and three regression methods added for trust
+promotion, missing requirements and malformed blockers.
+
+No source identity is authenticated by this check. No authority,
+P.P. issuance, account binding, merge or deployment occurs.
+Tests have not been independently executed in this round.
+**HOLD / DENY / NOT_AUTHORIZED**.
