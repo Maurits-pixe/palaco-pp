@@ -23,8 +23,11 @@ class BoundaryInputError(ValueError):
     """An invalid, ambiguous or privilege-escalating review report."""
 
 
-def _parse_json(data: bytes) -> dict:
-    if type(data) is not bytes or not (1 <= len(data) <= MAX_INPUT_BYTES):
+def _parse_json(data: bytes, *, max_bytes: int = MAX_INPUT_BYTES) -> dict:
+    """Parse strict JSON with a caller-specific, bounded byte limit."""
+    if (type(max_bytes) is not int or not (1 <= max_bytes <= 512 * 1024)
+            or type(data) is not bytes
+            or not (1 <= len(data) <= max_bytes)):
         raise BoundaryInputError("PP_BOUNDARY_INVALID")
     try:
         def reject_duplicates(pairs):
