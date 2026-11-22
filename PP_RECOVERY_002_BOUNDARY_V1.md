@@ -93,3 +93,38 @@ python -m unittest -v test_review_044_evidence_manifest
 has not been observed. Direct repository cloning from this execution
 environment failed on DNS lookup for github.com. Consequently no
 PASS claim is made. Production / merging remains HOLD.
+
+
+## Detached Ed25519 inspection (draft v5, 22 November 2026)
+
+`review_044_detached_signature_inspection.py` performs *mathematical*
+Ed25519 verification over the exact manifest bytes with the fixed
+domain-separation prefix `PALACO-PP-RECOVERY-002-MANIFEST-ED25519-V1\\0`.
+The public key is caller-supplied and untrusted. This operation neither
+enrolls an issuer nor verifies key provenance, revocation, trusted
+timestamps, reviewer authority or replay prevention. Even a valid
+signature returns `VALID_UNTRUSTED_KEY` plus `HOLD/DENY`.
+
+The optional test dependency is the Python `cryptography` package.
+The application runtime does not import it until inspection is invoked;
+when unavailable, inspection fails closed. No signing keys are stored
+or shipped.
+
+Synthetic-only tests (not yet executed in this environment):
+
+```powershell
+python -m pip install cryptography
+python -m unittest -v test_review_044_detached_signature_inspection
+```
+
+The tests generate ephemeral test-only signing keys; no live accounts,
+production identities or P.P. registrations are touched. A genuine
+trust decision requires a separately governed trust-anchor registry,
+revocation freshness, an atomic replay ledger, independent reviewer
+authentication and an authorized human release decision. None of
+these controls are provided by the new module.
+
+**Verification status:** GitHub commits confirmed; runtime tests not
+verified. GitHub DNS resolution failed from the local execution
+container on 22 November 2026. Merge, issuance and deployment remain
+**HOLD / DENY**.
