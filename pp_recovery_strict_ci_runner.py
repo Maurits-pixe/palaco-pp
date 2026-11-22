@@ -9,6 +9,7 @@ import sys
 import unittest
 
 SUITES = (
+    "test_review_044_contract_parity",
     "test_review_044_release_boundary_snapshot",
     "test_review_044_release_boundary_snapshot_cli",
     "test_review_044_boundary_reconciliation",
