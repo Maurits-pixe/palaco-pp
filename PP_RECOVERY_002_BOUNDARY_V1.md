@@ -447,3 +447,32 @@ python pp_recovery_strict_ci_runner.py
 
 No successful CI execution was verified in this turn.
 Release, merge and authorization remain **HOLD / DENY**.
+
+
+## Static producer/boundary contract parity (draft v18, 22 November 2026)
+
+The fail-closed boundary deliberately mirrors four independent producer
+declarations. New `test_review_044_contract_parity.py` now extracts
+the static declarations using the Python AST **without executing**
+the original recovery stack or importing real account/database
+integrations. It compares the exact sequence of:
+- original `REQUIREMENTS` names and descriptions;
+- `GATE_PREREQUISITES` and corresponding `_NEXT_ACTIONS`;
+- the six `CHECKS` identifiers;
+- the six `GLOBAL_BLOCKERS` codes.
+
+Seven synthetic unit methods exercise current source parity, renamed
+gates/checks/blockers/actions, dynamic expression refusal and ambiguous
+declaration rejection. The test is part of the strict CI suite:
+changes to either producer or boundary declarations cannot silently
+drift through a successful test run.
+
+Run manually in the repository:
+```powershell
+python -m unittest -v test_review_044_contract_parity
+python pp_recovery_strict_ci_runner.py
+```
+
+**Evidence limitation:** A code commit is not evidence that CI ran.
+No successful CI outcome has been established by this update.
+Production and authorization remain **HOLD / DENY / NOT_AUTHORIZED**.
