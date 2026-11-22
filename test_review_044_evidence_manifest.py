@@ -74,6 +74,40 @@ class EvidenceManifestTests(unittest.TestCase):
         with self.assertRaises(BoundaryInputError):
             validate_evidence_manifest(encode(manifest))
 
+    def test_reject_impossible_mismatch_after_hash_chain_recalculation(self):
+        # A malicious editor can recompute every hash in an unsigned
+        # manifest. The validator must still reject logical contradictions.
+        import hashlib
+        from review_044_evidence_manifest import _canonical
+        for flag, comparison in (
+            ("sourceDigestMatch", "MISMATCH"),
+            ("blockedGateCountMatch", "MISMATCH"),
+        ):
+            with self.subTest(flag=flag):
+                manifest = build_evidence_manifest(((snapshot(), snapshot()),))
+                record = manifest["entries"][0]
+                record[flag] = False
+                record["comparison"] = comparison
+                manifest["headRecordSha256"] = hashlib.sha256(
+                    _canonical(record)
+                ).hexdigest()
+                with self.assertRaises(BoundaryInputError):
+                    validate_evidence_manifest(encode(manifest))
+
+    def test_reject_impossible_comparison_even_with_valid_chain(self):
+        import hashlib
+        from review_044_evidence_manifest import _canonical
+        manifest = build_evidence_manifest(((snapshot(), snapshot()),))
+        record = manifest["entries"][0]
+        record["comparison"] = "MISMATCH"
+        record["sourceDigestMatch"] = False
+        record["blockedGateCountMatch"] = True
+        manifest["headRecordSha256"] = hashlib.sha256(
+            _canonical(record)
+        ).hexdigest()
+        with self.assertRaises(BoundaryInputError):
+            validate_evidence_manifest(encode(manifest))
+
     def test_reject_malformed_and_limits(self):
         s = snapshot()
         for data in ((), ((s,),), (("not bytes", s),), ((s, s),) * 33):
