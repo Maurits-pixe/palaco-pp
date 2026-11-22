@@ -177,3 +177,23 @@ PR-associated workflow-run queries returned no entries. Therefore
 execution remains **NOT VERIFIED**, not PASS. A maintainer must
 confirm GitHub Actions is enabled and inspect the actual run
 conclusions and logs before recording tests as verified.
+
+
+## Strict CI execution policy v8 (2026-11-22)
+
+The added `pp_recovery_strict_ci_runner.py` executes the five
+synthetic recovery test suites. It fails with a nonzero exit code if
+any suite is missing or empty, if no tests execute, or if any test
+fails, errors, skips, is expected to fail, or succeeds unexpectedly.
+This addresses the risk of marking Ed25519 regression coverage as
+passing when the optional cryptographic dependency is absent.
+
+`test_pp_recovery_strict_ci_runner.py` adds policy regression
+checks for argument rejection, empty suites, skipped tests and
+zero tests executed. The GitHub workflow runs these first, then
+the strict synthetic suite, both on Python 3.11 and 3.12.
+
+The CLI test runner does not deploy anything, trust keys,
+promote identities or connect PALACO ONE. GitHub commits
+do **not** constitute proof of CI execution: inspect the Actions
+conclusion and logs. Review / merge / production remain HOLD.
