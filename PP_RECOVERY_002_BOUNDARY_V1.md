@@ -417,3 +417,33 @@ python pp_recovery_strict_ci_runner.py
 Changes were committed on the draft branch only. No independent
 runtime test PASS is claimed; no merge or release occurred.
 **HOLD / DENY / NOT_AUTHORIZED**.
+
+
+## Canonical review-gate identity validation (draft v17, 22 November 2026)
+
+The release-boundary validator now rejects synthetic placeholder gates
+and validates the exact five gate identities in their original order:
+SOURCE_ATTESTATION, CROSS_SOURCE_SUBJECT, OWNER_AUTHORITY,
+RUNTIME_EXECUTION and HUMAN_REVIEW. It checks each gate's canonical
+description, manual action, required check order and six-check ID
+mapping, as well as `NOT_STARTED`, `NOT_VERIFIED`,
+`BLOCKED`, `NOT_READY` and exact integer counts.
+
+This mirrors the existing producer's `REQUIREMENTS`,
+`GATE_PREREQUISITES`, `CHECKS` and `_NEXT_ACTIONS`
+without importing production identity processing into the minimal
+boundary component. The shared synthetic fixture now represents
+five real contract-shaped gates instead of two placeholders.
+Three regression methods cover reordered/duplicated gates,
+fake completed evidence, wrong metadata and counts.
+
+The inspection remains **structural and untrusted**: it does not
+authenticate the source files, reviewer or owner.
+
+```powershell
+python -m unittest -v test_review_044_release_boundary_snapshot
+python pp_recovery_strict_ci_runner.py
+```
+
+No successful CI execution was verified in this turn.
+Release, merge and authorization remain **HOLD / DENY**.
