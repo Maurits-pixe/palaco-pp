@@ -5,7 +5,7 @@ import unittest
 from review_044_evidence_manifest import (
     build_evidence_manifest, validate_evidence_manifest,
 )
-from review_044_release_boundary_snapshot import BoundaryInputError
+from review_044_release_boundary_snapshot import BoundaryInputError, _parse_json
 from test_review_044_boundary_reconciliation import snapshot
 from test_review_044_release_boundary_snapshot import valid_report, encode
 
@@ -52,6 +52,27 @@ class EvidenceManifestTests(unittest.TestCase):
                     build_evidence_manifest(data)
         with self.assertRaises(BoundaryInputError):
             validate_evidence_manifest(b'{"x":1,"x":2}')
+
+    def test_manifest_parser_accepts_bounded_large_json(self):
+        # Exercise the parser boundary separately: the strict manifest
+        # schema may still reject this oversized JSON object later.
+        large = json.dumps({"padding": "x" * (70 * 1024)}).encode("utf-8")
+        self.assertGreater(len(large), 64 * 1024)
+        self.assertEqual(70 * 1024, len(_parse_json(
+            large, max_bytes=512 * 1024
+        )["padding"]))
+        with self.assertRaises(BoundaryInputError):
+            _parse_json(large)
+
+    def test_manifest_parser_rejects_oversize_and_duplicates(self):
+        with self.assertRaises(BoundaryInputError):
+            _parse_json(b"x" * (512 * 1024 + 1), max_bytes=512 * 1024)
+        with self.assertRaises(BoundaryInputError):
+            _parse_json(b'{"a":1,"a":2}', max_bytes=512 * 1024)
+        with self.assertRaises(BoundaryInputError):
+            _parse_json(b"{}", max_bytes=True)
+        with self.assertRaises(BoundaryInputError):
+            _parse_json(b"{}", max_bytes=512 * 1024 + 1)
 
     def test_no_private_identifiers_leak(self):
         report = valid_report()
