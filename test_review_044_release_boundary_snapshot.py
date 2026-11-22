@@ -19,6 +19,11 @@ def valid_report():
         "accessDecision": "DENY",
         "issuance": "NOT_AUTHORIZED",
         "overallReadiness": "NOT_READY",
+        "manualDecision": "REQUIRED_OUTSIDE_THIS_MODULE",
+        "sourceAuthenticity": "NOT_ESTABLISHED",
+        "subjectBinding": "NOT_ESTABLISHED",
+        "reviewerAuthority": "NOT_ESTABLISHED",
+        "globalBlockers": ["SOURCE_ATTESTATION_MISSING", "REVIEWER_AUTHORITY_MISSING"],
         "palacoOneHandoff": "BLOCKED",
         "palacoOneSession": "NOT_CREATED",
         "independentVerification": "NOT_VERIFIED",
@@ -70,6 +75,40 @@ class RecoveryBoundaryTests(unittest.TestCase):
             with self.subTest(key=key, value=value):
                 report = valid_report()
                 report[key] = value
+                with self.assertRaises(BoundaryInputError):
+                    review_boundary_snapshot(encode(report))
+
+    def test_reject_false_authenticity_and_reviewer_claims(self):
+        for key, value in (
+            ("sourceAuthenticity", "VERIFIED"),
+            ("subjectBinding", "ESTABLISHED"),
+            ("reviewerAuthority", "ESTABLISHED"),
+            ("manualDecision", "APPROVED"),
+        ):
+            with self.subTest(key=key):
+                report = valid_report()
+                report[key] = value
+                with self.assertRaises(BoundaryInputError):
+                    review_boundary_snapshot(encode(report))
+
+    def test_reject_missing_trust_prerequisites(self):
+        for key in (
+            "sourceAuthenticity", "subjectBinding", "reviewerAuthority",
+            "manualDecision", "globalBlockers",
+        ):
+            with self.subTest(key=key):
+                report = valid_report()
+                del report[key]
+                with self.assertRaises(BoundaryInputError):
+                    review_boundary_snapshot(encode(report))
+
+    def test_reject_empty_duplicate_or_fake_global_blockers(self):
+        for blockers in (
+            [], ["DUPLICATE", "DUPLICATE"], [True], "NOT_A_LIST",
+        ):
+            with self.subTest(blockers=blockers):
+                report = valid_report()
+                report["globalBlockers"] = blockers
                 with self.assertRaises(BoundaryInputError):
                     review_boundary_snapshot(encode(report))
 
