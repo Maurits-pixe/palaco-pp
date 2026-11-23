@@ -23,6 +23,14 @@ class RecoveryCiInventoryTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "MISSING_SUITE"):
             audit_security_inventory(SUITES[:-1], ROOT)
 
+    def test_missing_and_unknown_suite_fail_closed(self):
+        # An unknown suite must never compensate for a missing required one.
+        replaced = SUITES[:-1] + ("test_fake_automatic_release",)
+        with self.assertRaisesRegex(ValueError, "MISSING_SUITE"):
+            audit_security_inventory(replaced, ROOT)
+        with self.assertRaisesRegex(ValueError, "UNREGISTERED_SUITE"):
+            audit_security_inventory(SUITES + ("test_fake_automatic_release",), ROOT)
+
     def test_duplicate_suite_is_rejected(self):
         with self.assertRaisesRegex(ValueError, "DUPLICATE_SUITE"):
             audit_security_inventory(SUITES + (SUITES[0],), ROOT)
