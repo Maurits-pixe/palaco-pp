@@ -1113,3 +1113,28 @@ interpreter supply-chain trust or runtime modification after loading.
 The CI remains synthetic and no source authentication, reviewer
 authority or production access is inferred. Release boundary stays
 **HOLD / DENY / NOT_AUTHORIZED / BLOCKED**.
+
+
+## Suite source digest pinning (draft v40, 23 November 2026)
+
+Security test module identity and file-path origin are now supplemented
+by a **SHA-256 digest of the exact test module source bytes**. The
+static inventory records `testSourceSha256BySuite` for all eleven
+scoped suites. Before running the test suite, the strict runner
+requires a complete map of 64-character lowercase hex digests,
+then compares the current file's SHA-256 with its inventoried digest,
+in addition to the existing source-path and loaded-test-ID checks.
+Mismatch fails closed with `PP_CI_SUITE_ORIGIN_MISMATCH` and missing
+digest metadata with `PP_CI_SOURCE_HASHES_INVALID`.
+
+Regression coverage now checks that the inventory hashes match the
+actual source bytes, that the genuine loaded module passes the
+correct digest, that a deliberately incorrect digest fails, and
+that the strict runner refuses missing digest metadata.
+
+**Scope and limitation:** this is an in-process consistency check
+between inventory and loaded Python source on the CI runner, **not**
+a signed third-party provenance attestation, runtime memory
+integrity proof or guarantee against a hostile runner. No release
+or account authorization follows from test success.
+**HOLD / DENY / NOT_AUTHORIZED / BLOCKED**.
