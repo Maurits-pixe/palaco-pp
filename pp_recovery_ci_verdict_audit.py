@@ -21,6 +21,7 @@ MAX_VERDICT_BYTES = 8192
 def audit_verdict(
     verdict_bytes: bytes, artifact_root: Path, *,
     expected_sha: str, expected_run_id: str,
+    expected_attempt: str = "1",
 ) -> dict:
     """Reject structurally altered, stale or contradictory verdicts."""
     if type(verdict_bytes) is not bytes or not (1 <= len(verdict_bytes) <= MAX_VERDICT_BYTES):
@@ -31,6 +32,7 @@ def audit_verdict(
     expected = assess_matrix(
         artifact_root, expected_sha=expected_sha,
         expected_run_id=expected_run_id,
+        expected_attempt=expected_attempt,
     )
     if parsed != expected:
         raise BoundaryInputError("PP_CI_VERDICT_MISMATCH")
@@ -73,6 +75,7 @@ def main(argv: list[str] | None = None) -> int:
             raw, args.artifacts,
             expected_sha=os.environ.get("GITHUB_SHA", ""),
             expected_run_id=os.environ.get("GITHUB_RUN_ID", ""),
+            expected_attempt=os.environ.get("GITHUB_RUN_ATTEMPT", ""),
         )
     except (BoundaryInputError, OSError, ValueError):
         print("PP_CI_VERDICT_AUDIT_REJECTED / HOLD / DENY")
