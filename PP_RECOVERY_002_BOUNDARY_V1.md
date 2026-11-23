@@ -1084,3 +1084,32 @@ not the semantic quality of their assertions or actual provenance
 of sources. Source-independent CI verification and human review
 remain separate requirements. **HOLD / DENY / NOT_AUTHORIZED /
 BLOCKED** irrespective of a passing synthetic test matrix.
+
+
+## Security test module origin verification (draft v39, 23 November 2026)
+
+Exact method names and counts do not, on their own, prove that
+`unittest` loaded the inspected repository's test files. A module
+with the same import name can be shadowed by another directory on
+Python's module search path.
+
+Before admitting each loaded security suite, the strict runner now
+compares the actual module's `sys.modules[name].__file__` against
+the expected `ROOT / (name + ".py")` path. Both must resolve to the
+same actual file, and the file itself may not be a symlink. Missing,
+unreadable, unrelated or outside-tree origins fail closed as
+`PP_CI_SUITE_ORIGIN_MISMATCH`. This check occurs after declared
+identity verification and before test execution.
+
+Three new runner policy tests cover an unknown/missing module,
+a synthetic external module shadowing the correct name, and a
+genuine repository test file. Existing mocked skip and incomplete
+execution policies explicitly stub the origin check so those cases
+continue to exercise the intended result checks.
+
+The origin check protects the **11 explicitly scoped recovery
+security suites**, not arbitrary imports from unrelated modules,
+interpreter supply-chain trust or runtime modification after loading.
+The CI remains synthetic and no source authentication, reviewer
+authority or production access is inferred. Release boundary stays
+**HOLD / DENY / NOT_AUTHORIZED / BLOCKED**.
