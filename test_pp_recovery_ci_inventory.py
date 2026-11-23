@@ -44,6 +44,44 @@ class RecoveryCiInventoryTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "MISSING_SOURCE"):
                 audit_security_inventory(SUITES, base)
 
+    def test_malformed_critical_source_fails_before_suite_loading(self):
+        with TemporaryDirectory() as temp:
+            base = Path(temp)
+            for module in CRITICAL_MODULES:
+                (base / f"{module}.py").write_text(
+                    "DENY = 'HOLD'\n", encoding="utf-8",
+                )
+            for suite in SUITES:
+                (base / f"{suite}.py").write_text(
+                    "import unittest\nclass Tests(unittest.TestCase):\n"
+                    "    def test_guard(self):\n        pass\n",
+                    encoding="utf-8",
+                )
+            (base / f"{CRITICAL_MODULES[0]}.py").write_text(
+                "from import BROKEN\n", encoding="utf-8",
+            )
+            with self.assertRaisesRegex(ValueError, "SOURCE_SYNTAX_INVALID"):
+                audit_security_inventory(SUITES, base)
+
+    def test_malformed_security_suite_is_not_accepted(self):
+        with TemporaryDirectory() as temp:
+            base = Path(temp)
+            for module in CRITICAL_MODULES:
+                (base / f"{module}.py").write_text(
+                    "DENY = 'HOLD'\n", encoding="utf-8",
+                )
+            for suite in SUITES:
+                (base / f"{suite}.py").write_text(
+                    "import unittest\nclass Tests(unittest.TestCase):\n"
+                    "    def test_guard(self):\n        pass\n",
+                    encoding="utf-8",
+                )
+            (base / f"{SUITES[0]}.py").write_text(
+                "import unittest\\nclass Broken(\\n", encoding="utf-8",
+            )
+            with self.assertRaises(SyntaxError):
+                audit_security_inventory(SUITES, base)
+
     def test_empty_test_file_rejected(self):
         with TemporaryDirectory() as temp:
             base = Path(temp)
