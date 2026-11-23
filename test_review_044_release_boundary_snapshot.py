@@ -7,7 +7,8 @@ import json
 import unittest
 
 from review_044_release_boundary_snapshot import (
-    BoundaryInputError, EXPECTED_GLOBAL_BLOCKERS, EXPECTED_GATES,\n    EXPECTED_CHECK_IDS, review_boundary_snapshot,
+    BoundaryInputError, EXPECTED_GLOBAL_BLOCKERS, EXPECTED_GATES,
+    EXPECTED_CHECK_IDS, review_boundary_snapshot,
 )
 
 
