@@ -724,3 +724,34 @@ These fingerprints do not verify that GitHub produced the
 artifacts or that the workflow conclusion was independently
 confirmed. No live CI PASS was confirmed in this turn.
 Authorization remains **HOLD / DENY / NOT_AUTHORIZED**.
+
+
+## Exact-byte, independent re-evaluation of CI verdict (draft v27, 23 November 2026)
+
+`pp_recovery_ci_verdict_audit.py` independently recomputes the expected
+post-matrix observation from the two unsigned CI receipts and the
+current commit SHA/workflow run ID. It parses the create-only verdict
+using strict JSON with duplicate-key rejection, requires its entire
+object to equal the recomputed result, and additionally requires
+byte-for-byte canonical JSON serialization (bounded to 8192 bytes).
+
+Six synthetic regressions in `test_pp_recovery_ci_verdict_audit.py`
+cover: matching-but-untrusted success; consistent failure without
+release; forged success on missing artifacts; tampered digest or
+authority; stale verdict after receipt-byte modification; duplicate-key,
+noncanonical and oversized JSON refusal.
+
+GitHub Actions now runs the verdict audit after creating the verdict
+and before uploading its artifact. The audit step is `always()`,
+so a failed verdict write cannot be silently treated as an audit PASS.
+Neither an audit match nor a successful synthetic test represents
+independent GitHub provenance or a production release decision.
+
+Manual command:
+```powershell
+python -m unittest -v test_pp_recovery_ci_verdict_audit
+```
+
+No merge, deployment, P.P. issuance or trust promotion occurs.
+No successful CI execution has been independently confirmed here.
+**HOLD / DENY / NOT_AUTHORIZED**.
