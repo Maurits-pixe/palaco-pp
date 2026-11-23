@@ -835,3 +835,28 @@ review. Such gaps must not be described as verified. The strict
 test suite includes the parity tests on the draft branch, but no
 independent GitHub Actions PASS is confirmed here.
 **HOLD / DENY / NOT_AUTHORIZED**.
+
+
+## Reflective symbol access fails closed (draft v31, 23 November 2026)
+
+The static parity guard for five security contract constants now
+rejects dynamic builtins that could access or mutate contract names
+indirectly: `globals()`, `locals()`, `vars()`, `eval()`,
+`exec()`, `compile()`, `setattr()`, `delattr()` and
+`__import__()`. Both top-level and nested occurrences are rejected
+when examining a producer module, rather than being executed. An
+unrelated conventional call such as `tuple(REQUIREMENTS)` remains
+permitted. The declaration-node set is precomputed once for a
+clearer bounded AST scan.
+
+Three additional tests exercise reflective lookups, nested
+reflection and non-reflective reads. This is a **conservative source
+audit**: dynamically aliased builtins, indirect imported helpers,
+monkeypatching from another module and other unexamined runtime
+paths remain outside its proof boundary. No unsupported guarantee
+of comprehensive security is made.
+
+The changes exist only on the draft recovery branch. GitHub
+Actions execution and PASS have not been independently verified.
+No production access, identity binding, merge or issuance:
+**HOLD / DENY / NOT_AUTHORIZED / BLOCKED**.
