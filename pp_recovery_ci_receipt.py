@@ -17,6 +17,7 @@ STEPS = ("syntax", "policy", "regressions", "boundary")
 OUTCOMES = frozenset({"success", "failure", "cancelled", "skipped", "unknown"})
 COMMIT_SHA = re.compile(r"[0-9a-f]{40}\Z", re.ASCII)
 RUN_ID = re.compile(r"[0-9]{1,20}\Z", re.ASCII)
+RUN_ATTEMPT = re.compile(r"[1-9][0-9]{0,9}\Z", re.ASCII)
 VERSIONS = frozenset({"3.11", "3.12"})
 
 
@@ -24,6 +25,7 @@ def build_receipt(
     outcomes: dict[str, str], *,
     commit_sha: str = "NOT_AVAILABLE",
     run_id: str = "NOT_AVAILABLE",
+    run_attempt: str = "NOT_AVAILABLE",
     python_version: str = "NOT_AVAILABLE",
 ) -> dict:
     """Accept only explicit step outcomes; never infer an unobserved PASS."""
@@ -36,6 +38,9 @@ def build_receipt(
             or type(run_id) is not str
             or (run_id != "NOT_AVAILABLE"
                 and RUN_ID.fullmatch(run_id) is None)
+            or type(run_attempt) is not str
+            or (run_attempt != "NOT_AVAILABLE"
+                and RUN_ATTEMPT.fullmatch(run_attempt) is None)
             or type(python_version) is not str
             or (python_version != "NOT_AVAILABLE"
                 and python_version not in VERSIONS)):
@@ -46,6 +51,7 @@ def build_receipt(
         "reference": "PP-RECOVERY-002",
         "commitSha": commit_sha,
         "workflowRunId": run_id,
+        "workflowRunAttempt": run_attempt,
         "pythonVersion": python_version,
         "steps": {name: outcomes[name] for name in STEPS},
         "syntheticExecution": (
@@ -88,6 +94,7 @@ def main(argv: list[str] | None = None) -> int:
             {name: getattr(args, name) for name in STEPS},
             commit_sha=os.environ.get("GITHUB_SHA", "NOT_AVAILABLE"),
             run_id=os.environ.get("GITHUB_RUN_ID", "NOT_AVAILABLE"),
+            run_attempt=os.environ.get("GITHUB_RUN_ATTEMPT", "NOT_AVAILABLE"),
             python_version=os.environ.get("PP_PYTHON_VERSION", "NOT_AVAILABLE"),
         )
         write_receipt(Path(args.output), encode_receipt(receipt))
