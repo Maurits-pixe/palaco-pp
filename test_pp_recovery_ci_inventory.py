@@ -30,6 +30,13 @@ class RecoveryCiInventoryTests(unittest.TestCase):
         for name in SUITES:
             expected = hashlib.sha256((ROOT / f"{name}.py").read_bytes()).hexdigest()
             self.assertEqual(expected, digests[name])
+        critical = result["criticalSourceSha256ByModule"]
+        self.assertEqual(set(CRITICAL_MODULES), set(critical))
+        for name in CRITICAL_MODULES:
+            self.assertEqual(
+                hashlib.sha256((ROOT / f"{name}.py").read_bytes()).hexdigest(),
+                critical[name],
+            )
         self.assertEqual("HOLD", result["authorization"])
         self.assertEqual("DENY", result["accessDecision"])
         self.assertEqual("BLOCKED", result["deployment"])
