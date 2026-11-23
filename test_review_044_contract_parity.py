@@ -26,7 +26,8 @@ def static_assignment(source: str, variable: str):
     """Extract one static literal declaration; reject writes and direct aliases.
 
     This is deliberately conservative: rebinding in any scope, aliases,
-    subscript writes and named mutator calls are rejected. No code executes.
+    subscript writes, named mutators and reflective builtins are refused.
+    No code executes.
     """
     tree = ast.parse(source)
     matches = [
@@ -45,9 +46,20 @@ def static_assignment(source: str, variable: str):
     }
     # Inspect every scope, not just module-level expressions. A function
     # may later be invoked by the producer, so nested writes also matter.
+    declaration_nodes = set(ast.walk(declaration))
+    reflective_calls = {
+        "globals", "locals", "vars", "eval", "exec", "compile",
+        "setattr", "delattr", "__import__",
+    }
     for node in ast.walk(tree):
-        if node is declaration or node in ast.walk(declaration):
+        if node in declaration_nodes:
             continue
+        # Reject dynamic symbol access that can bypass direct-name checks.
+        # A static source audit must fail closed rather than guess its target.
+        if (isinstance(node, ast.Call)
+                and isinstance(node.func, ast.Name)
+                and node.func.id in reflective_calls):
+            raise ValueError("PP_CONTRACT_REFLECTION_UNREVIEWED")
         if (isinstance(node, ast.Name) and node.id == variable
                 and isinstance(node.ctx, (ast.Store, ast.Del))):
             raise ValueError("PP_CONTRACT_MUTATED")
