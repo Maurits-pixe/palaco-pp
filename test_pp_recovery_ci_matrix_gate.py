@@ -5,7 +5,7 @@ import unittest
 
 from pp_recovery_ci_receipt import STEPS, build_receipt, encode_receipt
 from pp_recovery_ci_matrix_gate import (
-    EXPECTED_FILES, verify_matrix_artifacts,
+    EXPECTED_FILES, expected_files_for_attempt, verify_matrix_artifacts,
 )
 from review_044_release_boundary_snapshot import BoundaryInputError
 
@@ -17,7 +17,7 @@ def write_pair(root: Path, *, second_outcome: str = "success",
                second_run: str = RUN, second_sha: str = SHA,
                second_attempt: str = "1",
                attempt: str = "1") -> None:
-    for version, path in zip(("3.11", "3.12"), EXPECTED_FILES):
+    for version, path in zip(("3.11", "3.12"), expected_files_for_attempt(attempt)):
         target = root / path
         target.parent.mkdir(parents=True, exist_ok=True)
         receipt = build_receipt(
