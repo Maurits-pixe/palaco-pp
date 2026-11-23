@@ -12,7 +12,7 @@ import os
 from pathlib import Path
 
 from pp_recovery_ci_matrix_gate import verify_matrix_artifacts
-from pp_recovery_ci_receipt import COMMIT_SHA, RUN_ID, write_receipt
+from pp_recovery_ci_receipt import COMMIT_SHA, RUN_ID, RUN_ATTEMPT, write_receipt
 from review_044_release_boundary_snapshot import BoundaryInputError
 
 SCHEMA = "palaco.pp.recovery-002-ci-matrix-verdict.v1"
@@ -24,13 +24,16 @@ REASONS = frozenset({
 
 def assess_matrix(
     folder: Path, *, expected_sha: str, expected_run_id: str,
+    expected_attempt: str = "1",
 ) -> dict:
     """Return a bounded refusal or successful *synthetic* observation."""
     fingerprints = {}
     if (type(expected_sha) is not str
             or COMMIT_SHA.fullmatch(expected_sha) is None
             or type(expected_run_id) is not str
-            or RUN_ID.fullmatch(expected_run_id) is None):
+            or RUN_ID.fullmatch(expected_run_id) is None
+            or type(expected_attempt) is not str
+            or RUN_ATTEMPT.fullmatch(expected_attempt) is None):
         status = "INCOMPLETE_OR_FAILED"
         reason = "INVALID_WORKFLOW_CONTEXT"
     else:
@@ -38,6 +41,7 @@ def assess_matrix(
             observed = verify_matrix_artifacts(
                 folder, expected_sha=expected_sha,
                 expected_run_id=expected_run_id,
+                expected_attempt=expected_attempt,
             )
         except (BoundaryInputError, OSError, ValueError):
             status = "INCOMPLETE_OR_FAILED"
@@ -58,6 +62,10 @@ def assess_matrix(
         "workflowRunId": (
             expected_run_id if type(expected_run_id) is str
             and RUN_ID.fullmatch(expected_run_id) else "NOT_AVAILABLE"
+        ),
+        "workflowRunAttempt": (
+            expected_attempt if type(expected_attempt) is str
+            and RUN_ATTEMPT.fullmatch(expected_attempt) else "NOT_AVAILABLE"
         ),
         "syntheticMatrixObservation": status,
         "reason": reason,
@@ -81,6 +89,7 @@ def main(argv: list[str] | None = None) -> int:
         args.artifacts,
         expected_sha=os.environ.get("GITHUB_SHA", ""),
         expected_run_id=os.environ.get("GITHUB_RUN_ID", ""),
+        expected_attempt=os.environ.get("GITHUB_RUN_ATTEMPT", ""),
     )
     try:
         payload = (json.dumps(
