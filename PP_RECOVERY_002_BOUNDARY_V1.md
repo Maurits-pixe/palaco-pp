@@ -785,3 +785,28 @@ This is **attempt-consistency** checking of unsigned observations,
 not cryptographic proof of GitHub provenance or human authority.
 No independent CI PASS is claimed and nothing is merged, deployed
 or issued. **HOLD / DENY / NOT_AUTHORIZED**.
+
+
+## Contract parity protection against top-level mutation (draft v29, 23 November 2026)
+
+The source-only recovery contract parity audit now rejects additional
+top-level writes to contract constants even when they use Python
+annotated assignments, augmented assignments, nested control-flow
+assignments, deletion, direct subscript mutation or common in-place
+dictionary/list mutator calls. Previously it extracted the first
+literal assignment and could miss a later top-level mutation.
+The check still uses the Python AST and `ast.literal_eval`; it does
+not execute producer modules.
+
+Three new synthetic test methods exercise rebinding/mutation bypasses
+and ensure unrelated declarations do not trigger false positives.
+This is deliberately conservative **top-level static analysis**, not a
+complete whole-program noninterference proof. Mutations that happen
+indirectly inside invoked functions or through reflective aliases
+require separate code review and tests.
+
+The existing strict CI suite includes
+`test_review_044_contract_parity`; no merge, production operation
+or identity authorization follows from parity alone. GitHub Actions
+PASS has not been independently confirmed.
+**HOLD / DENY / NOT_AUTHORIZED**.
