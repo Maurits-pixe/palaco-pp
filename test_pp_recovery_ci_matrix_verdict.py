@@ -63,7 +63,7 @@ class MatrixVerdictTests(unittest.TestCase):
             folder = Path(tmp)
             write_pair(folder)
             first = assess_matrix(folder, expected_sha=SHA, expected_run_id=RUN)
-            target = folder / "pp-recovery-receipt-py3.12" / "pp-recovery-ci-receipt.json"
+            target = folder / "pp-recovery-receipt-attempt1-py3.12" / "pp-recovery-ci-receipt.json"
             # Whitespace is valid JSON but changes the exact bytes observed.
             target.write_bytes(target.read_bytes() + b" ")
             second = assess_matrix(folder, expected_sha=SHA, expected_run_id=RUN)
