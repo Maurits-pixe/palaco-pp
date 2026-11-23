@@ -8,7 +8,9 @@ from types import ModuleType
 from unittest.mock import patch
 import unittest
 
-from pp_recovery_strict_ci_runner import SUITES, loaded_test_ids, run, verify_suite_origin
+from pp_recovery_strict_ci_runner import (SUITES, loaded_test_ids, run,
+    verify_suite_origin, verify_critical_source_integrity)
+from pp_recovery_ci_inventory import CRITICAL_MODULES, ROOT
 
 
 class StrictRunnerPolicyTests(unittest.TestCase):
@@ -33,6 +35,9 @@ class StrictRunnerPolicyTests(unittest.TestCase):
             "declaredTestMethodsBySuite": {name: 1 for name in SUITES},
             "declaredTestIdsBySuite": {name: ["SYNTHETIC_ID"] for name in SUITES},
             "testSourceSha256BySuite": {name: "a" * 64 for name in SUITES},
+            "criticalSourceSha256ByModule": {name: hashlib.sha256(
+                (ROOT / f"{name}.py").read_bytes()).hexdigest()
+                for name in CRITICAL_MODULES},
         }
         with patch("pp_recovery_strict_ci_runner.audit_security_inventory",
                    return_value=inventory):
@@ -50,6 +55,9 @@ class StrictRunnerPolicyTests(unittest.TestCase):
             "declaredTestMethodsBySuite": {name: 2 for name in SUITES},
             "declaredTestIdsBySuite": {name: ["SYNTHETIC_ID_1", "SYNTHETIC_ID_2"] for name in SUITES},
             "testSourceSha256BySuite": {name: "a" * 64 for name in SUITES},
+            "criticalSourceSha256ByModule": {name: hashlib.sha256(
+                (ROOT / f"{name}.py").read_bytes()).hexdigest()
+                for name in CRITICAL_MODULES},
         }
         one = unittest.TestSuite([unittest.FunctionTestCase(lambda: None)])
         with patch("pp_recovery_strict_ci_runner.audit_security_inventory",
@@ -77,6 +85,9 @@ class StrictRunnerPolicyTests(unittest.TestCase):
             "declaredTestMethodsBySuite": {name: 1 for name in SUITES},
             "declaredTestIdsBySuite": {name: ["SYNTHETIC_ID"] for name in SUITES},
             "testSourceSha256BySuite": {name: "a" * 64 for name in SUITES},
+            "criticalSourceSha256ByModule": {name: hashlib.sha256(
+                (ROOT / f"{name}.py").read_bytes()).hexdigest()
+                for name in CRITICAL_MODULES},
         }
         result = unittest.TestResult()
         result.testsRun = 1
@@ -97,6 +108,9 @@ class StrictRunnerPolicyTests(unittest.TestCase):
             "declaredTestMethodsBySuite": {name: 1 for name in SUITES},
             "declaredTestIdsBySuite": {name: ["EXPECTED_TEST"] for name in SUITES},
             "testSourceSha256BySuite": {name: "a" * 64 for name in SUITES},
+            "criticalSourceSha256ByModule": {name: hashlib.sha256(
+                (ROOT / f"{name}.py").read_bytes()).hexdigest()
+                for name in CRITICAL_MODULES},
         }
         with patch("pp_recovery_strict_ci_runner.audit_security_inventory",
                    return_value=inventory):
@@ -165,6 +179,44 @@ class StrictRunnerPolicyTests(unittest.TestCase):
                 self.assertEqual(1, run())
             self.assertIn("SOURCE_HASHES_INVALID", log.getvalue())
 
+    def test_critical_module_digest_verification(self):
+        expected = {
+            name: hashlib.sha256((ROOT / f"{name}.py").read_bytes()).hexdigest()
+            for name in CRITICAL_MODULES
+        }
+        self.assertTrue(verify_critical_source_integrity(expected))
+        changed = dict(expected)
+        changed[CRITICAL_MODULES[0]] = "0" * 64
+        self.assertFalse(verify_critical_source_integrity(changed))
+        self.assertFalse(verify_critical_source_integrity({}))
+
+    def test_critical_module_tampering_after_inventory_rejected(self):
+        with TemporaryDirectory() as temp:
+            root = Path(temp)
+            expected = {}
+            for name in CRITICAL_MODULES:
+                content = b"AUTHORIZATION = 'HOLD'\n"
+                (root / f"{name}.py").write_bytes(content)
+                expected[name] = hashlib.sha256(content).hexdigest()
+            self.assertTrue(verify_critical_source_integrity(expected, root))
+            (root / f"{CRITICAL_MODULES[0]}.py").write_bytes(
+                b"AUTHORIZATION = 'ALLOW'\n"
+            )
+            self.assertFalse(verify_critical_source_integrity(expected, root))
+
+    def test_missing_critical_source_hash_inventory_rejected(self):
+        inventory = {
+            "authorization": "HOLD", "accessDecision": "DENY",
+            "declaredTestMethodsBySuite": {name: 1 for name in SUITES},
+            "declaredTestIdsBySuite": {name: ["SYNTHETIC_ID"] for name in SUITES},
+            "testSourceSha256BySuite": {name: "a" * 64 for name in SUITES},
+        }
+        with patch("pp_recovery_strict_ci_runner.audit_security_inventory",
+                   return_value=inventory):
+            with redirect_stdout(StringIO()) as log:
+                self.assertEqual(1, run())
+            self.assertIn("CRITICAL_SOURCE_INTEGRITY_FAILED", log.getvalue())
+
     @patch("pp_recovery_strict_ci_runner.verify_suite_origin", return_value=True)
     def test_no_false_pass_on_zero_executed(self, _origin):
         result = unittest.TestResult()
@@ -173,6 +225,9 @@ class StrictRunnerPolicyTests(unittest.TestCase):
             "declaredTestMethodsBySuite": {name: 1 for name in SUITES},
             "declaredTestIdsBySuite": {name: ["SYNTHETIC_ID"] for name in SUITES},
             "testSourceSha256BySuite": {name: "a" * 64 for name in SUITES},
+            "criticalSourceSha256ByModule": {name: hashlib.sha256(
+                (ROOT / f"{name}.py").read_bytes()).hexdigest()
+                for name in CRITICAL_MODULES},
         }
         with patch("pp_recovery_strict_ci_runner.audit_security_inventory",
                    return_value=inventory):
