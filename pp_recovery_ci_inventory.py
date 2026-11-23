@@ -42,8 +42,18 @@ def audit_security_inventory(
     if frozenset(runner_suites) != required:
         raise ValueError("PP_CI_UNREGISTERED_OR_MISSING_SUITE")
     for module in CRITICAL_MODULES:
-        if not (base / f"{module}.py").is_file():
+        source_path = base / f"{module}.py"
+        if not source_path.is_file():
             raise ValueError("PP_CI_MISSING_SOURCE")
+        # A present file is not a valid testable module unless it parses.
+        # Parse only; never import, evaluate or execute recovery sources.
+        try:
+            ast.parse(
+                source_path.read_text(encoding="utf-8"),
+                filename=str(source_path),
+            )
+        except (SyntaxError, UnicodeError) as exc:
+            raise ValueError("PP_CI_SOURCE_SYNTAX_INVALID") from exc
     for name in runner_suites:
         path = base / f"{name}.py"
         if not path.is_file():
