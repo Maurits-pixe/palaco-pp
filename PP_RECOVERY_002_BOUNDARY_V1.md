@@ -886,3 +886,28 @@ This repair addresses a discovered pre-test blocker, **not** proof
 that the entire workflow has executed or passed. CI execution
 remains to be independently confirmed. The branch remains a
 non-authorizing draft: **HOLD / DENY / NOT_AUTHORIZED / BLOCKED**.
+
+
+## Distinct security suite inventory failure codes (draft v33, 23 November 2026)
+
+Review identified a CI regression-test mismatch: the inventory used
+`PP_CI_UNREGISTERED_OR_MISSING_SUITE` for both missing and
+unexpected suite names, while its own regression test expected
+`MISSING_SUITE` for omissions. This could report a test failure
+even though the underlying inventory correctly refused a missing
+security test.
+
+`pp_recovery_ci_inventory.py` now reports
+`PP_CI_MISSING_SUITE` when any required suite is absent, and
+`PP_CI_UNREGISTERED_SUITE` when an additional unknown suite is
+present. A missing required suite takes precedence if both apply,
+so inserting a non-security test can never compensate for
+the missing scoped security suite.
+
+An additional synthetic regression tests the replacement and
+extra-suite cases. Existing regressions for missing, duplicated
+and unknown suites retain meaningful matching error identifiers.
+
+These commits do not prove that the full test runner or GitHub
+Actions passed. No release, deployment, merge or recovery authorization
+has occurred. **HOLD / DENY / NOT_AUTHORIZED / BLOCKED**.
