@@ -5,6 +5,8 @@ produce nonzero exit status. Intended for CI; no production operations.
 """
 from __future__ import annotations
 
+import hashlib
+import re
 import sys
 import unittest
 from pathlib import Path
@@ -25,7 +27,7 @@ def loaded_test_ids(suite: unittest.TestSuite) -> list[str]:
 
 
 
-def verify_suite_origin(name: str) -> bool:
+def verify_suite_origin(name: str, expected_sha256: str | None = None) -> bool:
     """Reject an imported security suite outside the checked source tree."""
     if type(name) is not str or not name.startswith("test_review_044_"):
         return False
@@ -37,13 +39,20 @@ def verify_suite_origin(name: str) -> bool:
         root = ROOT.resolve(strict=True)
         expected = root / f"{name}.py"
         supplied = Path(origin)
-        return (
+        if not (
             expected.is_file()
             and not expected.is_symlink()
             and supplied.is_file()
             and not supplied.is_symlink()
             and supplied.resolve(strict=True) == expected.resolve(strict=True)
-        )
+        ):
+            return False
+        if expected_sha256 is None:
+            return True  # Standalone origin check; CI always passes a digest.
+        if (type(expected_sha256) is not str
+                or re.fullmatch(r"[0-9a-f]{64}", expected_sha256) is None):
+            return False
+        return hashlib.sha256(supplied.read_bytes()).hexdigest() == expected_sha256
     except (OSError, ValueError, RuntimeError):
         return False
 
@@ -92,6 +101,13 @@ def run(argv: list[str] | None = None) -> int:
                    for name in SUITES)):
         print("PP_CI_DECLARED_IDS_INVALID / HOLD / DENY")
         return 1
+    hashes = inventory.get("testSourceSha256BySuite")
+    if (type(hashes) is not dict or set(hashes) != set(SUITES)
+            or any(type(hashes.get(name)) is not str
+                   or re.fullmatch(r"[0-9a-f]{64}", hashes[name]) is None
+                   for name in SUITES)):
+        print("PP_CI_SOURCE_HASHES_INVALID / HOLD / DENY")
+        return 1
     loader = unittest.defaultTestLoader
     combined = unittest.TestSuite()
     for name in SUITES:
@@ -111,7 +127,7 @@ def run(argv: list[str] | None = None) -> int:
         if sorted(loaded_ids) != sorted(expected_ids[name]):
             print("PP_CI_LOADED_TEST_ID_MISMATCH / HOLD / DENY")
             return 1
-        if not verify_suite_origin(name):
+        if not verify_suite_origin(name, hashes[name]):
             print("PP_CI_SUITE_ORIGIN_MISMATCH / HOLD / DENY")
             return 1
         combined.addTests(tests)
