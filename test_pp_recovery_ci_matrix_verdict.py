@@ -25,6 +25,8 @@ class MatrixVerdictTests(unittest.TestCase):
             self.assertEqual("DENY", result["accessDecision"])
             self.assertEqual("NOT_AUTHORIZED", result["issuance"])
             self.assertEqual("BLOCKED", result["deployment"])
+            self.assertEqual({"3.11", "3.12"}, set(result["receiptSha256ByVersion"]))
+            self.assertTrue(all(len(value) == 64 for value in result["receiptSha256ByVersion"].values()))
 
     def test_missing_artifacts_produce_failure_verdict(self):
         with TemporaryDirectory() as tmp:
@@ -33,6 +35,7 @@ class MatrixVerdictTests(unittest.TestCase):
             )
             self.assertEqual("INCOMPLETE_OR_FAILED", result["syntheticMatrixObservation"])
             self.assertEqual("PAIR_REJECTED", result["reason"])
+            self.assertEqual({}, result["receiptSha256ByVersion"])
 
     def test_incomplete_tests_produce_failure_verdict(self):
         with TemporaryDirectory() as tmp:
@@ -53,6 +56,25 @@ class MatrixVerdictTests(unittest.TestCase):
                     )
                     self.assertEqual("INCOMPLETE_OR_FAILED", result["syntheticMatrixObservation"])
                     self.assertEqual("INVALID_WORKFLOW_CONTEXT", result["reason"])
+
+    def test_different_receipt_bytes_change_verdict_fingerprint(self):
+        with TemporaryDirectory() as tmp:
+            folder = Path(tmp)
+            write_pair(folder)
+            first = assess_matrix(folder, expected_sha=SHA, expected_run_id=RUN)
+            target = folder / "pp-recovery-receipt-py3.12" / "pp-recovery-ci-receipt.json"
+            # Whitespace is valid JSON but changes the exact bytes observed.
+            target.write_bytes(target.read_bytes() + b" ")
+            second = assess_matrix(folder, expected_sha=SHA, expected_run_id=RUN)
+            self.assertEqual(
+                first["receiptSha256ByVersion"]["3.11"],
+                second["receiptSha256ByVersion"]["3.11"],
+            )
+            self.assertNotEqual(
+                first["receiptSha256ByVersion"]["3.12"],
+                second["receiptSha256ByVersion"]["3.12"],
+            )
+            self.assertEqual("HOLD", second["authorization"])
 
     def test_cli_exports_failure_then_exits_nonzero(self):
         with TemporaryDirectory() as tmp:
