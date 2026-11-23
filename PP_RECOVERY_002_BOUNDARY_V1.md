@@ -935,3 +935,29 @@ The strict runner must still actually load the suites, reject skip
 and unexpected success states, and require all tests to pass.
 Neither runtime CI results nor independent human review is established
 by this commit. **HOLD / DENY / NOT_AUTHORIZED / BLOCKED**.
+
+
+## Async unittest false-positive prevention (draft v35, 23 November 2026)
+
+The scoped static test inventory previously accepted
+`ast.AsyncFunctionDef` methods named `test_*` in a class directly
+inheriting `unittest.TestCase`. A regular `unittest.TestCase` method
+is not automatically awaited, so this could produce false confidence:
+assertions inside an unawaited coroutine may never execute.
+
+The inventory now rejects **any** async `test_*` method inside
+the recognized `unittest.TestCase` classes with
+`PP_CI_ASYNC_TEST_UNSUPPORTED`, including a mixed suite containing
+both synchronous and asynchronous tests. It counts only synchronous
+`ast.FunctionDef` methods when deciding whether the suite has
+recognizable tests. Two additional synthetic regression methods
+cover pure-async and mixed-async cases.
+
+This is intentionally restrictive. A future genuine asynchronous
+test suite would require separately reviewed `IsolatedAsyncioTestCase`
+support and verified interpreter behavior before being admitted;
+it is not automatically trusted by this static inventory.
+
+No complete runtime test execution or GitHub Actions PASS has
+been confirmed by this change. No merge, deployment, owner
+authorization or number issuance: **HOLD / DENY / NOT_AUTHORIZED**.
