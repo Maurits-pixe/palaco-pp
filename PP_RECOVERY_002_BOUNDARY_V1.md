@@ -701,3 +701,26 @@ a verdict remains a failure to verify, never proof of success.
 No production/recovery authorization or merge has occurred.
 The GitHub Actions result was not independently verified in this
 turn. **HOLD / DENY / NOT_AUTHORIZED**.
+
+
+## Exact-byte receipt fingerprints in final matrix verdict (draft v26, 23 November 2026)
+
+The unsigned post-matrix verdict now includes
+`receiptSha256ByVersion` for a successfully matched Python 3.11
+and Python 3.12 pair. These are SHA-256 hashes of the **exact
+receipt bytes** used to determine the synthetic observation; the
+verdict does not duplicate the receipt contents or personally
+identifiable data. Incomplete/failed verdicts carry an empty
+fingerprint map, never invented evidence.
+
+An additional regression verifies that modifying the bytes
+of one receipt changes only that receipt's recorded SHA-256
+digest while preserving `HOLD`. The existing test suite now
+also validates the two populated digests on success and the
+empty map on failure.
+
+SHA-256 gives content linkage, **not provenance authentication**.
+These fingerprints do not verify that GitHub produced the
+artifacts or that the workflow conclusion was independently
+confirmed. No live CI PASS was confirmed in this turn.
+Authorization remains **HOLD / DENY / NOT_AUTHORIZED**.
