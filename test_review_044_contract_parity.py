@@ -149,6 +149,40 @@ class RecoveryContractParityTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             static_assignment(text, "REQUIREMENTS")
 
+    def test_annotated_and_augmented_rebinding_rejected(self):
+        for mutated in (
+            "X: int = 2",
+            "X += 1",
+            "X = 2",
+            "if True:\\n    X = 2",
+            "del X",
+        ):
+            with self.subTest(mutated=mutated):
+                with self.assertRaises(ValueError):
+                    static_assignment("X = 1\\n" + mutated, "X")
+
+    def test_indirect_collection_mutations_rejected(self):
+        for mutated in (
+            "X['SOURCE_ATTESTATION'] = 'AUTO_APPROVE'",
+            "X.update({'SOURCE_ATTESTATION': 'AUTO_APPROVE'})",
+            "X.setdefault('SOURCE_ATTESTATION', 'AUTO_APPROVE')",
+            "X.clear()",
+            "del X['SOURCE_ATTESTATION']",
+        ):
+            with self.subTest(mutated=mutated):
+                with self.assertRaises(ValueError):
+                    static_assignment("X = {'SOURCE_ATTESTATION': 'HOLD'}\\n" + mutated, "X")
+
+    def test_unrelated_declarations_do_not_trigger_mutation_guard(self):
+        self.assertEqual(
+            {"SOURCE_ATTESTATION": "HOLD"},
+            static_assignment(
+                "X = {'SOURCE_ATTESTATION': 'HOLD'}\\n"
+                "OTHER = {'SOURCE_ATTESTATION': 'AUTO_APPROVE'}",
+                "X",
+            ),
+        )
+
     def test_duplicate_or_missing_declaration_fails(self):
         with self.assertRaises(ValueError):
             static_assignment("X = 1\nX = 2", "X")
