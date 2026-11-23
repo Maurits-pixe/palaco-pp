@@ -63,15 +63,29 @@ def audit_security_inventory(
             raise ValueError("PP_CI_MISSING_TEST")
         # Parse all relevant test files without running their imports.
         tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+        # Only methods in a statically recognizable unittest.TestCase
+        # subclass are registered here. A plain class with test_* names
+        # would satisfy the old AST inventory but be ignored by unittest.
+        test_classes = [
+            node for node in tree.body
+            if isinstance(node, ast.ClassDef)
+            and any(
+                isinstance(base_class, ast.Attribute)
+                and isinstance(base_class.value, ast.Name)
+                and base_class.value.id == "unittest"
+                and base_class.attr == "TestCase"
+                for base_class in node.bases
+            )
+        ]
         methods = [
-            item
-            for node in tree.body if isinstance(node, ast.ClassDef)
-            for item in node.body
-            if isinstance(item, (ast.FunctionDef, ast.AsyncFunctionDef))
-            and item.name.startswith("test_")
+            method
+            for test_class in test_classes
+            for method in test_class.body
+            if isinstance(method, (ast.FunctionDef, ast.AsyncFunctionDef))
+            and method.name.startswith("test_")
         ]
         if not methods:
-            raise ValueError("PP_CI_SUITE_WITHOUT_TEST_METHODS")
+            raise ValueError("PP_CI_SUITE_WITHOUT_DISCOVERABLE_TESTS")
     return {
         "schema": "palaco.pp.recovery-002-ci-inventory-observation.v1",
         "reference": "PP-RECOVERY-002",
