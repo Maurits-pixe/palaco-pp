@@ -45,6 +45,7 @@ def audit_security_inventory(
         raise ValueError("PP_CI_MISSING_SUITE")
     if actual - required:
         raise ValueError("PP_CI_UNREGISTERED_SUITE")
+    critical_sha256 = {}
     for module in CRITICAL_MODULES:
         source_path = base / f"{module}.py"
         if not source_path.is_file():
@@ -52,12 +53,14 @@ def audit_security_inventory(
         # A present file is not a valid testable module unless it parses.
         # Parse only; never import, evaluate or execute recovery sources.
         try:
+            source_bytes = source_path.read_bytes()
             ast.parse(
-                source_path.read_text(encoding="utf-8"),
+                source_bytes.decode("utf-8"),
                 filename=str(source_path),
             )
         except (SyntaxError, UnicodeError) as exc:
             raise ValueError("PP_CI_SOURCE_SYNTAX_INVALID") from exc
+        critical_sha256[module] = hashlib.sha256(source_bytes).hexdigest()
     declared_counts = {}
     declared_ids = {}
     source_sha256 = {}
@@ -124,6 +127,7 @@ def audit_security_inventory(
         "declaredTestMethodsBySuite": declared_counts,
         "declaredTestIdsBySuite": declared_ids,
         "testSourceSha256BySuite": source_sha256,
+        "criticalSourceSha256ByModule": critical_sha256,
         "coverageState": "ALL_SCOPED_FILES_PRESENT_NOT_EXECUTION_PROOF",
         "authorization": "HOLD",
         "accessDecision": "DENY",
