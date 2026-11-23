@@ -18,6 +18,12 @@ class RecoveryCiInventoryTests(unittest.TestCase):
         counts = result["declaredTestMethodsBySuite"]
         self.assertEqual(set(SUITES), set(counts))
         self.assertTrue(all(type(count) is int and count > 0 for count in counts.values()))
+        identities = result["declaredTestIdsBySuite"]
+        self.assertEqual(set(SUITES), set(identities))
+        for name in SUITES:
+            self.assertEqual(counts[name], len(identities[name]))
+            self.assertEqual(len(identities[name]), len(set(identities[name])))
+            self.assertTrue(all(test_id.startswith(name + ".") for test_id in identities[name]))
         self.assertEqual("HOLD", result["authorization"])
         self.assertEqual("DENY", result["accessDecision"])
         self.assertEqual("BLOCKED", result["deployment"])
