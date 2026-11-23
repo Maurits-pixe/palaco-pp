@@ -90,6 +90,30 @@ class RecoveryCiInventoryTests(unittest.TestCase):
             with self.assertRaises(SyntaxError):
                 audit_security_inventory(SUITES, base)
 
+    def test_plain_class_test_method_does_not_count_as_coverage(self):
+        with TemporaryDirectory() as temp:
+            base = Path(temp)
+            for module in CRITICAL_MODULES:
+                (base / f"{module}.py").write_text(
+                    "AUTHORIZATION = 'HOLD'\n", encoding="utf-8",
+                )
+            for suite in SUITES:
+                (base / f"{suite}.py").write_text(
+                    "import unittest\n"
+                    "class Valid(unittest.TestCase):\n"
+                    "    def test_denial(self):\n"
+                    "        self.assertEqual('HOLD', 'HOLD')\n",
+                    encoding="utf-8",
+                )
+            (base / f"{SUITES[0]}.py").write_text(
+                "class FakeTests:\n"
+                "    def test_should_run(self):\n"
+                "        raise AssertionError('NOT_DISCOVERED')\n",
+                encoding="utf-8",
+            )
+            with self.assertRaisesRegex(ValueError, "WITHOUT_DISCOVERABLE_TESTS"):
+                audit_security_inventory(SUITES, base)
+
     def test_empty_test_file_rejected(self):
         with TemporaryDirectory() as temp:
             base = Path(temp)
@@ -103,7 +127,7 @@ class RecoveryCiInventoryTests(unittest.TestCase):
             (base / f"{INTEGRATION_SUITES[0]}.py").write_text(
                 "class Tests:\n    pass\n", encoding="utf-8"
             )
-            with self.assertRaisesRegex(ValueError, "WITHOUT_TEST_METHODS"):
+            with self.assertRaisesRegex(ValueError, "WITHOUT_DISCOVERABLE_TESTS"):
                 audit_security_inventory(SUITES, base)
 
 
