@@ -23,11 +23,10 @@ SOURCES = {
 
 
 def static_assignment(source: str, variable: str):
-    """Extract one immutable literal declaration; reject later top-level writes.
+    """Extract one static literal declaration; reject writes and direct aliases.
 
-    This is deliberately conservative: top-level rebinding, annotated
-    assignments, augmented assignments, subscripts and obvious in-place
-    mutator calls on the protected contract are refused. Nothing is executed.
+    This is deliberately conservative: rebinding in any scope, aliases,
+    subscript writes and named mutator calls are rejected. No code executes.
     """
     tree = ast.parse(source)
     matches = [
@@ -44,26 +43,31 @@ def static_assignment(source: str, variable: str):
         "update", "setdefault", "pop", "popitem", "clear",
         "append", "extend", "insert", "remove", "sort", "reverse",
     }
-    for stmt in tree.body:
-        if stmt is declaration:
+    # Inspect every scope, not just module-level expressions. A function
+    # may later be invoked by the producer, so nested writes also matter.
+    for node in ast.walk(tree):
+        if node is declaration or node in ast.walk(declaration):
             continue
-        if isinstance(stmt, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
-            continue
-        for node in ast.walk(stmt):
-            if (isinstance(node, ast.Name) and node.id == variable
-                    and isinstance(node.ctx, (ast.Store, ast.Del))):
-                raise ValueError("PP_CONTRACT_MUTATED")
-            if (isinstance(node, ast.Subscript)
-                    and isinstance(node.ctx, (ast.Store, ast.Del))
-                    and isinstance(node.value, ast.Name)
-                    and node.value.id == variable):
-                raise ValueError("PP_CONTRACT_MUTATED")
-            if (isinstance(node, ast.Call)
-                    and isinstance(node.func, ast.Attribute)
-                    and isinstance(node.func.value, ast.Name)
-                    and node.func.value.id == variable
-                    and node.func.attr in mutators):
-                raise ValueError("PP_CONTRACT_MUTATED")
+        if (isinstance(node, ast.Name) and node.id == variable
+                and isinstance(node.ctx, (ast.Store, ast.Del))):
+            raise ValueError("PP_CONTRACT_MUTATED")
+        if (isinstance(node, ast.Subscript)
+                and isinstance(node.ctx, (ast.Store, ast.Del))
+                and isinstance(node.value, ast.Name)
+                and node.value.id == variable):
+            raise ValueError("PP_CONTRACT_MUTATED")
+        if (isinstance(node, ast.Call)
+                and isinstance(node.func, ast.Attribute)
+                and isinstance(node.func.value, ast.Name)
+                and node.func.value.id == variable
+                and node.func.attr in mutators):
+            raise ValueError("PP_CONTRACT_MUTATED")
+        # Refuse simple aliases even when they only appear in a function:
+        # alias = X; alias.clear() otherwise escapes direct-name checks.
+        if isinstance(node, (ast.Assign, ast.AnnAssign, ast.NamedExpr)):
+            value = node.value
+            if isinstance(value, ast.Name) and value.id == variable:
+                raise ValueError("PP_CONTRACT_ALIAS_UNREVIEWED")
     try:
         return ast.literal_eval(declaration.value)
     except (ValueError, TypeError, RecursionError, MemoryError) as exc:
