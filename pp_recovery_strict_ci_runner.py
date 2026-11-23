@@ -60,6 +60,7 @@ def run(argv: list[str] | None = None) -> int:
     runner = unittest.TextTestRunner(verbosity=2)
     result = runner.run(combined)
     if (not result.wasSuccessful()
+            or result.testsRun != sum(declared.values())
             or result.testsRun == 0
             or result.skipped
             or result.expectedFailures
