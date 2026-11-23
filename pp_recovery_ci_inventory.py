@@ -7,6 +7,7 @@ repository tests or grant release authority.
 from __future__ import annotations
 
 import ast
+import hashlib
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
@@ -59,12 +60,15 @@ def audit_security_inventory(
             raise ValueError("PP_CI_SOURCE_SYNTAX_INVALID") from exc
     declared_counts = {}
     declared_ids = {}
+    source_sha256 = {}
     for name in runner_suites:
         path = base / f"{name}.py"
         if not path.is_file():
             raise ValueError("PP_CI_MISSING_TEST")
         # Parse all relevant test files without running their imports.
-        tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+        raw_source = path.read_bytes()
+        tree = ast.parse(raw_source.decode("utf-8"), filename=str(path))
+        source_sha256[name] = hashlib.sha256(raw_source).hexdigest()
         # Only methods in a statically recognizable unittest.TestCase
         # subclass are registered here. A plain class with test_* names
         # would satisfy the old AST inventory but be ignored by unittest.
@@ -119,6 +123,7 @@ def audit_security_inventory(
         "criticalModules": len(CRITICAL_MODULES),
         "declaredTestMethodsBySuite": declared_counts,
         "declaredTestIdsBySuite": declared_ids,
+        "testSourceSha256BySuite": source_sha256,
         "coverageState": "ALL_SCOPED_FILES_PRESENT_NOT_EXECUTION_PROOF",
         "authorization": "HOLD",
         "accessDecision": "DENY",
