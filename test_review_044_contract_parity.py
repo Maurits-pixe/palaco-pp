@@ -213,6 +213,37 @@ class RecoveryContractParityTests(unittest.TestCase):
                 with self.assertRaises(ValueError):
                     static_assignment("X = {'gate': 'BLOCKED'}\n" + mutation, "X")
 
+    def test_reflective_contract_lookup_rejected(self):
+        mutations = (
+            "globals()['X'].clear()",
+            "locals()['X'].update({'gate': 'ALLOW'})",
+            "vars()['X'].pop('gate')",
+            "eval('X.clear()')",
+            "exec('X.clear()')",
+            "setattr(X, 'gate', 'ALLOW')",
+            "delattr(X, 'gate')",
+            "__import__('builtins').exec('X.clear()')",
+        )
+        for mutation in mutations:
+            with self.subTest(mutation=mutation):
+                with self.assertRaisesRegex(ValueError, "REFLECTION_UNREVIEWED"):
+                    static_assignment("X = {'gate': 'BLOCKED'}\n" + mutation, "X")
+
+    def test_nested_reflective_lookup_rejected(self):
+        text = "X = {'gate': 'BLOCKED'}\ndef change():\n    globals()['X'].clear()"
+        with self.assertRaisesRegex(ValueError, "REFLECTION_UNREVIEWED"):
+            static_assignment(text, "X")
+
+    def test_plain_nonreflective_calls_not_rejected(self):
+        self.assertEqual(
+            {"gate": "BLOCKED"},
+            static_assignment(
+                "X = {'gate': 'BLOCKED'}\n"
+                "def inspect():\n    return tuple(X)\n",
+                "X",
+            ),
+        )
+
     def test_unrelated_declarations_do_not_trigger_mutation_guard(self):
         self.assertEqual(
             {"SOURCE_ATTESTATION": "HOLD"},
