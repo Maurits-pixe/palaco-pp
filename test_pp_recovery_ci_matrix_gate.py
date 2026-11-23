@@ -15,7 +15,8 @@ RUN = "79123"
 
 def write_pair(root: Path, *, second_outcome: str = "success",
                second_run: str = RUN, second_sha: str = SHA,
-               second_attempt: str = "1") -> None:
+               second_attempt: str = "1",
+               attempt: str = "1") -> None:
     for version, path in zip(("3.11", "3.12"), EXPECTED_FILES):
         target = root / path
         target.parent.mkdir(parents=True, exist_ok=True)
@@ -24,7 +25,7 @@ def write_pair(root: Path, *, second_outcome: str = "success",
                     else second_outcome) for step in STEPS},
             commit_sha=SHA if version == "3.11" else second_sha,
             run_id=RUN if version == "3.11" else second_run,
-            run_attempt="1" if version == "3.11" else second_attempt,
+            run_attempt=attempt if version == "3.11" else second_attempt,
             python_version=version,
         )
         target.write_bytes(encode_receipt(receipt))
@@ -40,6 +41,22 @@ class CiMatrixGateTests(unittest.TestCase):
             self.assertEqual("HOLD", result["authorization"])
             self.assertEqual("DENY", result["accessDecision"])
             self.assertEqual("NOT_AUTHORIZED", result["issuance"])
+
+    def test_second_attempt_requires_matching_current_attempt(self):
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write_pair(root, attempt="2", second_attempt="2")
+            result = verify_matrix_artifacts(
+                root, expected_sha=SHA, expected_run_id=RUN,
+                expected_attempt="2",
+            )
+            self.assertEqual("2", result["workflowRunAttempt"])
+            self.assertEqual("HOLD", result["authorization"])
+            with self.assertRaises(BoundaryInputError):
+                verify_matrix_artifacts(
+                    root, expected_sha=SHA, expected_run_id=RUN,
+                    expected_attempt="1",
+                )
 
     def test_reject_missing_artifacts(self):
         with TemporaryDirectory() as tmp:
