@@ -68,7 +68,7 @@ class MatrixVerdictAuditTests(unittest.TestCase):
             root = Path(tmp)
             write_pair(root)
             verdict = assess_matrix(root, expected_sha=SHA, expected_run_id=RUN)
-            path = root / "pp-recovery-receipt-py3.11" / "pp-recovery-ci-receipt.json"
+            path = root / "pp-recovery-receipt-attempt1-py3.11" / "pp-recovery-ci-receipt.json"
             path.write_bytes(path.read_bytes() + b" ")
             with self.assertRaises(BoundaryInputError):
                 audit_verdict(encoded(verdict), root, expected_sha=SHA, expected_run_id=RUN)
