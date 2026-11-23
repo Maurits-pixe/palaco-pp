@@ -16,7 +16,8 @@ def states(**changes):
 class RecoveryCiReceiptTests(unittest.TestCase):
     def test_all_steps_success_is_still_not_authorization(self):
         receipt = build_receipt(
-            states(), commit_sha="a" * 40, run_id="123", python_version="3.12"
+            states(), commit_sha="a" * 40, run_id="123",
+            run_attempt="2", python_version="3.12"
         )
         self.assertEqual("ALL_RECORDED_STEPS_SUCCESS", receipt["syntheticExecution"])
         self.assertEqual("NOT_INDEPENDENTLY_VERIFIED", receipt["externalCIConclusion"])
@@ -24,6 +25,7 @@ class RecoveryCiReceiptTests(unittest.TestCase):
         self.assertEqual("DENY", receipt["accessDecision"])
         self.assertEqual("NOT_AUTHORIZED", receipt["issuance"])
         self.assertEqual("BLOCKED", receipt["deployment"])
+        self.assertEqual("2", receipt["workflowRunAttempt"])
 
     def test_failure_skipped_cancelled_or_unknown_never_passes(self):
         for outcome in ("failure", "skipped", "cancelled", "unknown"):
@@ -49,6 +51,8 @@ class RecoveryCiReceiptTests(unittest.TestCase):
             {"commit_sha": "a" * 64},
             {"run_id": "../../etc/passwd"},
             {"python_version": "3.13"},
+            {"run_attempt": "0"},
+            {"run_attempt": "-1"},
         ):
             with self.subTest(metadata=metadata):
                 with self.assertRaises(ValueError):
