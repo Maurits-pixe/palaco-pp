@@ -1003,3 +1003,37 @@ documentation commit or a blanket PASS for later branch changes.
 Workflow success does not authenticate P.P. ownership, third-party
 source provenance, signing authority or independent human review.
 **HOLD / DENY / NOT_AUTHORIZED / BLOCKED** remains unchanged.
+
+
+## Loaded-versus-executed regression count reconciliation (draft v37, 23 November 2026)
+
+The strict synthetic recovery CI runner now enforces **three distinct
+counts for each of the eleven scoped security suites**:
+
+1. `pp_recovery_ci_inventory.py` statically records the number of
+   declared synchronous `test_*` methods for every recognized
+   `unittest.TestCase` subclass. It exposes an explicit
+   `declaredTestMethodsBySuite` map, which remains unsigned and
+   non-authorizing.
+2. The strict runner requires the `unittest` loader to return
+   **exactly that many tests per named module**, rejecting mismatches
+   with `PP_CI_LOADED_TEST_COUNT_MISMATCH`. A missing, malformed,
+   or non-positive count map fails closed.
+3. The test runner also requires the number of actually executed
+   tests to equal the sum of those declared counts. Missing
+   executions, failures, errors, skips and unexpected successes
+   remain rejection conditions.
+
+New negative runner regressions cover a wrong loaded count,
+missing count map and a truncated executed count. Existing skip
+and zero-run tests were updated so they still reach the relevant
+result handling rather than being stopped prematurely by count
+mismatch. The inventory test checks the complete positive map.
+
+**Scope warning:** this reconciles counts, not the identities of
+individual test methods or their assertion strength. The last
+separately verified GitHub Actions PASS before these commits was
+run 45127611844 at commit `1093ae956781b2872c6b2af4496c65bc398cb3cc`.
+This new change must obtain its own passing workflow result
+before claiming CI PASS. No deployment, identity recovery or P.P.
+number authorization: **HOLD / DENY / NOT_AUTHORIZED / BLOCKED**.
