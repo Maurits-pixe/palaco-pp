@@ -21,13 +21,19 @@ class StrictRunnerPolicyTests(unittest.TestCase):
 
     def test_reject_skipped_security_tests(self):
         result = unittest.TestResult()
-        result.testsRun = 1
+        result.testsRun = len(SUITES)
         result.skipped.append((None, "dependency missing"))
-        with patch("pp_recovery_strict_ci_runner.unittest.defaultTestLoader.loadTestsFromName",
-                   return_value=unittest.TestSuite([unittest.FunctionTestCase(lambda: None)])):
-            with patch("pp_recovery_strict_ci_runner.unittest.TextTestRunner.run", return_value=result):
-                with redirect_stdout(StringIO()):
-                    self.assertEqual(1, run())
+        inventory = {
+            "authorization": "HOLD", "accessDecision": "DENY",
+            "declaredTestMethodsBySuite": {name: 1 for name in SUITES},
+        }
+        with patch("pp_recovery_strict_ci_runner.audit_security_inventory",
+                   return_value=inventory):
+            with patch("pp_recovery_strict_ci_runner.unittest.defaultTestLoader.loadTestsFromName",
+                       side_effect=lambda _: unittest.TestSuite([unittest.FunctionTestCase(lambda: None)])):
+                with patch("pp_recovery_strict_ci_runner.unittest.TextTestRunner.run", return_value=result):
+                    with redirect_stdout(StringIO()):
+                        self.assertEqual(1, run())
 
     def test_loaded_count_mismatch_is_rejected_before_execution(self):
         inventory = {
@@ -61,7 +67,6 @@ class StrictRunnerPolicyTests(unittest.TestCase):
         }
         result = unittest.TestResult()
         result.testsRun = 1
-        one = unittest.TestSuite([unittest.FunctionTestCase(lambda: None)])
         with patch("pp_recovery_strict_ci_runner.audit_security_inventory",
                    return_value=inventory):
             with patch("pp_recovery_strict_ci_runner.unittest.defaultTestLoader.loadTestsFromName",
@@ -73,11 +78,17 @@ class StrictRunnerPolicyTests(unittest.TestCase):
 
     def test_no_false_pass_on_zero_executed(self):
         result = unittest.TestResult()
-        with patch("pp_recovery_strict_ci_runner.unittest.defaultTestLoader.loadTestsFromName",
-                   return_value=unittest.TestSuite([unittest.FunctionTestCase(lambda: None)])):
-            with patch("pp_recovery_strict_ci_runner.unittest.TextTestRunner.run", return_value=result):
-                with redirect_stdout(StringIO()):
-                    self.assertEqual(1, run())
+        inventory = {
+            "authorization": "HOLD", "accessDecision": "DENY",
+            "declaredTestMethodsBySuite": {name: 1 for name in SUITES},
+        }
+        with patch("pp_recovery_strict_ci_runner.audit_security_inventory",
+                   return_value=inventory):
+            with patch("pp_recovery_strict_ci_runner.unittest.defaultTestLoader.loadTestsFromName",
+                       side_effect=lambda _: unittest.TestSuite([unittest.FunctionTestCase(lambda: None)])):
+                with patch("pp_recovery_strict_ci_runner.unittest.TextTestRunner.run", return_value=result):
+                    with redirect_stdout(StringIO()):
+                        self.assertEqual(1, run())
 
 
 if __name__ == "__main__":
