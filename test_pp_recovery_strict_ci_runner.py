@@ -1,6 +1,7 @@
 """Synthetic unit checks for CI's fail-closed test-result policy."""
 from contextlib import redirect_stdout
 from io import StringIO
+import hashlib
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from types import ModuleType
@@ -31,6 +32,7 @@ class StrictRunnerPolicyTests(unittest.TestCase):
             "authorization": "HOLD", "accessDecision": "DENY",
             "declaredTestMethodsBySuite": {name: 1 for name in SUITES},
             "declaredTestIdsBySuite": {name: ["SYNTHETIC_ID"] for name in SUITES},
+            "testSourceSha256BySuite": {name: "a" * 64 for name in SUITES},
         }
         with patch("pp_recovery_strict_ci_runner.audit_security_inventory",
                    return_value=inventory):
@@ -47,6 +49,7 @@ class StrictRunnerPolicyTests(unittest.TestCase):
             "accessDecision": "DENY",
             "declaredTestMethodsBySuite": {name: 2 for name in SUITES},
             "declaredTestIdsBySuite": {name: ["SYNTHETIC_ID_1", "SYNTHETIC_ID_2"] for name in SUITES},
+            "testSourceSha256BySuite": {name: "a" * 64 for name in SUITES},
         }
         one = unittest.TestSuite([unittest.FunctionTestCase(lambda: None)])
         with patch("pp_recovery_strict_ci_runner.audit_security_inventory",
@@ -73,6 +76,7 @@ class StrictRunnerPolicyTests(unittest.TestCase):
             "accessDecision": "DENY",
             "declaredTestMethodsBySuite": {name: 1 for name in SUITES},
             "declaredTestIdsBySuite": {name: ["SYNTHETIC_ID"] for name in SUITES},
+            "testSourceSha256BySuite": {name: "a" * 64 for name in SUITES},
         }
         result = unittest.TestResult()
         result.testsRun = 1
@@ -92,6 +96,7 @@ class StrictRunnerPolicyTests(unittest.TestCase):
             "accessDecision": "DENY",
             "declaredTestMethodsBySuite": {name: 1 for name in SUITES},
             "declaredTestIdsBySuite": {name: ["EXPECTED_TEST"] for name in SUITES},
+            "testSourceSha256BySuite": {name: "a" * 64 for name in SUITES},
         }
         with patch("pp_recovery_strict_ci_runner.audit_security_inventory",
                    return_value=inventory):
@@ -143,7 +148,22 @@ class StrictRunnerPolicyTests(unittest.TestCase):
     def test_real_registered_security_module_origin_is_accepted(self):
         name = "test_review_044_release_boundary_snapshot"
         __import__(name)
-        self.assertTrue(verify_suite_origin(name))
+        from pp_recovery_ci_inventory import ROOT
+        digest = hashlib.sha256((ROOT / f"{name}.py").read_bytes()).hexdigest()
+        self.assertTrue(verify_suite_origin(name, digest))
+        self.assertFalse(verify_suite_origin(name, "f" * 64))
+
+    def test_missing_source_hash_map_rejected(self):
+        inventory = {
+            "authorization": "HOLD", "accessDecision": "DENY",
+            "declaredTestMethodsBySuite": {name: 1 for name in SUITES},
+            "declaredTestIdsBySuite": {name: ["SYNTHETIC_ID"] for name in SUITES},
+        }
+        with patch("pp_recovery_strict_ci_runner.audit_security_inventory",
+                   return_value=inventory):
+            with redirect_stdout(StringIO()) as log:
+                self.assertEqual(1, run())
+            self.assertIn("SOURCE_HASHES_INVALID", log.getvalue())
 
     @patch("pp_recovery_strict_ci_runner.verify_suite_origin", return_value=True)
     def test_no_false_pass_on_zero_executed(self, _origin):
@@ -152,6 +172,7 @@ class StrictRunnerPolicyTests(unittest.TestCase):
             "authorization": "HOLD", "accessDecision": "DENY",
             "declaredTestMethodsBySuite": {name: 1 for name in SUITES},
             "declaredTestIdsBySuite": {name: ["SYNTHETIC_ID"] for name in SUITES},
+            "testSourceSha256BySuite": {name: "a" * 64 for name in SUITES},
         }
         with patch("pp_recovery_strict_ci_runner.audit_security_inventory",
                    return_value=inventory):
