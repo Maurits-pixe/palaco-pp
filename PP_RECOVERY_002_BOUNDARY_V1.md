@@ -755,3 +755,33 @@ python -m unittest -v test_pp_recovery_ci_verdict_audit
 No merge, deployment, P.P. issuance or trust promotion occurs.
 No successful CI execution has been independently confirmed here.
 **HOLD / DENY / NOT_AUTHORIZED**.
+
+
+## Run-attempt separation for GitHub Actions reruns (draft v28, 23 November 2026)
+
+GitHub Actions may rerun a workflow with the same `GITHUB_RUN_ID`
+but a higher `GITHUB_RUN_ATTEMPT`. The unsigned per-version
+receipts now record `workflowRunAttempt` as an explicit
+positive decimal string, and the receipt-pair validator requires
+that both Python versions use the same attempt. The matrix gate
+requires that this attempt matches the **current** environment;
+the final matrix verdict and independent verdict audit propagate
+the attempt as well.
+
+Artifact names now include `attemptN`, for both individual
+Python receipts and the combined matrix verdict. The matrix
+verification job downloads only the current attempt's two
+receipt artifacts and rejects all unexpected extra directories.
+This avoids accidental mixture with older attempts and avoids
+overwriting the previous attempt's immutable GitHub artifacts.
+Older pre-v28 receipts lack the required attempt field and
+correctly fail the new contract.
+
+The synthetic tests now cover cross-attempt mismatch, a
+valid second attempt, rejection of a previous attempt under a
+new current attempt, and non-authorizing attempt metadata.
+
+This is **attempt-consistency** checking of unsigned observations,
+not cryptographic proof of GitHub provenance or human authority.
+No independent CI PASS is claimed and nothing is merged, deployed
+or issued. **HOLD / DENY / NOT_AUTHORIZED**.
