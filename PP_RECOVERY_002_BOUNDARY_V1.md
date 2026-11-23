@@ -860,3 +860,29 @@ The changes exist only on the draft recovery branch. GitHub
 Actions execution and PASS have not been independently verified.
 No production access, identity binding, merge or issuance:
 **HOLD / DENY / NOT_AUTHORIZED / BLOCKED**.
+
+
+## CI parseability repair and source syntax audit (draft v32, 23 November 2026)
+
+A concrete Python syntax defect was identified in
+`test_review_044_release_boundary_snapshot.py`: the import contained
+literal escaped newline characters (`\\n`) outside a quoted Python
+string. That prevented Python from importing the boundary test
+module. The malformed import was corrected to a real newline.
+
+The fail-closed inventory audit in `pp_recovery_ci_inventory.py` now
+parses every explicitly scoped critical security source module using
+`ast.parse` before accepting the inventory. Previously it checked
+whether the source file existed, but did not verify parseability.
+No runtime import, database operation or source execution occurs.
+
+Two inventory regression methods were added: malformed critical
+security source must yield `PP_CI_SOURCE_SYNTAX_INVALID`, and a
+malformed registered security test must also fail the inventory.
+A malformed test fixture is deliberately syntactically invalid,
+rather than merely containing escaped line separators.
+
+This repair addresses a discovered pre-test blocker, **not** proof
+that the entire workflow has executed or passed. CI execution
+remains to be independently confirmed. The branch remains a
+non-authorizing draft: **HOLD / DENY / NOT_AUTHORIZED / BLOCKED**.
