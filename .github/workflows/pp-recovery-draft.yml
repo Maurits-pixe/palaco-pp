@@ -16,6 +16,8 @@ on:
       - "test_pp_recovery_ci_receipt_pair.py"
       - "pp_recovery_ci_matrix_gate.py"
       - "test_pp_recovery_ci_matrix_gate.py"
+      - "pp_recovery_ci_matrix_verdict.py"
+      - "test_pp_recovery_ci_matrix_verdict.py"
       - "test_pp_recovery_strict_ci_runner.py"
       - ".github/workflows/pp-recovery-draft.yml"
   pull_request:
@@ -31,6 +33,8 @@ on:
       - "test_pp_recovery_ci_receipt_pair.py"
       - "pp_recovery_ci_matrix_gate.py"
       - "test_pp_recovery_ci_matrix_gate.py"
+      - "pp_recovery_ci_matrix_verdict.py"
+      - "test_pp_recovery_ci_matrix_verdict.py"
       - "test_pp_recovery_strict_ci_runner.py"
       - ".github/workflows/pp-recovery-draft.yml"
   workflow_dispatch:
@@ -75,13 +79,13 @@ jobs:
               ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
           for path in sorted(Path(".").glob("test_review_044_*.py")):
               ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
-          for name in ("pp_recovery_strict_ci_runner.py", "test_pp_recovery_strict_ci_runner.py", "pp_recovery_ci_inventory.py", "test_pp_recovery_ci_inventory.py", "pp_recovery_ci_receipt.py", "test_pp_recovery_ci_receipt.py", "pp_recovery_ci_receipt_pair.py", "test_pp_recovery_ci_receipt_pair.py", "pp_recovery_ci_matrix_gate.py", "test_pp_recovery_ci_matrix_gate.py"):
+          for name in ("pp_recovery_strict_ci_runner.py", "test_pp_recovery_strict_ci_runner.py", "pp_recovery_ci_inventory.py", "test_pp_recovery_ci_inventory.py", "pp_recovery_ci_receipt.py", "test_pp_recovery_ci_receipt.py", "pp_recovery_ci_receipt_pair.py", "test_pp_recovery_ci_receipt_pair.py", "pp_recovery_ci_matrix_gate.py", "test_pp_recovery_ci_matrix_gate.py", "pp_recovery_ci_matrix_verdict.py", "test_pp_recovery_ci_matrix_verdict.py"):
               ast.parse(Path(name).read_text(encoding="utf-8"), filename=name)
           print("Synthetic recovery source syntax: OK")
           PY
       - name: Verify fail-closed CI runner, inventory and receipt
         id: policy
-        run: python -m unittest -v test_pp_recovery_strict_ci_runner test_pp_recovery_ci_inventory test_pp_recovery_ci_receipt test_pp_recovery_ci_receipt_pair test_pp_recovery_ci_matrix_gate
+        run: python -m unittest -v test_pp_recovery_strict_ci_runner test_pp_recovery_ci_inventory test_pp_recovery_ci_receipt test_pp_recovery_ci_receipt_pair test_pp_recovery_ci_matrix_gate test_pp_recovery_ci_matrix_verdict
       - name: Run offline synthetic recovery regression suites
         id: regressions
         run: |
@@ -148,6 +152,16 @@ jobs:
           pattern: pp-recovery-receipt-py*
           path: matrix-receipts
           merge-multiple: false
-      - name: Fail closed on incomplete or mismatched matrix
+      - name: Export fail-closed final matrix verdict
         run: |
-          python pp_recovery_ci_matrix_gate.py --artifacts matrix-receipts
+          python pp_recovery_ci_matrix_verdict.py \
+            --artifacts matrix-receipts \
+            --output pp-recovery-matrix-verdict.json
+      - name: Upload unsigned final matrix verdict
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: pp-recovery-matrix-verdict
+          path: pp-recovery-matrix-verdict.json
+          if-no-files-found: warn
+          retention-days: 7
