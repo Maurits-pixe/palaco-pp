@@ -1,10 +1,13 @@
 """Synthetic unit checks for CI's fail-closed test-result policy."""
 from contextlib import redirect_stdout
 from io import StringIO
+from pathlib import Path
+from tempfile import TemporaryDirectory
+from types import ModuleType
 from unittest.mock import patch
 import unittest
 
-from pp_recovery_strict_ci_runner import SUITES, loaded_test_ids, run
+from pp_recovery_strict_ci_runner import SUITES, loaded_test_ids, run, verify_suite_origin
 
 
 class StrictRunnerPolicyTests(unittest.TestCase):
@@ -19,7 +22,8 @@ class StrictRunnerPolicyTests(unittest.TestCase):
         ), redirect_stdout(StringIO()):
             self.assertEqual(1, run())
 
-    def test_reject_skipped_security_tests(self):
+    @patch("pp_recovery_strict_ci_runner.verify_suite_origin", return_value=True)
+    def test_reject_skipped_security_tests(self, _origin):
         result = unittest.TestResult()
         result.testsRun = len(SUITES)
         result.skipped.append((None, "dependency missing"))
@@ -62,7 +66,8 @@ class StrictRunnerPolicyTests(unittest.TestCase):
                 self.assertEqual(1, run())
             self.assertIn("DECLARED_COUNTS_INVALID", log.getvalue())
 
-    def test_short_executed_count_cannot_report_pass(self):
+    @patch("pp_recovery_strict_ci_runner.verify_suite_origin", return_value=True)
+    def test_short_executed_count_cannot_report_pass(self, _origin):
         inventory = {
             "authorization": "HOLD",
             "accessDecision": "DENY",
@@ -121,7 +126,27 @@ class StrictRunnerPolicyTests(unittest.TestCase):
             unittest.TestSuite([unittest.TestSuite([case])])
         ))
 
-    def test_no_false_pass_on_zero_executed(self):
+    @patch("pp_recovery_strict_ci_runner.verify_suite_origin", return_value=True)
+    def test_reject_unrelated_or_missing_module_origin(self):
+        self.assertFalse(verify_suite_origin("test_unexpected_suite"))
+        self.assertFalse(verify_suite_origin("test_review_044_absent"))
+
+    def test_shadowed_module_from_other_directory_is_rejected(self):
+        name = SUITES[0]
+        with TemporaryDirectory() as temp:
+            external = Path(temp) / f"{name}.py"
+            external.write_text("def synthetic(): pass\n", encoding="utf-8")
+            shadow = ModuleType(name)
+            shadow.__file__ = str(external)
+            with patch.dict("sys.modules", {name: shadow}):
+                self.assertFalse(verify_suite_origin(name))
+
+    def test_real_registered_security_module_origin_is_accepted(self):
+        name = "test_review_044_release_boundary_snapshot"
+        __import__(name)
+        self.assertTrue(verify_suite_origin(name))
+
+    def test_no_false_pass_on_zero_executed(self, _origin):
         result = unittest.TestResult()
         inventory = {
             "authorization": "HOLD", "accessDecision": "DENY",
