@@ -1,5 +1,6 @@
 """Synthetic checks for PP critical-suite coverage inventory."""
 from pathlib import Path
+import hashlib
 from tempfile import TemporaryDirectory
 import unittest
 
@@ -24,6 +25,11 @@ class RecoveryCiInventoryTests(unittest.TestCase):
             self.assertEqual(counts[name], len(identities[name]))
             self.assertEqual(len(identities[name]), len(set(identities[name])))
             self.assertTrue(all(test_id.startswith(name + ".") for test_id in identities[name]))
+        digests = result["testSourceSha256BySuite"]
+        self.assertEqual(set(SUITES), set(digests))
+        for name in SUITES:
+            expected = hashlib.sha256((ROOT / f"{name}.py").read_bytes()).hexdigest()
+            self.assertEqual(expected, digests[name])
         self.assertEqual("HOLD", result["authorization"])
         self.assertEqual("DENY", result["accessDecision"])
         self.assertEqual("BLOCKED", result["deployment"])
