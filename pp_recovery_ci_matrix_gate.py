@@ -33,6 +33,19 @@ def verify_matrix_artifacts(
             or type(expected_sha) is not str
             or type(expected_run_id) is not str):
         raise BoundaryInputError("PP_CI_MATRIX_INVALID")
+    # The download directory must contain exactly the two known artifact
+    # subdirectories and one receipt file inside each. Reject extras and
+    # symlinked parents, rather than silently ignoring surprise evidence.
+    expected_dirs = {relative.parts[0] for relative in EXPECTED_FILES}
+    if (folder.is_symlink() or not folder.is_dir()
+            or {child.name for child in folder.iterdir()} != expected_dirs):
+        raise BoundaryInputError("PP_CI_MATRIX_UNEXPECTED_ARTIFACT")
+    for dirname in expected_dirs:
+        directory = folder / dirname
+        if (directory.is_symlink() or not directory.is_dir()
+                or {child.name for child in directory.iterdir()}
+                != {"pp-recovery-ci-receipt.json"}):
+            raise BoundaryInputError("PP_CI_MATRIX_UNEXPECTED_ARTIFACT")
     inputs = []
     for relative in EXPECTED_FILES:
         path = folder / relative
