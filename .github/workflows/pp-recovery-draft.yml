@@ -127,6 +127,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: pp-recovery-receipt-py${{ matrix.python-version }}
+          overwrite: true
           path: pp-recovery-ci-receipt.json
           if-no-files-found: warn
           retention-days: 7
@@ -172,6 +173,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: pp-recovery-matrix-verdict
+          overwrite: true
           path: pp-recovery-matrix-verdict.json
           if-no-files-found: warn
           retention-days: 7
