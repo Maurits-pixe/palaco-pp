@@ -177,6 +177,30 @@ class RecoveryContractParityTests(unittest.TestCase):
                 with self.assertRaises(ValueError):
                     static_assignment("X = {'SOURCE_ATTESTATION': 'HOLD'}\n" + mutated, "X")
 
+    def test_nested_function_mutations_are_rejected(self):
+        sources = (
+            "def mutate():\n    X['gate'] = 'APPROVED'",
+            "def mutate():\n    X.update({'gate': 'APPROVED'})",
+            "def mutate():\n    global X\n    X = {'gate': 'APPROVED'}",
+            "class Hidden:\n    X.clear()",
+        )
+        for mutation in sources:
+            with self.subTest(mutation=mutation):
+                with self.assertRaises(ValueError):
+                    static_assignment("X = {'gate': 'BLOCKED'}\n" + mutation, "X")
+
+    def test_simple_aliases_are_rejected_even_in_nested_scope(self):
+        sources = (
+            "ALIAS = X\nALIAS.clear()",
+            "def mutate():\n    alias = X\n    alias.clear()",
+            "def mutate():\n    alias: dict = X",
+            "def mutate():\n    alias = (X := {})",
+        )
+        for mutation in sources:
+            with self.subTest(mutation=mutation):
+                with self.assertRaises(ValueError):
+                    static_assignment("X = {'gate': 'BLOCKED'}\n" + mutation, "X")
+
     def test_unrelated_declarations_do_not_trigger_mutation_guard(self):
         self.assertEqual(
             {"SOURCE_ATTESTATION": "HOLD"},
