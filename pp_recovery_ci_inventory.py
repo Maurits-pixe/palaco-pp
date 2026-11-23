@@ -39,8 +39,11 @@ def audit_security_inventory(
     ) | frozenset(INTEGRATION_SUITES)
     if len(set(runner_suites)) != len(runner_suites):
         raise ValueError("PP_CI_DUPLICATE_SUITE")
-    if frozenset(runner_suites) != required:
-        raise ValueError("PP_CI_UNREGISTERED_OR_MISSING_SUITE")
+    actual = frozenset(runner_suites)
+    if required - actual:
+        raise ValueError("PP_CI_MISSING_SUITE")
+    if actual - required:
+        raise ValueError("PP_CI_UNREGISTERED_SUITE")
     for module in CRITICAL_MODULES:
         source_path = base / f"{module}.py"
         if not source_path.is_file():
