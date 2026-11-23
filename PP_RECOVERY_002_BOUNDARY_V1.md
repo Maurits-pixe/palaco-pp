@@ -810,3 +810,28 @@ The existing strict CI suite includes
 or identity authorization follows from parity alone. GitHub Actions
 PASS has not been independently confirmed.
 **HOLD / DENY / NOT_AUTHORIZED**.
+
+
+## Nested contract mutation and direct alias rejection (draft v30, 23 November 2026)
+
+The source-only recovery parity guard now inspects **all AST scopes**
+rather than stopping at top-level statements. It rejects reassignment,
+deletion, direct dictionary/list mutations and common named in-place
+mutator calls referring to any of the five guarded contract constants,
+including inside function or class bodies. It also conservatively
+rejects direct aliases such as `alias = GATE_PREREQUISITES`, including
+nested aliases, because an alias could mutate a shared dictionary
+without referring to the original constant name again.
+
+Two additional synthetic test methods exercise nested function/class
+writes and direct alias escapes. Existing expected producer declarations
+remain unchanged. The audit never imports or executes the source text
+under inspection.
+
+The AST guard is **not a complete alias analysis**: reflective
+lookup via `globals()`, indirect effects through dynamically called
+helpers, or other adversarial control/data flows require separate
+review. Such gaps must not be described as verified. The strict
+test suite includes the parity tests on the draft branch, but no
+independent GitHub Actions PASS is confirmed here.
+**HOLD / DENY / NOT_AUTHORIZED**.
