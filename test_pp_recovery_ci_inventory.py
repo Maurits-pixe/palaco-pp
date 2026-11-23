@@ -114,6 +114,54 @@ class RecoveryCiInventoryTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "WITHOUT_DISCOVERABLE_TESTS"):
                 audit_security_inventory(SUITES, base)
 
+    def test_async_unittest_method_is_rejected(self):
+        with TemporaryDirectory() as temp:
+            base = Path(temp)
+            for module in CRITICAL_MODULES:
+                (base / f"{module}.py").write_text(
+                    "DENY = 'HOLD'\n", encoding="utf-8",
+                )
+            for suite in SUITES:
+                (base / f"{suite}.py").write_text(
+                    "import unittest\n"
+                    "class Tests(unittest.TestCase):\n"
+                    "    def test_guard(self):\n        pass\n",
+                    encoding="utf-8",
+                )
+            (base / f"{SUITES[0]}.py").write_text(
+                "import unittest\n"
+                "class Tests(unittest.TestCase):\n"
+                "    async def test_false_pass(self):\n"
+                "        raise AssertionError('ASYNC_ASSERTION_NEVER_AWAITED')\n",
+                encoding="utf-8",
+            )
+            with self.assertRaisesRegex(ValueError, "ASYNC_TEST_UNSUPPORTED"):
+                audit_security_inventory(SUITES, base)
+
+    def test_mixed_sync_async_suite_is_rejected(self):
+        with TemporaryDirectory() as temp:
+            base = Path(temp)
+            for module in CRITICAL_MODULES:
+                (base / f"{module}.py").write_text(
+                    "DENY = 'HOLD'\n", encoding="utf-8",
+                )
+            for suite in SUITES:
+                (base / f"{suite}.py").write_text(
+                    "import unittest\n"
+                    "class Tests(unittest.TestCase):\n"
+                    "    def test_guard(self):\n        pass\n",
+                    encoding="utf-8",
+                )
+            (base / f"{SUITES[0]}.py").write_text(
+                "import unittest\n"
+                "class Tests(unittest.TestCase):\n"
+                "    def test_sync(self):\n        pass\n"
+                "    async def test_async(self):\n        assert False\n",
+                encoding="utf-8",
+            )
+            with self.assertRaisesRegex(ValueError, "ASYNC_TEST_UNSUPPORTED"):
+                audit_security_inventory(SUITES, base)
+
     def test_empty_test_file_rejected(self):
         with TemporaryDirectory() as temp:
             base = Path(temp)
