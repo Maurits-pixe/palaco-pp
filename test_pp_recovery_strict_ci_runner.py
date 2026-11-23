@@ -126,7 +126,6 @@ class StrictRunnerPolicyTests(unittest.TestCase):
             unittest.TestSuite([unittest.TestSuite([case])])
         ))
 
-    @patch("pp_recovery_strict_ci_runner.verify_suite_origin", return_value=True)
     def test_reject_unrelated_or_missing_module_origin(self):
         self.assertFalse(verify_suite_origin("test_unexpected_suite"))
         self.assertFalse(verify_suite_origin("test_review_044_absent"))
@@ -146,6 +145,7 @@ class StrictRunnerPolicyTests(unittest.TestCase):
         __import__(name)
         self.assertTrue(verify_suite_origin(name))
 
+    @patch("pp_recovery_strict_ci_runner.verify_suite_origin", return_value=True)
     def test_no_false_pass_on_zero_executed(self, _origin):
         result = unittest.TestResult()
         inventory = {
