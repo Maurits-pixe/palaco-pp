@@ -23,6 +23,7 @@ MAX_ARTIFACT_BYTES = 8192
 
 def verify_matrix_artifacts(
     folder: Path, *, expected_sha: str, expected_run_id: str,
+    expected_attempt: str = "1",
 ) -> dict:
     """Require two exact matrix artifacts from the expected current run.
 
@@ -31,7 +32,8 @@ def verify_matrix_artifacts(
     """
     if (not isinstance(folder, Path)
             or type(expected_sha) is not str
-            or type(expected_run_id) is not str):
+            or type(expected_run_id) is not str
+            or type(expected_attempt) is not str):
         raise BoundaryInputError("PP_CI_MATRIX_INVALID")
     # The download directory must contain exactly the two known artifact
     # subdirectories and one receipt file inside each. Reject extras and
@@ -59,6 +61,7 @@ def verify_matrix_artifacts(
     observation = inspect_receipt_pair(*inputs)
     if (observation["commitSha"] != expected_sha
             or observation["workflowRunId"] != expected_run_id
+            or observation["workflowRunAttempt"] != expected_attempt
             or observation["syntheticExecution"] !=
                 "BOTH_RECORDED_SUCCESS_UNTRUSTED"
             or observation["authorization"] != "HOLD"
@@ -80,6 +83,7 @@ def main(argv: list[str] | None = None) -> int:
             args.artifacts,
             expected_sha=os.environ.get("GITHUB_SHA", ""),
             expected_run_id=os.environ.get("GITHUB_RUN_ID", ""),
+            expected_attempt=os.environ.get("GITHUB_RUN_ATTEMPT", ""),
         )
     except (BoundaryInputError, OSError, ValueError) as exc:
         print(f"PP_CI_MATRIX_REJECTED: {type(exc).__name__} / HOLD / DENY")
