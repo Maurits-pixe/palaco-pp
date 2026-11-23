@@ -15,6 +15,9 @@ class RecoveryCiInventoryTests(unittest.TestCase):
         result = audit_security_inventory(SUITES, ROOT)
         self.assertEqual(len(CRITICAL_MODULES), result["criticalModules"])
         self.assertEqual(len(SUITES), result["registeredSuites"])
+        counts = result["declaredTestMethodsBySuite"]
+        self.assertEqual(set(SUITES), set(counts))
+        self.assertTrue(all(type(count) is int and count > 0 for count in counts.values()))
         self.assertEqual("HOLD", result["authorization"])
         self.assertEqual("DENY", result["accessDecision"])
         self.assertEqual("BLOCKED", result["deployment"])
