@@ -7,8 +7,9 @@ from __future__ import annotations
 
 import sys
 import unittest
+from pathlib import Path
 
-from pp_recovery_ci_inventory import audit_security_inventory
+from pp_recovery_ci_inventory import ROOT, audit_security_inventory
 
 def loaded_test_ids(suite: unittest.TestSuite) -> list[str]:
     """Flatten unittest's actual test cases without running any tests."""
@@ -21,6 +22,30 @@ def loaded_test_ids(suite: unittest.TestSuite) -> list[str]:
         else:
             raise ValueError("PP_CI_UNEXPECTED_LOADED_ITEM")
     return ids
+
+
+
+def verify_suite_origin(name: str) -> bool:
+    """Reject an imported security suite outside the checked source tree."""
+    if type(name) is not str or not name.startswith("test_review_044_"):
+        return False
+    module = sys.modules.get(name)
+    origin = getattr(module, "__file__", None)
+    if type(origin) is not str:
+        return False
+    try:
+        root = ROOT.resolve(strict=True)
+        expected = root / f"{name}.py"
+        supplied = Path(origin)
+        return (
+            expected.is_file()
+            and not expected.is_symlink()
+            and supplied.is_file()
+            and not supplied.is_symlink()
+            and supplied.resolve(strict=True) == expected.resolve(strict=True)
+        )
+    except (OSError, ValueError, RuntimeError):
+        return False
 
 
 SUITES = (
@@ -85,6 +110,9 @@ def run(argv: list[str] | None = None) -> int:
             return 1
         if sorted(loaded_ids) != sorted(expected_ids[name]):
             print("PP_CI_LOADED_TEST_ID_MISMATCH / HOLD / DENY")
+            return 1
+        if not verify_suite_origin(name):
+            print("PP_CI_SUITE_ORIGIN_MISMATCH / HOLD / DENY")
             return 1
         combined.addTests(tests)
     runner = unittest.TextTestRunner(verbosity=2)
