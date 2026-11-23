@@ -911,3 +911,27 @@ and unknown suites retain meaningful matching error identifiers.
 These commits do not prove that the full test runner or GitHub
 Actions passed. No release, deployment, merge or recovery authorization
 has occurred. **HOLD / DENY / NOT_AUTHORIZED / BLOCKED**.
+
+
+## Unittest discovery coverage gate (draft v34, 23 November 2026)
+
+A review of all 11 explicitly scoped recovery security suites confirmed
+that the current test classes directly inherit `unittest.TestCase`.
+The earlier AST inventory accepted any class with a method named
+`test_*`, even a plain class that `unittest` will not discover.
+That allowed a falsely reassuring source-level inventory result.
+
+`pp_recovery_ci_inventory.py` now requires at least one
+`test_*` method inside a statically recognizable direct
+`unittest.TestCase` subclass. If absent, it rejects the suite with
+`PP_CI_SUITE_WITHOUT_DISCOVERABLE_TESTS`. One new negative
+regression covers an ordinary class containing an undiscoverable
+`test_*` method. The existing empty-suite test expects the more
+accurate failure identifier.
+
+This is a **static preflight**, not test execution. It deliberately
+does not infer inheritance through aliases or intermediate base classes.
+The strict runner must still actually load the suites, reject skip
+and unexpected success states, and require all tests to pass.
+Neither runtime CI results nor independent human review is established
+by this commit. **HOLD / DENY / NOT_AUTHORIZED / BLOCKED**.
