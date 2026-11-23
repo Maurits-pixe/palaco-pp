@@ -77,11 +77,23 @@ def audit_security_inventory(
                 for base_class in node.bases
             )
         ]
+        # unittest.TestCase does not await async test methods: an async
+        # method may return a coroutine without executing assertions.
+        # It is therefore never acceptable as a security regression.
+        async_tests = [
+            method
+            for test_class in test_classes
+            for method in test_class.body
+            if isinstance(method, ast.AsyncFunctionDef)
+            and method.name.startswith("test_")
+        ]
+        if async_tests:
+            raise ValueError("PP_CI_ASYNC_TEST_UNSUPPORTED")
         methods = [
             method
             for test_class in test_classes
             for method in test_class.body
-            if isinstance(method, (ast.FunctionDef, ast.AsyncFunctionDef))
+            if isinstance(method, ast.FunctionDef)
             and method.name.startswith("test_")
         ]
         if not methods:
