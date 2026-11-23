@@ -75,6 +75,35 @@ class CiMatrixGateTests(unittest.TestCase):
                     with self.assertRaises(BoundaryInputError):
                         verify_matrix_artifacts(root, **kwargs)
 
+    def test_reject_extra_artifact_directory(self):
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write_pair(root)
+            extra = root / "pp-recovery-receipt-py3.13"
+            extra.mkdir()
+            (extra / "pp-recovery-ci-receipt.json").write_bytes(b"{}")
+            with self.assertRaises(BoundaryInputError):
+                verify_matrix_artifacts(root, expected_sha=SHA, expected_run_id=RUN)
+
+    def test_reject_extra_file_in_artifact_directory(self):
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write_pair(root)
+            (root / EXPECTED_FILES[0].parent / "unexpected.json").write_bytes(b"{}")
+            with self.assertRaises(BoundaryInputError):
+                verify_matrix_artifacts(root, expected_sha=SHA, expected_run_id=RUN)
+
+    def test_reject_symlinked_parent_artifact_directory(self):
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write_pair(root)
+            directory = root / EXPECTED_FILES[1].parent
+            real = root / "saved-directory"
+            directory.rename(real)
+            directory.symlink_to(real, target_is_directory=True)
+            with self.assertRaises(BoundaryInputError):
+                verify_matrix_artifacts(root, expected_sha=SHA, expected_run_id=RUN)
+
     def test_reject_oversized_or_symlinked_artifact(self):
         with TemporaryDirectory() as tmp:
             root = Path(tmp)
