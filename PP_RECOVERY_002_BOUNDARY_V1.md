@@ -650,3 +650,28 @@ and are not independent provenance attestations. A successful
 GitHub Actions job also does not establish owner/reviewer authority,
 trusted identity binding or telecom permissions. No CI PASS has
 been verified in this turn. **HOLD / DENY / NOT_AUTHORIZED**.
+
+
+## Strict matrix artifact directory inventory (draft v24, 23 November 2026)
+
+The post-matrix verifier previously read two expected JSON paths while
+ignoring unexpected files and possible symlinked parent directories.
+It now requires **exactly two named artifact subdirectories**, each
+containing **exactly one expected JSON receipt**. An unexpected
+directory/file or symlinked artifact directory fails closed, as does
+the existing rejection of oversized, missing, tampered, stale or
+cross-run receipts.
+
+Three new synthetic test methods cover an extra version directory,
+extra file inside a known directory, and a parent directory symlink
+that points outside the artifact root. No trusted issuer, owner or
+reviewer authority is established by these filename checks.
+
+Manual verification:
+```powershell
+python -m unittest -v test_pp_recovery_ci_matrix_gate
+```
+
+Changes are committed only on the draft branch. No independent
+GitHub Actions PASS has been observed. Production remains
+**HOLD / DENY / NOT_AUTHORIZED**.
