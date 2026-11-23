@@ -12,13 +12,24 @@ import os
 from pathlib import Path
 
 from pp_recovery_ci_receipt_pair import inspect_receipt_pair
+from pp_recovery_ci_receipt import RUN_ATTEMPT
 from review_044_release_boundary_snapshot import BoundaryInputError
 
 EXPECTED_FILES = (
-    Path("pp-recovery-receipt-py3.11/pp-recovery-ci-receipt.json"),
-    Path("pp-recovery-receipt-py3.12/pp-recovery-ci-receipt.json"),
+    Path("pp-recovery-receipt-attempt1-py3.11/pp-recovery-ci-receipt.json"),
+    Path("pp-recovery-receipt-attempt1-py3.12/pp-recovery-ci-receipt.json"),
 )
 MAX_ARTIFACT_BYTES = 8192
+
+def expected_files_for_attempt(attempt: str) -> tuple[Path, Path]:
+    """Bind permitted artifact directory names to the exact run attempt."""
+    if type(attempt) is not str or RUN_ATTEMPT.fullmatch(attempt) is None:
+        raise BoundaryInputError("PP_CI_MATRIX_INVALID_ATTEMPT")
+    return tuple(
+        Path(str(path).replace("attempt1-", f"attempt{attempt}-", 1))
+        for path in EXPECTED_FILES
+    )
+
 
 
 def verify_matrix_artifacts(
@@ -38,7 +49,8 @@ def verify_matrix_artifacts(
     # The download directory must contain exactly the two known artifact
     # subdirectories and one receipt file inside each. Reject extras and
     # symlinked parents, rather than silently ignoring surprise evidence.
-    expected_dirs = {relative.parts[0] for relative in EXPECTED_FILES}
+    expected_files = expected_files_for_attempt(expected_attempt)
+    expected_dirs = {relative.parts[0] for relative in expected_files}
     if (folder.is_symlink() or not folder.is_dir()
             or {child.name for child in folder.iterdir()} != expected_dirs):
         raise BoundaryInputError("PP_CI_MATRIX_UNEXPECTED_ARTIFACT")
@@ -49,7 +61,7 @@ def verify_matrix_artifacts(
                 != {"pp-recovery-ci-receipt.json"}):
             raise BoundaryInputError("PP_CI_MATRIX_UNEXPECTED_ARTIFACT")
     inputs = []
-    for relative in EXPECTED_FILES:
+    for relative in expected_files:
         path = folder / relative
         if path.is_symlink() or not path.is_file():
             raise BoundaryInputError("PP_CI_MATRIX_MISSING_ARTIFACT")
