@@ -126,8 +126,7 @@ jobs:
         if: ${{ always() }}
         uses: actions/upload-artifact@v4
         with:
-          name: pp-recovery-receipt-py${{ matrix.python-version }}
-          overwrite: true
+          name: pp-recovery-receipt-attempt${{ github.run_attempt }}-py${{ matrix.python-version }}
           path: pp-recovery-ci-receipt.json
           if-no-files-found: warn
           retention-days: 7
@@ -154,7 +153,7 @@ jobs:
       - name: Retrieve both matrix receipts from this workflow run
         uses: actions/download-artifact@v4
         with:
-          pattern: pp-recovery-receipt-py*
+          pattern: pp-recovery-receipt-attempt${{ github.run_attempt }}-py*
           path: matrix-receipts
           merge-multiple: false
       - name: Export fail-closed final matrix verdict
@@ -172,8 +171,7 @@ jobs:
         if: ${{ always() }}
         uses: actions/upload-artifact@v4
         with:
-          name: pp-recovery-matrix-verdict
-          overwrite: true
+          name: pp-recovery-matrix-verdict-attempt${{ github.run_attempt }}
           path: pp-recovery-matrix-verdict.json
           if-no-files-found: warn
           retention-days: 7
