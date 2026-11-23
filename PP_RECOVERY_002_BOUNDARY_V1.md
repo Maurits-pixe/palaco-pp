@@ -675,3 +675,29 @@ python -m unittest -v test_pp_recovery_ci_matrix_gate
 Changes are committed only on the draft branch. No independent
 GitHub Actions PASS has been observed. Production remains
 **HOLD / DENY / NOT_AUTHORIZED**.
+
+
+## Machine-readable post-matrix verdict (draft v25, 23 November 2026)
+
+`pp_recovery_ci_matrix_verdict.py` adds a create-only, unsigned JSON
+verdict to the final post-matrix workflow. It calls the strict artifact
+verification logic and records a failure as
+`INCOMPLETE_OR_FAILED` with `PAIR_REJECTED` or
+`INVALID_WORKFLOW_CONTEXT`, returning a **nonzero process status**.
+Only an explicitly complete synthetic matrix produces
+`BOTH_RECORDED_SUCCESS_UNTRUSTED` and a zero exit status; even
+that still reports `externalCIConclusion: NOT_INDEPENDENTLY_VERIFIED`,
+`HOLD`, `DENY`, `NOT_AUTHORIZED` and `BLOCKED`.
+
+The separate GitHub Actions verification job now attempts to upload
+`pp-recovery-matrix-verdict.json` whether the check passes or fails.
+Six synthetic tests cover successful-but-untrusted execution,
+missing artifacts, skipped tests, malformed current-run context,
+export of a failing verdict, and overwrite rejection.
+
+A checkout, artifact-download, or interpreter failure *before* the
+verdict tool runs can still prevent artifact creation; absence of
+a verdict remains a failure to verify, never proof of success.
+No production/recovery authorization or merge has occurred.
+The GitHub Actions result was not independently verified in this
+turn. **HOLD / DENY / NOT_AUTHORIZED**.
