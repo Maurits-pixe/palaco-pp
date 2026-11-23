@@ -154,12 +154,12 @@ class RecoveryContractParityTests(unittest.TestCase):
             "X: int = 2",
             "X += 1",
             "X = 2",
-            "if True:\\n    X = 2",
+            "if True:\n    X = 2",
             "del X",
         ):
             with self.subTest(mutated=mutated):
                 with self.assertRaises(ValueError):
-                    static_assignment("X = 1\\n" + mutated, "X")
+                    static_assignment("X = 1\n" + mutated, "X")
 
     def test_indirect_collection_mutations_rejected(self):
         for mutated in (
@@ -171,13 +171,13 @@ class RecoveryContractParityTests(unittest.TestCase):
         ):
             with self.subTest(mutated=mutated):
                 with self.assertRaises(ValueError):
-                    static_assignment("X = {'SOURCE_ATTESTATION': 'HOLD'}\\n" + mutated, "X")
+                    static_assignment("X = {'SOURCE_ATTESTATION': 'HOLD'}\n" + mutated, "X")
 
     def test_unrelated_declarations_do_not_trigger_mutation_guard(self):
         self.assertEqual(
             {"SOURCE_ATTESTATION": "HOLD"},
             static_assignment(
-                "X = {'SOURCE_ATTESTATION': 'HOLD'}\\n"
+                "X = {'SOURCE_ATTESTATION': 'HOLD'}\n"
                 "OTHER = {'SOURCE_ATTESTATION': 'AUTO_APPROVE'}",
                 "X",
             ),
