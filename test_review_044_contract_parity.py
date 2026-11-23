@@ -23,19 +23,49 @@ SOURCES = {
 
 
 def static_assignment(source: str, variable: str):
-    """Return a literal top-level assignment. No exec/eval/import side effects."""
+    """Extract one immutable literal declaration; reject later top-level writes.
+
+    This is deliberately conservative: top-level rebinding, annotated
+    assignments, augmented assignments, subscripts and obvious in-place
+    mutator calls on the protected contract are refused. Nothing is executed.
+    """
     tree = ast.parse(source)
-    matches = []
-    for node in tree.body:
+    matches = [
+        node for node in tree.body
         if (isinstance(node, ast.Assign)
-                and len(node.targets) == 1
-                and isinstance(node.targets[0], ast.Name)
-                and node.targets[0].id == variable):
-            matches.append(node.value)
+            and len(node.targets) == 1
+            and isinstance(node.targets[0], ast.Name)
+            and node.targets[0].id == variable)
+    ]
     if len(matches) != 1:
         raise ValueError("PP_CONTRACT_MISSING_OR_AMBIGUOUS")
+    declaration = matches[0]
+    mutators = {
+        "update", "setdefault", "pop", "popitem", "clear",
+        "append", "extend", "insert", "remove", "sort", "reverse",
+    }
+    for stmt in tree.body:
+        if stmt is declaration:
+            continue
+        if isinstance(stmt, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+            continue
+        for node in ast.walk(stmt):
+            if (isinstance(node, ast.Name) and node.id == variable
+                    and isinstance(node.ctx, (ast.Store, ast.Del))):
+                raise ValueError("PP_CONTRACT_MUTATED")
+            if (isinstance(node, ast.Subscript)
+                    and isinstance(node.ctx, (ast.Store, ast.Del))
+                    and isinstance(node.value, ast.Name)
+                    and node.value.id == variable):
+                raise ValueError("PP_CONTRACT_MUTATED")
+            if (isinstance(node, ast.Call)
+                    and isinstance(node.func, ast.Attribute)
+                    and isinstance(node.func.value, ast.Name)
+                    and node.func.value.id == variable
+                    and node.func.attr in mutators):
+                raise ValueError("PP_CONTRACT_MUTATED")
     try:
-        return ast.literal_eval(matches[0])
+        return ast.literal_eval(declaration.value)
     except (ValueError, TypeError, RecursionError, MemoryError) as exc:
         raise ValueError("PP_CONTRACT_NOT_STATIC") from exc
 
