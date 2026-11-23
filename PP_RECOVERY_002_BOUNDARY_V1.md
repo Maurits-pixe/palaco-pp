@@ -1037,3 +1037,26 @@ run 45127611844 at commit `1093ae956781b2872c6b2af4496c65bc398cb3cc`.
 This new change must obtain its own passing workflow result
 before claiming CI PASS. No deployment, identity recovery or P.P.
 number authorization: **HOLD / DENY / NOT_AUTHORIZED / BLOCKED**.
+
+
+## Verified v37 synthetic CI run (23 November 2026)
+
+After adding source/loader/execution count reconciliation, GitHub Actions
+[run 45130235987](https://github.com/Maurits-pixe/palaco-pp/actions/runs/45130235987)
+completed with `conclusion: success` for commit
+`744144e24009354226cfb324835d4083b16812df`. The three jobs all
+reported success: Python 3.11 security regressions, Python 3.12
+security regressions and independent synthetic receipt-matrix verdict
+verification. Actual job logs confirm **56 CI-policy tests plus 87
+strict recovery tests per Python version**; combined across two
+versions this represents 286 test executions. Both versions logged
+`PP_CI_SYNTHETIC_PASS / 87 tests / AUTHORIZATION_HOLD`.
+The final job logged `BOTH_RECORDED_SUCCESS_UNTRUSTED`
+followed by `PP_CI_VERDICT_AUDIT_MATCH_UNTRUSTED`.
+
+The previous cancelled jobs were transient concurrency cancellations,
+not a replacement for this completed successful run. This result
+applies specifically to commit `744144e...`, before subsequent
+documentation-only edits. Test success concerns synthetic regression
+behavior; production and identity gates remain **HOLD / DENY /
+NOT_AUTHORIZED / BLOCKED**.
