@@ -58,6 +58,7 @@ def audit_security_inventory(
         except (SyntaxError, UnicodeError) as exc:
             raise ValueError("PP_CI_SOURCE_SYNTAX_INVALID") from exc
     declared_counts = {}
+    declared_ids = {}
     for name in runner_suites:
         path = base / f"{name}.py"
         if not path.is_file():
@@ -102,12 +103,22 @@ def audit_security_inventory(
         # Keep per-suite counts for a separate comparison with unittest's
         # actual loader. This is only an inventory, not execution proof.
         declared_counts[name] = len(methods)
+        declared_ids[name] = sorted(
+            f"{name}.{test_class.name}.{method.name}"
+            for test_class in test_classes
+            for method in test_class.body
+            if isinstance(method, ast.FunctionDef)
+            and method.name.startswith("test_")
+        )
+        if len(set(declared_ids[name])) != len(declared_ids[name]):
+            raise ValueError("PP_CI_DUPLICATE_DECLARED_TEST")
     return {
         "schema": "palaco.pp.recovery-002-ci-inventory-observation.v1",
         "reference": "PP-RECOVERY-002",
         "registeredSuites": len(runner_suites),
         "criticalModules": len(CRITICAL_MODULES),
         "declaredTestMethodsBySuite": declared_counts,
+        "declaredTestIdsBySuite": declared_ids,
         "coverageState": "ALL_SCOPED_FILES_PRESENT_NOT_EXECUTION_PROOF",
         "authorization": "HOLD",
         "accessDecision": "DENY",
