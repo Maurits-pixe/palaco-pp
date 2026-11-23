@@ -33,12 +33,14 @@ def _parse_receipt(raw: bytes) -> dict:
         expected = build_receipt(
             source["steps"], commit_sha=source["commitSha"],
             run_id=source["workflowRunId"],
+            run_attempt=source["workflowRunAttempt"],
             python_version=source["pythonVersion"],
         )
         if source != expected:
             raise ValueError
         if (source["commitSha"] == "NOT_AVAILABLE"
                 or source["workflowRunId"] == "NOT_AVAILABLE"
+                or source["workflowRunAttempt"] == "NOT_AVAILABLE"
                 or source["pythonVersion"] not in VERSIONS):
             raise ValueError
         return source
@@ -53,7 +55,8 @@ def inspect_receipt_pair(first_bytes: bytes, second_bytes: bytes) -> dict:
     if (first["pythonVersion"] == second["pythonVersion"]
             or {first["pythonVersion"], second["pythonVersion"]} != VERSIONS
             or first["commitSha"] != second["commitSha"]
-            or first["workflowRunId"] != second["workflowRunId"]):
+            or first["workflowRunId"] != second["workflowRunId"]
+            or first["workflowRunAttempt"] != second["workflowRunAttempt"]):
         raise BoundaryInputError("PP_CI_PAIR_MISMATCH")
     outcomes = (first["syntheticExecution"], second["syntheticExecution"])
     matched = all(
@@ -64,6 +67,7 @@ def inspect_receipt_pair(first_bytes: bytes, second_bytes: bytes) -> dict:
         "reference": "PP-RECOVERY-002",
         "commitSha": first["commitSha"],
         "workflowRunId": first["workflowRunId"],
+        "workflowRunAttempt": first["workflowRunAttempt"],
         "pythonVersions": ["3.11", "3.12"],
         "receiptSha256ByVersion": {
             first["pythonVersion"]: hashlib.sha256(first_bytes).hexdigest(),
