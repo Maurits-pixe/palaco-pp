@@ -1060,3 +1060,27 @@ applies specifically to commit `744144e...`, before subsequent
 documentation-only edits. Test success concerns synthetic regression
 behavior; production and identity gates remain **HOLD / DENY /
 NOT_AUTHORIZED / BLOCKED**.
+
+
+## Exact security test identities (draft v38, 23 November 2026)
+
+The strict synthetic CI suite now reconciles the **identities** of
+security tests, not just their counts. The static inventory records
+a sorted list of fully qualified `module.Class.test_method` IDs
+for each of its eleven explicitly scoped suites. The strict runner
+flattens `unittest.TestSuite` objects into actual loaded
+`unittest.TestCase.id()` values before execution. It rejects a
+loaded suite with the right number of tests but different IDs as
+`PP_CI_LOADED_TEST_ID_MISMATCH`. Missing or malformed identity
+inventories and unexpected suite elements fail closed too.
+
+Negative regression tests cover substitution of a test with the
+same count, absent identity inventory, and nested suite flattening.
+The prior skip, short-execution and zero-execution tests retain
+their intended coverage while satisfying identity preflight.
+
+This measures the **declared and loaded test method identities**,
+not the semantic quality of their assertions or actual provenance
+of sources. Source-independent CI verification and human review
+remain separate requirements. **HOLD / DENY / NOT_AUTHORIZED /
+BLOCKED** irrespective of a passing synthetic test matrix.
