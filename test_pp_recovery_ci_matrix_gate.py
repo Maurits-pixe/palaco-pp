@@ -14,7 +14,8 @@ RUN = "79123"
 
 
 def write_pair(root: Path, *, second_outcome: str = "success",
-               second_run: str = RUN, second_sha: str = SHA) -> None:
+               second_run: str = RUN, second_sha: str = SHA,
+               second_attempt: str = "1") -> None:
     for version, path in zip(("3.11", "3.12"), EXPECTED_FILES):
         target = root / path
         target.parent.mkdir(parents=True, exist_ok=True)
@@ -23,6 +24,7 @@ def write_pair(root: Path, *, second_outcome: str = "success",
                     else second_outcome) for step in STEPS},
             commit_sha=SHA if version == "3.11" else second_sha,
             run_id=RUN if version == "3.11" else second_run,
+            run_attempt="1" if version == "3.11" else second_attempt,
             python_version=version,
         )
         target.write_bytes(encode_receipt(receipt))
@@ -56,7 +58,8 @@ class CiMatrixGateTests(unittest.TestCase):
                     verify_matrix_artifacts(root, expected_sha=SHA, expected_run_id=RUN)
 
     def test_reject_cross_run_or_cross_commit_artifacts(self):
-        for changes in ({"second_run": "5"}, {"second_sha": "b" * 40}):
+        for changes in ({"second_run": "5"}, {"second_sha": "b" * 40},
+                        {"second_attempt": "2"}):
             with self.subTest(changes=changes), TemporaryDirectory() as tmp:
                 root = Path(tmp)
                 write_pair(root, **changes)
