@@ -17,8 +17,8 @@ from review_044_release_boundary_snapshot import BoundaryInputError
 
 SCHEMA = "palaco.pp.recovery-002-ci-matrix-verdict.v1"
 REASONS = frozenset({
-    "PAIR_REJECTED", "ARTIFACT_UNAVAILABLE",
-    "INVALID_WORKFLOW_CONTEXT", "PAIR_RECORDER_INCOMPLETE",
+    "PAIR_REJECTED", "INVALID_WORKFLOW_CONTEXT",
+    "PAIR_RECORDED_SUCCESS_UNTRUSTED",
 })
 
 
@@ -26,6 +26,7 @@ def assess_matrix(
     folder: Path, *, expected_sha: str, expected_run_id: str,
 ) -> dict:
     """Return a bounded refusal or successful *synthetic* observation."""
+    fingerprints = {}
     if (type(expected_sha) is not str
             or COMMIT_SHA.fullmatch(expected_sha) is None
             or type(expected_run_id) is not str
@@ -44,6 +45,9 @@ def assess_matrix(
         else:
             status = observed["syntheticExecution"]
             reason = "PAIR_RECORDED_SUCCESS_UNTRUSTED"
+            fingerprints = observed["receiptSha256ByVersion"]
+    if reason not in REASONS:
+        raise ValueError("PP_CI_MATRIX_VERDICT_INVALID_REASON")
     return {
         "schema": SCHEMA,
         "reference": "PP-RECOVERY-002",
@@ -57,6 +61,7 @@ def assess_matrix(
         ),
         "syntheticMatrixObservation": status,
         "reason": reason,
+        "receiptSha256ByVersion": fingerprints,
         "sourceAuthenticity": "NOT_ESTABLISHED",
         "externalCIConclusion": "NOT_INDEPENDENTLY_VERIFIED",
         "humanReview": "NOT_COMPLETED",
