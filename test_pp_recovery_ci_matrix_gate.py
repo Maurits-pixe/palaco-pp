@@ -95,10 +95,11 @@ class CiMatrixGateTests(unittest.TestCase):
 
     def test_reject_symlinked_parent_artifact_directory(self):
         with TemporaryDirectory() as tmp:
-            root = Path(tmp)
+            root = Path(tmp) / "matrix"
+            root.mkdir()
             write_pair(root)
             directory = root / EXPECTED_FILES[1].parent
-            real = root / "saved-directory"
+            real = Path(tmp) / "saved-directory"
             directory.rename(real)
             directory.symlink_to(real, target_is_directory=True)
             with self.assertRaises(BoundaryInputError):
