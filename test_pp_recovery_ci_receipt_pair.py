@@ -7,10 +7,10 @@ from pp_recovery_ci_receipt_pair import inspect_receipt_pair
 from review_044_release_boundary_snapshot import BoundaryInputError
 
 
-def receipt(version, *, run="1922", commit="a" * 40, outcome="success"):
+def receipt(version, *, run="1922", attempt="1", commit="a" * 40, outcome="success"):
     return encode_receipt(build_receipt(
         {name: outcome for name in STEPS},
-        commit_sha=commit, run_id=run, python_version=version,
+        commit_sha=commit, run_id=run, run_attempt=attempt, python_version=version,
     ))
 
 
@@ -23,6 +23,7 @@ class RecoveryCiReceiptPairTests(unittest.TestCase):
         self.assertEqual("DENY", result["accessDecision"])
         self.assertEqual("NOT_AUTHORIZED", result["issuance"])
         self.assertEqual("BLOCKED", result["deployment"])
+        self.assertEqual("1", result["workflowRunAttempt"])
 
     def test_failure_and_skipped_remain_incomplete(self):
         for outcome in ("failure", "skipped", "cancelled", "unknown"):
@@ -39,6 +40,7 @@ class RecoveryCiReceiptPairTests(unittest.TestCase):
     def test_reject_mismatched_run_or_commit(self):
         for altered in (
             receipt("3.12", run="1923"),
+            receipt("3.12", attempt="2"),
             receipt("3.12", commit="b" * 40),
         ):
             with self.subTest(altered=altered[:30]):
