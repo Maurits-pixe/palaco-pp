@@ -77,7 +77,7 @@ class RecoveryCiInventoryTests(unittest.TestCase):
                     encoding="utf-8",
                 )
             (base / f"{SUITES[0]}.py").write_text(
-                "import unittest\\nclass Broken(\\n", encoding="utf-8",
+                "import unittest\nclass Broken(\n", encoding="utf-8",
             )
             with self.assertRaises(SyntaxError):
                 audit_security_inventory(SUITES, base)
