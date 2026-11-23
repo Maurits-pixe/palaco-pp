@@ -10,6 +10,19 @@ import unittest
 
 from pp_recovery_ci_inventory import audit_security_inventory
 
+def loaded_test_ids(suite: unittest.TestSuite) -> list[str]:
+    """Flatten unittest's actual test cases without running any tests."""
+    ids = []
+    for item in suite:
+        if isinstance(item, unittest.TestSuite):
+            ids.extend(loaded_test_ids(item))
+        elif isinstance(item, unittest.TestCase):
+            ids.append(item.id())
+        else:
+            raise ValueError("PP_CI_UNEXPECTED_LOADED_ITEM")
+    return ids
+
+
 SUITES = (
     "test_review_044_contract_parity",
     "test_review_044_recovery_chain_e2e",
@@ -45,6 +58,15 @@ def run(argv: list[str] | None = None) -> int:
                    or declared[name] < 1 for name in SUITES)):
         print("PP_CI_DECLARED_COUNTS_INVALID / HOLD / DENY")
         return 1
+    expected_ids = inventory.get("declaredTestIdsBySuite")
+    if (type(expected_ids) is not dict or set(expected_ids) != set(SUITES)
+            or any(type(expected_ids.get(name)) is not list
+                   or len(expected_ids[name]) != declared[name]
+                   or any(type(item) is not str for item in expected_ids[name])
+                   or len(set(expected_ids[name])) != len(expected_ids[name])
+                   for name in SUITES)):
+        print("PP_CI_DECLARED_IDS_INVALID / HOLD / DENY")
+        return 1
     loader = unittest.defaultTestLoader
     combined = unittest.TestSuite()
     for name in SUITES:
@@ -55,6 +77,14 @@ def run(argv: list[str] | None = None) -> int:
             return 1
         if actual_count != declared[name]:
             print("PP_CI_LOADED_TEST_COUNT_MISMATCH / HOLD / DENY")
+            return 1
+        try:
+            loaded_ids = loaded_test_ids(tests)
+        except (ValueError, TypeError):
+            print("PP_CI_LOADED_TEST_ID_INVALID / HOLD / DENY")
+            return 1
+        if sorted(loaded_ids) != sorted(expected_ids[name]):
+            print("PP_CI_LOADED_TEST_ID_MISMATCH / HOLD / DENY")
             return 1
         combined.addTests(tests)
     runner = unittest.TextTestRunner(verbosity=2)
