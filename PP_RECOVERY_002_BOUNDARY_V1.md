@@ -961,3 +961,45 @@ it is not automatically trusted by this static inventory.
 No complete runtime test execution or GitHub Actions PASS has
 been confirmed by this change. No merge, deployment, owner
 authorization or number issuance: **HOLD / DENY / NOT_AUTHORIZED**.
+
+
+## First independently checked GitHub Actions success (23 November 2026)
+
+The previous repeated statement "no confirmed CI PASS" was limited by
+a commit-status/PR-run endpoint that did not surface the relevant runs.
+Direct inspection of the branch's GitHub Actions run collection now
+confirms actual workflow run
+[45126879152](https://github.com/Maurits-pixe/palaco-pp/actions/runs/45126879152),
+triggered by `pull_request`, with `conclusion: success`, on
+commit `6ca299a0eee61a7a93f880e0bcbb3419d08e85d8`
+(draft v35), completed 23 November 2026 at 06:51 UTC.
+
+The workflow job API reports three successfully completed jobs:
+
+- `Synthetic recovery security (Python 3.11)`: **success**,
+  including Python compilation, strict CI policy/unittest,
+  offline synthetic regressions, denial-boundary confirmation
+  and unsigned receipt artifact upload.
+- `Synthetic recovery security (Python 3.12)`: **success**,
+  with the equivalent checks and receipt upload.
+- `Verify both unsigned Python receipts (never authorize)`:
+  **success**, including artifact download, fail-closed
+  matrix verdict export and exact-byte verdict audit.
+
+The workflow's artifact API also confirms these three stored ZIP
+artifacts for this run (archive digests are provided by GitHub,
+distinct from the embedded receipt-byte digests):
+
+| Artifact | GitHub artifact id | GitHub SHA-256 archive digest |
+| --- | ---: | --- |
+| `pp-recovery-receipt-attempt1-py3.11` | 14795354686 | `30aebb1944975ea71a4d4954cd3f957c619288d93d9cab193e27d1b4a404f5d7` |
+| `pp-recovery-receipt-attempt1-py3.12` | 14796092091 | `ef6ae03ba5f9135c160b1c6a5b3ef703885f9646b02909c89881b5b6eed28089` |
+| `pp-recovery-matrix-verdict-attempt1` | 14795792772 | `ae310738eb55f37710f854b9c2a35147cc319c42705f7a2250a2f80025251cb3` |
+
+Artifact retention was configured for seven days; artifacts may expire
+30 November 2026. This records a real GitHub Actions run result for
+the **specified commit**, not a new runtime test executed by this
+documentation commit or a blanket PASS for later branch changes.
+Workflow success does not authenticate P.P. ownership, third-party
+source provenance, signing authority or independent human review.
+**HOLD / DENY / NOT_AUTHORIZED / BLOCKED** remains unchanged.
