@@ -25,6 +25,7 @@ class MatrixVerdictTests(unittest.TestCase):
             self.assertEqual("DENY", result["accessDecision"])
             self.assertEqual("NOT_AUTHORIZED", result["issuance"])
             self.assertEqual("BLOCKED", result["deployment"])
+            self.assertEqual("1", result["workflowRunAttempt"])
             self.assertEqual({"3.11", "3.12"}, set(result["receiptSha256ByVersion"]))
             self.assertTrue(all(len(value) == 64 for value in result["receiptSha256ByVersion"].values()))
 
