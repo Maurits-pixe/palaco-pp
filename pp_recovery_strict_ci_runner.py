@@ -39,12 +39,22 @@ def run(argv: list[str] | None = None) -> int:
             or inventory["accessDecision"] != "DENY"):
         print("PP_CI_INVENTORY_AUTHORIZATION_INVALID / HOLD / DENY")
         return 1
+    declared = inventory.get("declaredTestMethodsBySuite")
+    if (type(declared) is not dict or set(declared) != set(SUITES)
+            or any(type(declared.get(name)) is not int
+                   or declared[name] < 1 for name in SUITES)):
+        print("PP_CI_DECLARED_COUNTS_INVALID / HOLD / DENY")
+        return 1
     loader = unittest.defaultTestLoader
     combined = unittest.TestSuite()
     for name in SUITES:
         tests = loader.loadTestsFromName(name)
-        if tests.countTestCases() == 0:
+        actual_count = tests.countTestCases()
+        if actual_count == 0:
             print("PP_CI_EMPTY_SUITE / HOLD / DENY")
+            return 1
+        if actual_count != declared[name]:
+            print("PP_CI_LOADED_TEST_COUNT_MISMATCH / HOLD / DENY")
             return 1
         combined.addTests(tests)
     runner = unittest.TextTestRunner(verbosity=2)
