@@ -1378,3 +1378,27 @@ This in-process module-location check does **not** establish
 independent bytecode provenance, a trusted Python interpreter or
 a real owner identity. The recovery boundary remains
 **DRAFT / HOLD / DENY / NOT_AUTHORIZED / BLOCKED**.
+
+
+## In-run critical import binding (draft v52, 24 November 2026)
+
+After the scoped suites are loaded, the strict synthetic CI runner
+retains strong references to each imported critical recovery module.
+After tests finish, every such module must still be bound to the
+**same Python module object** in `sys.modules`. In addition to the
+existing post-run file-origin and SHA-256 checks, this detects
+replacement with a new object even if the substitute advertises the
+same canonical source path and its on-disk bytes match. Removing an
+existing module binding also fails closed under
+`PP_CI_CRITICAL_IMPORT_OBJECT_CHANGED_DURING_RUN`.
+
+New runner-level negative regressions exercise an external-path
+shadow first appearing during execution (rejected by
+`PP_CI_CRITICAL_IMPORT_CHANGED_DURING_RUN`), same-path module-object
+replacement and disappearance of a previously loaded module. Each
+test uses temporary synthetic module objects and explicitly avoids
+executing production identity-recovery actions.
+
+This is in-process runtime consistency evidence, not cryptographic
+module attestation or evidence of a trustworthy interpreter.
+**DRAFT / HOLD / DENY / NOT_AUTHORIZED / BLOCKED** continues.
