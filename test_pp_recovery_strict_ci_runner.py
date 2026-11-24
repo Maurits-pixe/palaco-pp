@@ -9,7 +9,7 @@ from unittest.mock import patch
 import unittest
 
 from pp_recovery_strict_ci_runner import (SUITES, loaded_test_ids, run,
-    verify_suite_origin, verify_critical_source_integrity, verify_test_source_integrity)
+    verify_suite_origin, verify_critical_source_integrity, verify_test_source_integrity, TrackingTextTestResult)
 from pp_recovery_ci_inventory import CRITICAL_MODULES, ROOT
 
 
@@ -30,6 +30,7 @@ class StrictRunnerPolicyTests(unittest.TestCase):
         result = unittest.TestResult()
         result.testsRun = len(SUITES)
         result.skipped.append((None, "dependency missing"))
+        result.started_test_ids = ["SYNTHETIC_ID"] * len(SUITES)
         inventory = {
             "authorization": "HOLD", "accessDecision": "DENY",
             "declaredTestMethodsBySuite": {name: 1 for name in SUITES},
@@ -91,6 +92,7 @@ class StrictRunnerPolicyTests(unittest.TestCase):
         }
         result = unittest.TestResult()
         result.testsRun = 1
+        result.started_test_ids = ["SYNTHETIC_ID"] * len(SUITES)
         with patch("pp_recovery_strict_ci_runner.audit_security_inventory",
                    return_value=inventory):
             with patch("pp_recovery_strict_ci_runner.unittest.defaultTestLoader.loadTestsFromName",
@@ -100,6 +102,48 @@ class StrictRunnerPolicyTests(unittest.TestCase):
                         with redirect_stdout(StringIO()) as log:
                             self.assertEqual(1, run())
                         self.assertIn("INCOMPLETE_OR_FAILED", log.getvalue())
+
+    def test_tracking_result_records_exact_test_ids(self):
+        class SyntheticCase(unittest.TestCase):
+            def test_hold(self):
+                self.assertEqual("HOLD", "HOLD")
+        stream = StringIO()
+        case = SyntheticCase("test_hold")
+        result = TrackingTextTestResult(stream, True, 2)
+        result.startTest(case)
+        result.stopTest(case)
+        self.assertEqual([case.id()], result.started_test_ids)
+        self.assertEqual(1, result.testsRun)
+
+    def test_substituted_executed_id_is_rejected_despite_matching_count(self):
+        from pp_recovery_ci_inventory import audit_security_inventory
+        inventory = audit_security_inventory(SUITES)
+        result = unittest.TestResult()
+        total = sum(inventory["declaredTestMethodsBySuite"].values())
+        result.testsRun = total
+        expected = [test for name in SUITES
+                    for test in inventory["declaredTestIdsBySuite"][name]]
+        result.started_test_ids = expected[:-1] + ["test_fake.Swapped.test_fake"]
+        with patch("pp_recovery_strict_ci_runner.audit_security_inventory",
+                   return_value=inventory):
+            with patch("pp_recovery_strict_ci_runner.unittest.TextTestRunner.run",
+                       return_value=result):
+                with redirect_stdout(StringIO()) as log:
+                    self.assertEqual(1, run())
+                self.assertIn("EXECUTED_TEST_ID_MISMATCH", log.getvalue())
+
+    def test_missing_execution_identity_records_fail_closed(self):
+        from pp_recovery_ci_inventory import audit_security_inventory
+        inventory = audit_security_inventory(SUITES)
+        result = unittest.TestResult()
+        result.testsRun = sum(inventory["declaredTestMethodsBySuite"].values())
+        with patch("pp_recovery_strict_ci_runner.audit_security_inventory",
+                   return_value=inventory):
+            with patch("pp_recovery_strict_ci_runner.unittest.TextTestRunner.run",
+                       return_value=result):
+                with redirect_stdout(StringIO()) as log:
+                    self.assertEqual(1, run())
+                self.assertIn("EXECUTED_TEST_ID_MISMATCH", log.getvalue())
 
     def test_same_count_with_substituted_method_id_fails_closed(self):
         inventory = {
