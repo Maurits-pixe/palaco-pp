@@ -19,6 +19,8 @@ class TrackingTextTestResult(unittest.TextTestResult):
     def __init__(self, stream, descriptions, verbosity):
         super().__init__(stream, descriptions, verbosity)
         self.started_test_ids: list[str] = []
+        self.started_test_object_ids: list[int] = []
+        self.stopped_test_object_ids: list[int] = []
         self.stopped_test_ids: list[str] = []
         self.test_lifecycle_events: list[tuple[str, str]] = []
         self.test_outcome_events: list[tuple[str, str]] = []
@@ -57,6 +59,7 @@ class TrackingTextTestResult(unittest.TextTestResult):
     def startTest(self, test):
         test_id = test.id()
         self.started_test_ids.append(test_id)
+        self.started_test_object_ids.append(id(test))
         self.test_lifecycle_events.append(("start", test_id))
         self.test_event_trace.append(("start", test_id))
         super().startTest(test)
@@ -64,9 +67,23 @@ class TrackingTextTestResult(unittest.TextTestResult):
     def stopTest(self, test):
         test_id = test.id()
         self.stopped_test_ids.append(test_id)
+        self.stopped_test_object_ids.append(id(test))
         self.test_lifecycle_events.append(("stop", test_id))
         self.test_event_trace.append(("stop", test_id))
         super().stopTest(test)
+
+
+def loaded_test_objects(suite: unittest.TestSuite) -> list[unittest.TestCase]:
+    """Retain actual loaded objects while unittest runs; refuse other items."""
+    objects = []
+    for item in suite:
+        if isinstance(item, unittest.TestSuite):
+            objects.extend(loaded_test_objects(item))
+        elif isinstance(item, unittest.TestCase):
+            objects.append(item)
+        else:
+            raise ValueError("PP_CI_UNEXPECTED_LOADED_ITEM")
+    return objects
 
 
 def loaded_test_ids(suite: unittest.TestSuite) -> list[str]:
@@ -215,6 +232,7 @@ def run(argv: list[str] | None = None) -> int:
     loader = unittest.defaultTestLoader
     combined = unittest.TestSuite()
     expected_started_ids = []
+    expected_test_objects = []
     for name in SUITES:
         tests = loader.loadTestsFromName(name)
         actual_count = tests.countTestCases()
@@ -235,6 +253,15 @@ def run(argv: list[str] | None = None) -> int:
         if not verify_suite_origin(name, hashes[name]):
             print("PP_CI_SUITE_ORIGIN_MISMATCH / HOLD / DENY")
             return 1
+        try:
+            cases = loaded_test_objects(tests)
+        except (TypeError, ValueError):
+            print("PP_CI_LOADED_OBJECT_INVALID / HOLD / DENY")
+            return 1
+        if len(cases) != actual_count:
+            print("PP_CI_LOADED_OBJECT_COUNT_MISMATCH / HOLD / DENY")
+            return 1
+        expected_test_objects.extend(cases)
         expected_started_ids.extend(expected_ids[name])
         combined.addTests(tests)
     # Check every suite, including those loaded earlier in the loop.
@@ -302,6 +329,17 @@ def run(argv: list[str] | None = None) -> int:
             or result.expectedFailures
             or result.unexpectedSuccesses):
         print("PP_CI_INCOMPLETE_OR_FAILED / HOLD / DENY")
+        return 1
+    # Same name is not the same loaded TestCase instance. Retain strong
+    # references above so Python cannot reuse an object identity mid-run.
+    expected_object_ids = [id(case) for case in expected_test_objects]
+    started_objects = getattr(result, "started_test_object_ids", None)
+    stopped_objects = getattr(result, "stopped_test_object_ids", None)
+    if (type(started_objects) is not list
+            or type(stopped_objects) is not list
+            or started_objects != expected_object_ids
+            or stopped_objects != expected_object_ids):
+        print("PP_CI_EXECUTED_TEST_OBJECT_MISMATCH / HOLD / DENY")
         return 1
     print(f"PP_CI_SYNTHETIC_PASS / {result.testsRun} tests / AUTHORIZATION_HOLD")
     return 0
