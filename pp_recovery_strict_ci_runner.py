@@ -370,15 +370,15 @@ def run(argv: list[str] | None = None) -> int:
     if not verify_critical_source_integrity(critical_hashes):
         print("PP_CI_CRITICAL_SOURCE_CHANGED_DURING_RUN / HOLD / DENY")
         return 1
-    if not verify_loaded_test_class_bindings(expected_test_objects):
-        print("PP_CI_TEST_CLASS_BINDING_CHANGED_DURING_RUN / HOLD / DENY")
-        return 1
     if any(sys.modules.get(name) is not module
            for name, module in loaded_suite_modules.items()):
         print("PP_CI_TEST_IMPORT_OBJECT_CHANGED_DURING_RUN / HOLD / DENY")
         return 1
     if any(not verify_suite_origin(name, hashes[name]) for name in SUITES):
         print("PP_CI_TEST_IMPORT_ORIGIN_CHANGED_DURING_RUN / HOLD / DENY")
+        return 1
+    if not verify_loaded_test_class_bindings(expected_test_objects):
+        print("PP_CI_TEST_CLASS_BINDING_CHANGED_DURING_RUN / HOLD / DENY")
         return 1
     if not verify_imported_critical_module_origins(critical_hashes):
         print("PP_CI_CRITICAL_IMPORT_CHANGED_DURING_RUN / HOLD / DENY")
