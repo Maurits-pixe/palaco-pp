@@ -147,6 +147,34 @@ def verify_loaded_test_method_snapshot(snapshot: object) -> bool:
             ))
 
 
+def snapshot_test_method_code(methods: object) -> dict | None:
+    """Retain exact code objects for the selected, registered test methods."""
+    if type(methods) is not dict or not methods:
+        return None
+    snapshot = {}
+    for key, function in methods.items():
+        if (type(key) is not tuple or len(key) != 2
+                or type(function) is not type(snapshot_test_method_code)):
+            return None
+        code = getattr(function, "__code__", None)
+        if type(code) is not type(snapshot_test_method_code.__code__):
+            return None
+        snapshot[key] = (function, code)
+    return snapshot
+
+
+def verify_test_method_code_snapshot(snapshot: object) -> bool:
+    """A class method's function and its executable code must remain pinned."""
+    return (type(snapshot) is dict and bool(snapshot)
+            and all(
+                type(key) is tuple and len(key) == 2
+                and type(pair) is tuple and len(pair) == 2
+                and type(pair[0]) is type(snapshot_test_method_code)
+                and pair[0].__code__ is pair[1]
+                for key, pair in snapshot.items()
+            ))
+
+
 def loaded_test_ids(suite: unittest.TestSuite) -> list[str]:
     """Flatten unittest's actual test cases without running any tests."""
     ids = []
@@ -381,6 +409,10 @@ def run(argv: list[str] | None = None) -> int:
     if loaded_method_snapshot is None:
         print("PP_CI_LOADED_TEST_METHOD_INVALID / HOLD / DENY")
         return 1
+    loaded_code_snapshot = snapshot_test_method_code(loaded_method_snapshot)
+    if loaded_code_snapshot is None:
+        print("PP_CI_LOADED_TEST_CODE_INVALID / HOLD / DENY")
+        return 1
     # Pin every loaded security-suite module, not just each TestCase.
     # The module must remain the audited import for the whole test run.
     if any(not verify_suite_origin(name, hashes[name]) for name in SUITES):
@@ -422,6 +454,9 @@ def run(argv: list[str] | None = None) -> int:
         return 1
     if not verify_loaded_test_method_snapshot(loaded_method_snapshot):
         print("PP_CI_TEST_METHOD_CHANGED_DURING_RUN / HOLD / DENY")
+        return 1
+    if not verify_test_method_code_snapshot(loaded_code_snapshot):
+        print("PP_CI_TEST_CODE_CHANGED_DURING_RUN / HOLD / DENY")
         return 1
     if not verify_loaded_test_class_bindings(expected_test_objects):
         print("PP_CI_TEST_CLASS_BINDING_CHANGED_DURING_RUN / HOLD / DENY")
