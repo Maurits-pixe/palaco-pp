@@ -108,6 +108,45 @@ def verify_loaded_test_class_bindings(cases: object) -> bool:
     return True
 
 
+def snapshot_loaded_test_methods(cases: object) -> dict | None:
+    """Pin the exact class-level test functions selected by unittest.
+
+    Reject instance-level overrides, descriptors and inherited methods.
+    Only the registered class's own ordinary function may be executed.
+    """
+    if type(cases) is not list or not cases:
+        return None
+    selected = {}
+    for case in cases:
+        if not isinstance(case, unittest.TestCase):
+            return None
+        cls = type(case)
+        method = getattr(case, "_testMethodName", None)
+        if (type(method) is not str or not method.startswith("test_")
+                or method in vars(case)):
+            return None
+        source_function = vars(cls).get(method)
+        if (type(source_function) is not type(snapshot_loaded_test_methods)
+                or source_function.__module__ != cls.__module__):
+            return None
+        key = (cls, method)
+        previous = selected.get(key)
+        if previous is not None and previous is not source_function:
+            return None
+        selected[key] = source_function
+    return selected if selected else None
+
+
+def verify_loaded_test_method_snapshot(snapshot: object) -> bool:
+    """No audited class-level test method can be rebound or removed."""
+    return (type(snapshot) is dict and bool(snapshot)
+            and all(
+                type(cls) is type and type(method) is str
+                and vars(cls).get(method) is source_function
+                for (cls, method), source_function in snapshot.items()
+            ))
+
+
 def loaded_test_ids(suite: unittest.TestSuite) -> list[str]:
     """Flatten unittest's actual test cases without running any tests."""
     ids = []
@@ -338,6 +377,10 @@ def run(argv: list[str] | None = None) -> int:
     if not verify_loaded_test_class_bindings(expected_test_objects):
         print("PP_CI_LOADED_TEST_CLASS_BINDING_INVALID / HOLD / DENY")
         return 1
+    loaded_method_snapshot = snapshot_loaded_test_methods(expected_test_objects)
+    if loaded_method_snapshot is None:
+        print("PP_CI_LOADED_TEST_METHOD_INVALID / HOLD / DENY")
+        return 1
     # Pin every loaded security-suite module, not just each TestCase.
     # The module must remain the audited import for the whole test run.
     if any(not verify_suite_origin(name, hashes[name]) for name in SUITES):
@@ -379,6 +422,9 @@ def run(argv: list[str] | None = None) -> int:
         return 1
     if not verify_loaded_test_class_bindings(expected_test_objects):
         print("PP_CI_TEST_CLASS_BINDING_CHANGED_DURING_RUN / HOLD / DENY")
+        return 1
+    if not verify_loaded_test_method_snapshot(loaded_method_snapshot):
+        print("PP_CI_TEST_METHOD_CHANGED_DURING_RUN / HOLD / DENY")
         return 1
     if not verify_imported_critical_module_origins(critical_hashes):
         print("PP_CI_CRITICAL_IMPORT_CHANGED_DURING_RUN / HOLD / DENY")
