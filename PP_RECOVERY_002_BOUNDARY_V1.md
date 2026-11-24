@@ -1163,3 +1163,25 @@ These same-process checks do **not** provide an independently
 signed provenance statement, immutable snapshot, hostile-runner
 security guarantee or live identity verification. Even a clean
 test run remains **HOLD / DENY / NOT_AUTHORIZED / BLOCKED**.
+
+
+## Mutation timing regression enforcement (draft v43, 24 November 2026)
+
+Four synthetic negative regressions now exercise the actual
+`pp_recovery_strict_ci_runner.run()` state machine, rather than
+testing source-hash helpers only. They simulate a previously valid
+digest check turning invalid during the suite-loading phase or
+after a nominally successful execution. Coverage includes both
+the eleven test suite sources and the nine critical recovery
+modules. The tests assert a nonzero exit status, the precise
+fail-closed error identifier and whether test execution was
+correctly prevented or had already occurred.
+
+The scenarios never modify actual repository files or issue
+identity grants. They use a synthetic response sequence from the
+source-integrity verifier while loading the genuine scoped
+test suites. This is behavior-oriented evidence that a late
+integrity mismatch cannot be turned into a synthetic CI PASS.
+
+A real GitHub Actions workflow run is required to confirm the
+new regressions. **HOLD / DENY / NOT_AUTHORIZED / BLOCKED**.
