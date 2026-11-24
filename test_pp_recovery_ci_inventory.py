@@ -109,7 +109,61 @@ class RecoveryCiInventoryTests(unittest.TestCase):
             (base / f"{SUITES[0]}.py").write_text(
                 "import unittest\nclass Broken(\n", encoding="utf-8",
             )
-            with self.assertRaises(SyntaxError):
+            with self.assertRaisesRegex(ValueError, "TEST_SYNTAX_INVALID"):
+                audit_security_inventory(SUITES, base)
+
+    def _create_valid_synthetic_inventory_sources(self, base):
+        for module in CRITICAL_MODULES:
+            (base / f"{module}.py").write_text(
+                "AUTHORIZATION = 'HOLD'\n", encoding="utf-8"
+            )
+        for suite in SUITES:
+            (base / f"{suite}.py").write_text(
+                "import unittest\n"
+                "class Tests(unittest.TestCase):\n"
+                "    def test_denial(self):\n"
+                "        self.assertEqual('HOLD', 'HOLD')\n",
+                encoding="utf-8",
+            )
+
+    def test_symlinked_critical_module_rejected_even_with_valid_target(self):
+        with TemporaryDirectory() as temp:
+            base = Path(temp)
+            self._create_valid_synthetic_inventory_sources(base)
+            target = base / f"{CRITICAL_MODULES[0]}.py"
+            outside = base / "same_source.py"
+            outside.write_bytes(target.read_bytes())
+            target.unlink()
+            target.symlink_to(outside)
+            with self.assertRaisesRegex(ValueError, "SOURCE_SYMLINK_FORBIDDEN"):
+                audit_security_inventory(SUITES, base)
+
+    def test_symlinked_security_suite_rejected_even_with_valid_target(self):
+        with TemporaryDirectory() as temp:
+            base = Path(temp)
+            self._create_valid_synthetic_inventory_sources(base)
+            target = base / f"{SUITES[0]}.py"
+            outside = base / "same_test.py"
+            outside.write_bytes(target.read_bytes())
+            target.unlink()
+            target.symlink_to(outside)
+            with self.assertRaisesRegex(ValueError, "TEST_SYMLINK_FORBIDDEN"):
+                audit_security_inventory(SUITES, base)
+
+    def test_invalid_utf8_critical_module_fails_closed(self):
+        with TemporaryDirectory() as temp:
+            base = Path(temp)
+            self._create_valid_synthetic_inventory_sources(base)
+            (base / f"{CRITICAL_MODULES[0]}.py").write_bytes(b"\xff\xfe")
+            with self.assertRaisesRegex(ValueError, "SOURCE_SYNTAX_INVALID"):
+                audit_security_inventory(SUITES, base)
+
+    def test_invalid_utf8_security_suite_fails_closed(self):
+        with TemporaryDirectory() as temp:
+            base = Path(temp)
+            self._create_valid_synthetic_inventory_sources(base)
+            (base / f"{SUITES[0]}.py").write_bytes(b"\xff\xfe")
+            with self.assertRaisesRegex(ValueError, "TEST_SYNTAX_INVALID"):
                 audit_security_inventory(SUITES, base)
 
     def test_plain_class_test_method_does_not_count_as_coverage(self):
