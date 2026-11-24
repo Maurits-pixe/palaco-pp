@@ -21,6 +21,31 @@ class TrackingTextTestResult(unittest.TextTestResult):
         self.started_test_ids: list[str] = []
         self.stopped_test_ids: list[str] = []
         self.test_lifecycle_events: list[tuple[str, str]] = []
+        self.test_outcome_events: list[tuple[str, str]] = []
+
+    def addSuccess(self, test):
+        self.test_outcome_events.append(("success", test.id()))
+        super().addSuccess(test)
+
+    def addFailure(self, test, err):
+        self.test_outcome_events.append(("failure", test.id()))
+        super().addFailure(test, err)
+
+    def addError(self, test, err):
+        self.test_outcome_events.append(("error", test.id()))
+        super().addError(test, err)
+
+    def addSkip(self, test, reason):
+        self.test_outcome_events.append(("skip", test.id()))
+        super().addSkip(test, reason)
+
+    def addExpectedFailure(self, test, err):
+        self.test_outcome_events.append(("expected_failure", test.id()))
+        super().addExpectedFailure(test, err)
+
+    def addUnexpectedSuccess(self, test):
+        self.test_outcome_events.append(("unexpected_success", test.id()))
+        super().addUnexpectedSuccess(test)
 
     def startTest(self, test):
         test_id = test.id()
@@ -242,6 +267,13 @@ def run(argv: list[str] | None = None) -> int:
             or type(events) is not list
             or events != expected_events):
         print("PP_CI_TEST_LIFECYCLE_MISMATCH / HOLD / DENY")
+        return 1
+    # Every started test must produce exactly one successful unittest
+    # outcome, in the same order. A start/stop pair by itself is not a PASS.
+    outcomes = getattr(result, "test_outcome_events", None)
+    expected_outcomes = [("success", test_id) for test_id in started]
+    if type(outcomes) is not list or outcomes != expected_outcomes:
+        print("PP_CI_TEST_OUTCOME_MISMATCH / HOLD / DENY")
         return 1
     if (not result.wasSuccessful()
             or result.testsRun != sum(declared.values())
