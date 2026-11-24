@@ -13,6 +13,18 @@ from pathlib import Path
 
 from pp_recovery_ci_inventory import CRITICAL_MODULES, ROOT, audit_security_inventory
 
+class TrackingTextTestResult(unittest.TextTestResult):
+    """Record each test actually started by unittest, including repeats."""
+
+    def __init__(self, stream, descriptions, verbosity):
+        super().__init__(stream, descriptions, verbosity)
+        self.started_test_ids: list[str] = []
+
+    def startTest(self, test):
+        self.started_test_ids.append(test.id())
+        super().startTest(test)
+
+
 def loaded_test_ids(suite: unittest.TestSuite) -> list[str]:
     """Flatten unittest's actual test cases without running any tests."""
     ids = []
@@ -158,6 +170,7 @@ def run(argv: list[str] | None = None) -> int:
         return 1
     loader = unittest.defaultTestLoader
     combined = unittest.TestSuite()
+    expected_started_ids = []
     for name in SUITES:
         tests = loader.loadTestsFromName(name)
         actual_count = tests.countTestCases()
@@ -178,6 +191,7 @@ def run(argv: list[str] | None = None) -> int:
         if not verify_suite_origin(name, hashes[name]):
             print("PP_CI_SUITE_ORIGIN_MISMATCH / HOLD / DENY")
             return 1
+        expected_started_ids.extend(expected_ids[name])
         combined.addTests(tests)
     # Check every suite, including those loaded earlier in the loop.
     if not verify_test_source_integrity(hashes):
@@ -187,7 +201,7 @@ def run(argv: list[str] | None = None) -> int:
     if not verify_critical_source_integrity(critical_hashes):
         print("PP_CI_CRITICAL_SOURCE_CHANGED_DURING_LOAD / HOLD / DENY")
         return 1
-    runner = unittest.TextTestRunner(verbosity=2)
+    runner = unittest.TextTestRunner(verbosity=2, resultclass=TrackingTextTestResult)
     result = runner.run(combined)
     if not verify_test_source_integrity(hashes):
         print("PP_CI_TEST_SOURCE_CHANGED_DURING_RUN / HOLD / DENY")
@@ -195,6 +209,13 @@ def run(argv: list[str] | None = None) -> int:
     # A successful test run is invalid when the audited code changed mid-run.
     if not verify_critical_source_integrity(critical_hashes):
         print("PP_CI_CRITICAL_SOURCE_CHANGED_DURING_RUN / HOLD / DENY")
+        return 1
+    # A count alone cannot detect duplicated or substituted executions.
+    started = getattr(result, "started_test_ids", None)
+    if (type(started) is not list
+            or any(type(item) is not str for item in started)
+            or sorted(started) != sorted(expected_started_ids)):
+        print("PP_CI_EXECUTED_TEST_ID_MISMATCH / HOLD / DENY")
         return 1
     if (not result.wasSuccessful()
             or result.testsRun != sum(declared.values())
