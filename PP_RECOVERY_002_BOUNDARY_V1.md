@@ -1471,3 +1471,28 @@ in-process binding evidence; it does **not** cryptographically attest
 the Python bytecode, prove the trustworthiness of the runner, or
 authorize account recovery. **DRAFT / HOLD / DENY /
 NOT_AUTHORIZED / BLOCKED** continues.
+
+
+## In-place test code-object stability (draft v56, 24 November 2026)
+
+The strict synthetic CI runner now takes a second snapshot of the
+selected registered `unittest.TestCase.test_*` functions' executable
+`__code__` objects, in addition to v55's class-level function-object
+binding snapshot. After the synthetic security tests have run, the
+runner requires every function's exact code object to remain
+unchanged. A replacement of `function.__code__` that preserves the
+same class, function, method name and disk-source SHA-256 fails closed
+with `PP_CI_TEST_CODE_CHANGED_DURING_RUN`. Missing or invalid initial
+code metadata fails before execution under
+`PP_CI_LOADED_TEST_CODE_INVALID`.
+
+New negative regressions simulate in-place code replacement and
+invalid/missing snapshot metadata; a positive case verifies actual
+scoped security test methods. Tests restore modified function code
+in a `finally` block.
+
+This is an **in-process Python code-object binding check**, not a
+trusted interpreter, independently signed binary attestation, proof
+of code semantic equivalence or identity verification.
+The release boundary remains
+**DRAFT / HOLD / DENY / NOT_AUTHORIZED / BLOCKED**.
