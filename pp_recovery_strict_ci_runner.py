@@ -422,7 +422,8 @@ def run(argv: list[str] | None = None) -> int:
         return 1
     if not verify_loaded_test_method_snapshot(loaded_method_snapshot):
         print("PP_CI_TEST_METHOD_CHANGED_DURING_RUN / HOLD / DENY")
-        return 1    if not verify_loaded_test_class_bindings(expected_test_objects):
+        return 1
+    if not verify_loaded_test_class_bindings(expected_test_objects):
         print("PP_CI_TEST_CLASS_BINDING_CHANGED_DURING_RUN / HOLD / DENY")
         return 1
 
