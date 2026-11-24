@@ -1,4 +1,5 @@
 """Synthetic unit checks for CI's fail-closed test-result policy."""
+import copy
 from contextlib import redirect_stdout
 from io import StringIO
 import hashlib
@@ -8,7 +9,7 @@ from types import ModuleType
 from unittest.mock import patch
 import unittest
 
-from pp_recovery_strict_ci_runner import (SUITES, loaded_test_ids, run,
+from pp_recovery_strict_ci_runner import (SUITES, loaded_test_ids, loaded_test_objects, run,
     verify_suite_origin, verify_critical_source_integrity, verify_test_source_integrity, TrackingTextTestResult)
 from pp_recovery_ci_inventory import CRITICAL_MODULES, ROOT
 
@@ -143,6 +144,8 @@ class StrictRunnerPolicyTests(unittest.TestCase):
             stream=stream, verbosity=2, resultclass=TrackingTextTestResult
         ).run(unittest.TestSuite([case]))
         self.assertEqual([case.id()], result.started_test_ids)
+        self.assertEqual([id(case)], result.started_test_object_ids)
+        self.assertEqual([id(case)], result.stopped_test_object_ids)
         self.assertEqual([case.id()], result.stopped_test_ids)
         self.assertEqual([("success", case.id())], result.test_outcome_events)
         self.assertEqual(
@@ -155,6 +158,85 @@ class StrictRunnerPolicyTests(unittest.TestCase):
             result.test_lifecycle_events,
         )
         self.assertEqual(1, result.testsRun)
+
+    def test_nested_loaded_suite_preserves_original_object_references(self):
+        class SyntheticCase(unittest.TestCase):
+            def test_hold(self):
+                self.assertEqual("HOLD", "HOLD")
+        case = SyntheticCase("test_hold")
+        nested = unittest.TestSuite([unittest.TestSuite([case])])
+        self.assertIs(case, loaded_test_objects(nested)[0])
+
+    def test_same_named_substitute_test_objects_fail_closed(self):
+        from pp_recovery_ci_inventory import audit_security_inventory
+        inventory = audit_security_inventory(SUITES)
+
+        def replace_actual_objects(suite):
+            original = loaded_test_objects(suite)
+            substitutes = [copy.copy(case) for case in original]
+            self.assertEqual([case.id() for case in original],
+                             [case.id() for case in substitutes])
+            self.assertTrue(all(first is not second for first, second
+                                in zip(original, substitutes)))
+            result = unittest.TestResult()
+            ids = [case.id() for case in original]
+            result.testsRun = len(ids)
+            result.started_test_ids = ids
+            result.stopped_test_ids = ids
+            result.test_lifecycle_events = [
+                event for test_id in ids
+                for event in (("start", test_id), ("stop", test_id))
+            ]
+            result.test_outcome_events = [
+                ("success", test_id) for test_id in ids
+            ]
+            result.test_event_trace = [
+                event for test_id in ids
+                for event in (("start", test_id), ("success", test_id),
+                              ("stop", test_id))
+            ]
+            result.started_test_object_ids = [id(case) for case in substitutes]
+            result.stopped_test_object_ids = [id(case) for case in substitutes]
+            return result
+
+        with patch("pp_recovery_strict_ci_runner.audit_security_inventory",
+                   return_value=inventory):
+            with patch("pp_recovery_strict_ci_runner.unittest.TextTestRunner.run",
+                       side_effect=replace_actual_objects):
+                with redirect_stdout(StringIO()) as log:
+                    self.assertEqual(1, run())
+                self.assertIn("EXECUTED_TEST_OBJECT_MISMATCH", log.getvalue())
+
+    def test_missing_object_identity_records_fail_closed(self):
+        from pp_recovery_ci_inventory import audit_security_inventory
+        inventory = audit_security_inventory(SUITES)
+        def synthetic_result(suite):
+            cases = loaded_test_objects(suite)
+            ids = [case.id() for case in cases]
+            result = unittest.TestResult()
+            result.testsRun = len(ids)
+            result.started_test_ids = ids
+            result.stopped_test_ids = ids
+            result.test_lifecycle_events = [
+                event for test_id in ids
+                for event in (("start", test_id), ("stop", test_id))
+            ]
+            result.test_outcome_events = [
+                ("success", test_id) for test_id in ids
+            ]
+            result.test_event_trace = [
+                event for test_id in ids
+                for event in (("start", test_id), ("success", test_id),
+                              ("stop", test_id))
+            ]
+            return result
+        with patch("pp_recovery_strict_ci_runner.audit_security_inventory",
+                   return_value=inventory):
+            with patch("pp_recovery_strict_ci_runner.unittest.TextTestRunner.run",
+                       side_effect=synthetic_result):
+                with redirect_stdout(StringIO()) as log:
+                    self.assertEqual(1, run())
+                self.assertIn("EXECUTED_TEST_OBJECT_MISMATCH", log.getvalue())
 
     def test_substituted_executed_id_is_rejected_despite_matching_count(self):
         from pp_recovery_ci_inventory import audit_security_inventory
