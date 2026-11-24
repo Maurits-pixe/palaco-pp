@@ -13,8 +13,67 @@ from pp_recovery_strict_ci_runner import (SUITES, loaded_test_ids, loaded_test_o
     verify_suite_origin, verify_critical_source_integrity, verify_test_source_integrity, TrackingTextTestResult)
 from pp_recovery_ci_inventory import CRITICAL_MODULES, ROOT
 
+BOUNDARY_METADATA = {
+    "schema": "palaco.pp.recovery-002-ci-inventory-observation.v1",
+    "reference": "PP-RECOVERY-002",
+    "coverageState": "ALL_SCOPED_FILES_PRESENT_NOT_EXECUTION_PROOF",
+    "registeredSuites": len(SUITES),
+    "criticalModules": len(CRITICAL_MODULES),
+    "issuance": "NOT_AUTHORIZED",
+    "deployment": "BLOCKED",
+}
+
 
 class StrictRunnerPolicyTests(unittest.TestCase):
+    def test_unauthorized_issuance_or_unblocked_deployment_fails_closed(self):
+        from pp_recovery_ci_inventory import audit_security_inventory
+        for field, invalid in (("issuance", "AUTHORIZED"),
+                               ("issuance", None),
+                               ("deployment", "READY"),
+                               ("deployment", None)):
+            with self.subTest(field=field, invalid=invalid):
+                inventory = audit_security_inventory(SUITES)
+                inventory[field] = invalid
+                with patch("pp_recovery_strict_ci_runner.audit_security_inventory",
+                           return_value=inventory):
+                    with patch("pp_recovery_strict_ci_runner.unittest.TextTestRunner.run") as execute:
+                        with redirect_stdout(StringIO()) as log:
+                            self.assertEqual(1, run())
+                        self.assertIn("INVENTORY_AUTHORIZATION_INVALID", log.getvalue())
+                        execute.assert_not_called()
+
+    def test_mismatched_provenance_or_coverage_metadata_fails_closed(self):
+        from pp_recovery_ci_inventory import audit_security_inventory
+        cases = (
+            ("schema", "unknown.schema"),
+            ("reference", "OTHER-RECOVERY"),
+            ("coverageState", "EXECUTION_PROVEN"),
+            ("registeredSuites", len(SUITES) - 1),
+            ("criticalModules", len(CRITICAL_MODULES) + 1),
+        )
+        for field, invalid in cases:
+            with self.subTest(field=field):
+                inventory = audit_security_inventory(SUITES)
+                inventory[field] = invalid
+                with patch("pp_recovery_strict_ci_runner.audit_security_inventory",
+                           return_value=inventory):
+                    with patch("pp_recovery_strict_ci_runner.unittest.TextTestRunner.run") as execute:
+                        with redirect_stdout(StringIO()) as log:
+                            self.assertEqual(1, run())
+                        self.assertIn("INVENTORY_BOUNDARY_INVALID", log.getvalue())
+                        execute.assert_not_called()
+
+    def test_missing_boundary_field_fails_closed(self):
+        from pp_recovery_ci_inventory import audit_security_inventory
+        for field in ("issuance", "deployment", "schema", "coverageState"):
+            with self.subTest(field=field):
+                inventory = audit_security_inventory(SUITES)
+                del inventory[field]
+                with patch("pp_recovery_strict_ci_runner.audit_security_inventory",
+                           return_value=inventory):
+                    with redirect_stdout(StringIO()):
+                        self.assertEqual(1, run())
+
     def test_reject_arguments(self):
         with redirect_stdout(StringIO()):
             self.assertEqual(2, run(["--unverified"]))
@@ -48,7 +107,7 @@ class StrictRunnerPolicyTests(unittest.TestCase):
             for item in (("start", "SYNTHETIC_ID"), ("stop", "SYNTHETIC_ID"))
         ]
         inventory = {
-            "authorization": "HOLD", "accessDecision": "DENY",
+            **BOUNDARY_METADATA, "authorization": "HOLD", "accessDecision": "DENY",
             "declaredTestMethodsBySuite": {name: 1 for name in SUITES},
             "declaredTestIdsBySuite": {name: ["SYNTHETIC_ID"] for name in SUITES},
             "testSourceSha256BySuite": {name: hashlib.sha256((ROOT / f"{name}.py").read_bytes()).hexdigest() for name in SUITES},
@@ -67,7 +126,7 @@ class StrictRunnerPolicyTests(unittest.TestCase):
 
     def test_loaded_count_mismatch_is_rejected_before_execution(self):
         inventory = {
-            "authorization": "HOLD",
+            **BOUNDARY_METADATA, "authorization": "HOLD",
             "accessDecision": "DENY",
             "declaredTestMethodsBySuite": {name: 2 for name in SUITES},
             "declaredTestIdsBySuite": {name: ["SYNTHETIC_ID_1", "SYNTHETIC_ID_2"] for name in SUITES},
@@ -89,7 +148,7 @@ class StrictRunnerPolicyTests(unittest.TestCase):
 
     def test_declared_count_map_missing_is_rejected(self):
         with patch("pp_recovery_strict_ci_runner.audit_security_inventory",
-                   return_value={"authorization": "HOLD", "accessDecision": "DENY"}):
+                   return_value={**BOUNDARY_METADATA, "authorization": "HOLD", "accessDecision": "DENY"}):
             with redirect_stdout(StringIO()) as log:
                 self.assertEqual(1, run())
             self.assertIn("DECLARED_COUNTS_INVALID", log.getvalue())
@@ -97,7 +156,7 @@ class StrictRunnerPolicyTests(unittest.TestCase):
     @patch("pp_recovery_strict_ci_runner.verify_suite_origin", return_value=True)
     def test_short_executed_count_cannot_report_pass(self, _origin):
         inventory = {
-            "authorization": "HOLD",
+            **BOUNDARY_METADATA, "authorization": "HOLD",
             "accessDecision": "DENY",
             "declaredTestMethodsBySuite": {name: 1 for name in SUITES},
             "declaredTestIdsBySuite": {name: ["SYNTHETIC_ID"] for name in SUITES},
@@ -482,7 +541,7 @@ class StrictRunnerPolicyTests(unittest.TestCase):
 
     def test_same_count_with_substituted_method_id_fails_closed(self):
         inventory = {
-            "authorization": "HOLD",
+            **BOUNDARY_METADATA, "authorization": "HOLD",
             "accessDecision": "DENY",
             "declaredTestMethodsBySuite": {name: 1 for name in SUITES},
             "declaredTestIdsBySuite": {name: ["EXPECTED_TEST"] for name in SUITES},
@@ -505,7 +564,7 @@ class StrictRunnerPolicyTests(unittest.TestCase):
 
     def test_missing_declared_id_inventory_fails_closed(self):
         inventory = {
-            "authorization": "HOLD",
+            **BOUNDARY_METADATA, "authorization": "HOLD",
             "accessDecision": "DENY",
             "declaredTestMethodsBySuite": {name: 1 for name in SUITES},
         }
@@ -548,7 +607,7 @@ class StrictRunnerPolicyTests(unittest.TestCase):
 
     def test_missing_source_hash_map_rejected(self):
         inventory = {
-            "authorization": "HOLD", "accessDecision": "DENY",
+            **BOUNDARY_METADATA, "authorization": "HOLD", "accessDecision": "DENY",
             "declaredTestMethodsBySuite": {name: 1 for name in SUITES},
             "declaredTestIdsBySuite": {name: ["SYNTHETIC_ID"] for name in SUITES},
         }
@@ -585,7 +644,7 @@ class StrictRunnerPolicyTests(unittest.TestCase):
 
     def test_missing_critical_source_hash_inventory_rejected(self):
         inventory = {
-            "authorization": "HOLD", "accessDecision": "DENY",
+            **BOUNDARY_METADATA, "authorization": "HOLD", "accessDecision": "DENY",
             "declaredTestMethodsBySuite": {name: 1 for name in SUITES},
             "declaredTestIdsBySuite": {name: ["SYNTHETIC_ID"] for name in SUITES},
             "testSourceSha256BySuite": {name: hashlib.sha256((ROOT / f"{name}.py").read_bytes()).hexdigest() for name in SUITES},
@@ -694,7 +753,7 @@ class StrictRunnerPolicyTests(unittest.TestCase):
     def test_no_false_pass_on_zero_executed(self, _origin):
         result = unittest.TestResult()
         inventory = {
-            "authorization": "HOLD", "accessDecision": "DENY",
+            **BOUNDARY_METADATA, "authorization": "HOLD", "accessDecision": "DENY",
             "declaredTestMethodsBySuite": {name: 1 for name in SUITES},
             "declaredTestIdsBySuite": {name: ["SYNTHETIC_ID"] for name in SUITES},
             "testSourceSha256BySuite": {name: hashlib.sha256((ROOT / f"{name}.py").read_bytes()).hexdigest() for name in SUITES},
