@@ -313,6 +313,12 @@ def run(argv: list[str] | None = None) -> int:
         expected_test_objects.extend(cases)
         expected_started_ids.extend(expected_ids[name])
         combined.addTests(tests)
+    # Pin every loaded security-suite module, not just each TestCase.
+    # The module must remain the audited import for the whole test run.
+    if any(not verify_suite_origin(name, hashes[name]) for name in SUITES):
+        print("PP_CI_TEST_IMPORT_ORIGIN_MISMATCH / HOLD / DENY")
+        return 1
+    loaded_suite_modules = {name: sys.modules[name] for name in SUITES}
     if not verify_imported_critical_module_origins(critical_hashes):
         print("PP_CI_CRITICAL_IMPORT_ORIGIN_MISMATCH / HOLD / DENY")
         return 1
@@ -338,6 +344,13 @@ def run(argv: list[str] | None = None) -> int:
     # A successful test run is invalid when the audited code changed mid-run.
     if not verify_critical_source_integrity(critical_hashes):
         print("PP_CI_CRITICAL_SOURCE_CHANGED_DURING_RUN / HOLD / DENY")
+        return 1
+    if any(sys.modules.get(name) is not module
+           for name, module in loaded_suite_modules.items()):
+        print("PP_CI_TEST_IMPORT_OBJECT_CHANGED_DURING_RUN / HOLD / DENY")
+        return 1
+    if any(not verify_suite_origin(name, hashes[name]) for name in SUITES):
+        print("PP_CI_TEST_IMPORT_ORIGIN_CHANGED_DURING_RUN / HOLD / DENY")
         return 1
     if not verify_imported_critical_module_origins(critical_hashes):
         print("PP_CI_CRITICAL_IMPORT_CHANGED_DURING_RUN / HOLD / DENY")
