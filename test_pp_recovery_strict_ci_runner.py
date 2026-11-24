@@ -13,6 +13,7 @@ from pp_recovery_strict_ci_runner import (SUITES, loaded_test_ids, loaded_test_o
     verify_suite_origin, verify_critical_source_integrity, verify_test_source_integrity,
     verify_imported_critical_module_origins, verify_loaded_test_class_bindings,
     snapshot_loaded_test_methods, verify_loaded_test_method_snapshot,
+    snapshot_test_method_code, verify_test_method_code_snapshot,
     TrackingTextTestResult)
 from pp_recovery_ci_inventory import CRITICAL_MODULES, ROOT
 
@@ -431,6 +432,56 @@ class StrictRunnerPolicyTests(unittest.TestCase):
         finally:
             setattr(cls, method, original)
 
+    def test_test_method_code_snapshot_accepts_authentic_methods(self):
+        for name in SUITES:
+            __import__(name)
+        cases = [
+            case for name in SUITES
+            for case in loaded_test_objects(
+                unittest.defaultTestLoader.loadTestsFromName(name)
+            )
+        ]
+        methods = snapshot_loaded_test_methods(cases)
+        snapshot = snapshot_test_method_code(methods)
+        self.assertIsNotNone(snapshot)
+        self.assertTrue(verify_test_method_code_snapshot(snapshot))
+
+    def test_in_place_code_replacement_during_run_fails_closed(self):
+        from pp_recovery_ci_inventory import audit_security_inventory
+        inventory = audit_security_inventory(SUITES)
+        for name in SUITES:
+            __import__(name)
+        case = loaded_test_objects(
+            unittest.defaultTestLoader.loadTestsFromName(SUITES[0])
+        )[0]
+        function = vars(type(case))[case._testMethodName]
+        original_code = function.__code__
+        # Replacing __code__ does not change the function or class identity.
+        def replacement(self):
+            return None
+        try:
+            def swap_code(_suite):
+                function.__code__ = replacement.__code__
+                return unittest.TestResult()
+            with patch("pp_recovery_strict_ci_runner.audit_security_inventory",
+                       return_value=inventory):
+                with patch("pp_recovery_strict_ci_runner.unittest.TextTestRunner.run",
+                           side_effect=swap_code) as execute:
+                    with redirect_stdout(StringIO()) as log:
+                        self.assertEqual(1, run())
+                    self.assertIn("TEST_CODE_CHANGED_DURING_RUN", log.getvalue())
+                    execute.assert_called_once()
+        finally:
+            function.__code__ = original_code
+
+    def test_code_snapshot_rejects_missing_or_invalid_metadata(self):
+        self.assertIsNone(snapshot_test_method_code({}))
+        self.assertFalse(verify_test_method_code_snapshot(None))
+        self.assertFalse(verify_test_method_code_snapshot({}))
+        self.assertFalse(verify_test_method_code_snapshot({
+            ("Fake", "test_guard"): ("not-a-function", None)
+        }))
+
     def test_reject_arguments(self):
         with redirect_stdout(StringIO()):
             self.assertEqual(2, run(["--unverified"]))
@@ -514,7 +565,9 @@ class StrictRunnerPolicyTests(unittest.TestCase):
     @patch("pp_recovery_strict_ci_runner.verify_loaded_test_class_bindings", return_value=True)
     @patch("pp_recovery_strict_ci_runner.snapshot_loaded_test_methods", return_value={})
     @patch("pp_recovery_strict_ci_runner.verify_loaded_test_method_snapshot", return_value=True)
-    def test_short_executed_count_cannot_report_pass(self, _method_verification, _method_snapshot, _class_binding, _origin):
+    @patch("pp_recovery_strict_ci_runner.snapshot_test_method_code", return_value={})
+    @patch("pp_recovery_strict_ci_runner.verify_test_method_code_snapshot", return_value=True)
+    def test_short_executed_count_cannot_report_pass(self, _code_verification, _code_snapshot, _method_verification, _method_snapshot, _class_binding, _origin):
         inventory = {
             **BOUNDARY_METADATA, "authorization": "HOLD",
             "accessDecision": "DENY",
