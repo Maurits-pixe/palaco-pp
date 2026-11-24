@@ -1496,3 +1496,28 @@ trusted interpreter, independently signed binary attestation, proof
 of code semantic equivalence or identity verification.
 The release boundary remains
 **DRAFT / HOLD / DENY / NOT_AUTHORIZED / BLOCKED**.
+
+
+## Test method execution parameter guard (draft v57, 24 November 2026)
+
+The strict synthetic CI runner now rejects any selected, audited
+`unittest.TestCase.test_*` class function with positional defaults
+(`__defaults__`), keyword defaults (`__kwdefaults__`) or captured
+closure cells (`__closure__`). These are execution-relevant function
+properties that may change test semantics without changing the
+function identity or `__code__` object. All eleven scoped suites
+use ordinary `test_*(self)` methods that need none of these.
+
+Before execution, disallowed function state fails closed as
+`PP_CI_TEST_METHOD_PARAMETERS_INVALID`. A repeat check after the
+synthetic tests rejects newly introduced defaults with
+`PP_CI_TEST_METHOD_PARAMETERS_CHANGED_DURING_RUN`. Five policy
+regressions cover the real registered test methods, positional and
+keyword defaults, closures, and post-load injections of each type
+of default. Each synthetic mutation is restored in a `finally`.
+
+This constrains the reviewed unittest method interface only:
+it neither monitors all module globals nor proves that transient
+mutations undone before the final check did not occur. It is not a
+trusted interpreter or independent code execution attestation.
+**DRAFT / HOLD / DENY / NOT_AUTHORIZED / BLOCKED**.
