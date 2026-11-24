@@ -196,9 +196,23 @@ def run(argv: list[str] | None = None) -> int:
     except (ValueError, OSError, SyntaxError) as exc:
         print(f"PP_CI_INVENTORY_FAILED: {type(exc).__name__} / HOLD / DENY")
         return 1
-    if (inventory["authorization"] != "HOLD"
-            or inventory["accessDecision"] != "DENY"):
+    if (type(inventory) is not dict
+            or inventory.get("authorization") != "HOLD"
+            or inventory.get("accessDecision") != "DENY"
+            or inventory.get("issuance") != "NOT_AUTHORIZED"
+            or inventory.get("deployment") != "BLOCKED"):
         print("PP_CI_INVENTORY_AUTHORIZATION_INVALID / HOLD / DENY")
+        return 1
+    if (inventory.get("schema")
+            != "palaco.pp.recovery-002-ci-inventory-observation.v1"
+            or inventory.get("reference") != "PP-RECOVERY-002"
+            or inventory.get("coverageState")
+            != "ALL_SCOPED_FILES_PRESENT_NOT_EXECUTION_PROOF"
+            or type(inventory.get("registeredSuites")) is not int
+            or inventory["registeredSuites"] != len(SUITES)
+            or type(inventory.get("criticalModules")) is not int
+            or inventory["criticalModules"] != len(CRITICAL_MODULES)):
+        print("PP_CI_INVENTORY_BOUNDARY_INVALID / HOLD / DENY")
         return 1
     declared = inventory.get("declaredTestMethodsBySuite")
     if (type(declared) is not dict or set(declared) != set(SUITES)
