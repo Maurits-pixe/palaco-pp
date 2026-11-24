@@ -168,6 +168,11 @@ class StrictRunnerPolicyTests(unittest.TestCase):
         original.__file__ = str(ROOT / f"{name}.py")
         substitute = ModuleType(name)
         substitute.__file__ = original.__file__
+        # Import real test suites before installing a synthetic module.
+        # Otherwise Python's first suite import can fail at discovery
+        # instead of exercising the intended post-run gate.
+        for suite_name in SUITES:
+            __import__(suite_name)
         with patch.dict("sys.modules", {name: original}):
             def replace_module(_suite):
                 sys.modules[name] = substitute
@@ -191,6 +196,11 @@ class StrictRunnerPolicyTests(unittest.TestCase):
         name = CRITICAL_MODULES[0]
         original = ModuleType(name)
         original.__file__ = str(ROOT / f"{name}.py")
+        # Import real test suites before installing a synthetic module.
+        # Otherwise Python's first suite import can fail at discovery
+        # instead of exercising the intended post-run gate.
+        for suite_name in SUITES:
+            __import__(suite_name)
         with patch.dict("sys.modules", {name: original}):
             def remove_module(_suite):
                 sys.modules.pop(name, None)
