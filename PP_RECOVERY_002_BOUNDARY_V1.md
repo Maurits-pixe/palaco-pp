@@ -1185,3 +1185,26 @@ integrity mismatch cannot be turned into a synthetic CI PASS.
 
 A real GitHub Actions workflow run is required to confirm the
 new regressions. **HOLD / DENY / NOT_AUTHORIZED / BLOCKED**.
+
+
+## Executed test identity reconciliation (draft v44, 24 November 2026)
+
+The strict runner now uses a custom `TrackingTextTestResult` that
+captures the precise `unittest.TestCase.id()` from every
+`startTest()` invocation. Following the synthetic run and its
+source-integrity rechecks, the runner compares the complete sorted
+multiset of **actually started IDs** to the inventoried IDs across
+all eleven security suites. Equal counts alone are insufficient:
+missing, repeated or substituted started IDs fail closed as
+`PP_CI_EXECUTED_TEST_ID_MISMATCH`.
+
+Additional negative regressions simulate a replaced executed test
+with the correct total count and a result without execution identity
+records. A focused test validates actual `startTest()` recording.
+Existing mocked runner-result tests retain the earlier coverage of
+skips and test count mismatches.
+
+This captures the framework's in-process test-start events, not
+a third-party runtime attestation or a guarantee that assertions
+were meaningful. Release, identity and P.P. number gates remain
+**HOLD / DENY / NOT_AUTHORIZED / BLOCKED**.
