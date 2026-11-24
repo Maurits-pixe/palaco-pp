@@ -435,7 +435,8 @@ class StrictRunnerPolicyTests(unittest.TestCase):
             self.assertIn("DECLARED_COUNTS_INVALID", log.getvalue())
 
     @patch("pp_recovery_strict_ci_runner.verify_suite_origin", return_value=True)
-    def test_short_executed_count_cannot_report_pass(self, _origin):
+    @patch("pp_recovery_strict_ci_runner.verify_loaded_test_class_bindings", return_value=True)
+    def test_short_executed_count_cannot_report_pass(self, _class_binding, _origin):
         inventory = {
             **BOUNDARY_METADATA, "authorization": "HOLD",
             "accessDecision": "DENY",
