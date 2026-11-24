@@ -1351,3 +1351,30 @@ declines inventory errors; it cannot turn these cases into PASS.
 This is a local CI repository source guard, not protection against
 a hostile runner or independently signed provenance evidence.
 **DRAFT / HOLD / DENY / NOT_AUTHORIZED / BLOCKED**.
+
+
+## Imported critical module origin enforcement (draft v51, 24 November 2026)
+
+The synthetic strict runner now examines any of the nine scoped
+critical recovery modules that are actually present in Python's
+`sys.modules` during the run. Such imported modules must have
+an existing regular source file at exactly the audited repository
+location, not a symlink or a shadow copy elsewhere, and the bytes
+must match the inventory's `criticalSourceSha256ByModule` values.
+Modules that have not been imported are not falsely reported as
+executed or attested.
+
+The runner checks this after loading the test suite modules and
+again after synthetic test execution. Missing module origins or a
+shadow import fail closed with
+`PP_CI_CRITICAL_IMPORT_ORIGIN_MISMATCH`; a changed import during
+test execution produces
+`PP_CI_CRITICAL_IMPORT_CHANGED_DURING_RUN`.
+Regression tests include a same-bytes shadow path, a module without
+a valid origin, malformed digest inventory and the runner-level
+pre-execution refusal.
+
+This in-process module-location check does **not** establish
+independent bytecode provenance, a trusted Python interpreter or
+a real owner identity. The recovery boundary remains
+**DRAFT / HOLD / DENY / NOT_AUTHORIZED / BLOCKED**.
