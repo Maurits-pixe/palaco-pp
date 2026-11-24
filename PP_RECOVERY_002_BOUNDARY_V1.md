@@ -1208,3 +1208,27 @@ This captures the framework's in-process test-start events, not
 a third-party runtime attestation or a guarantee that assertions
 were meaningful. Release, identity and P.P. number gates remain
 **HOLD / DENY / NOT_AUTHORIZED / BLOCKED**.
+
+
+## Unittest start/stop lifecycle pairing (draft v45, 24 November 2026)
+
+The strict synthetic recovery CI runner now records both
+`unittest.TextTestResult.startTest(test)` and `stopTest(test)`
+events for each of the explicitly scoped security regressions.
+After confirming the declared, loaded and started test IDs, it also
+requires a matching stop ID for each started test, in strictly paired
+start/stop order. Missing, repeated, misordered or absent lifecycle
+events cause `PP_CI_TEST_LIFECYCLE_MISMATCH`, even when the number of
+started tests is correct and the framework result claims success.
+
+Three additional negative regressions cover an omitted stop event,
+misordered stop events and missing lifecycle metadata. A focused test
+now checks both start and stop recording. The existing synthetic
+skip and truncated-run fixtures include correctly paired lifecycle
+observations, preserving coverage of their intended independent
+failure conditions.
+
+These are in-process unittest lifecycle observations, not signed
+third-party execution attestations, and they do not prove the semantic
+strength of the assertions or authenticate any owner identity.
+**HOLD / DENY / NOT_AUTHORIZED / BLOCKED** remains mandatory.
