@@ -11,7 +11,8 @@ import unittest
 
 from pp_recovery_strict_ci_runner import (SUITES, loaded_test_ids, loaded_test_objects, run,
     verify_suite_origin, verify_critical_source_integrity, verify_test_source_integrity,
-    verify_imported_critical_module_origins, TrackingTextTestResult)
+    verify_imported_critical_module_origins, verify_loaded_test_class_bindings,
+    TrackingTextTestResult)
 from pp_recovery_ci_inventory import CRITICAL_MODULES, ROOT
 
 BOUNDARY_METADATA = {
@@ -295,6 +296,64 @@ class StrictRunnerPolicyTests(unittest.TestCase):
                         execute.assert_called_once()
             finally:
                 module.__file__ = original_file
+
+    def test_real_loaded_security_classes_are_bound_to_suite_modules(self):
+        for suite_name in SUITES:
+            __import__(suite_name)
+        cases = [
+            case for suite_name in SUITES
+            for case in loaded_test_objects(
+                unittest.defaultTestLoader.loadTestsFromName(suite_name)
+            )
+        ]
+        self.assertTrue(verify_loaded_test_class_bindings(cases))
+
+    def test_same_name_unregistered_test_class_is_denied(self):
+        import sys
+        name = SUITES[0]
+        module = __import__(name)
+        case = loaded_test_objects(
+            unittest.defaultTestLoader.loadTestsFromName(name)
+        )[0]
+        cls = type(case)
+        replacement = type(cls.__name__, (unittest.TestCase,), {
+            "__module__": name,
+            case._testMethodName: lambda self: None,
+        })
+        self.assertEqual(cls.__name__, replacement.__name__)
+        self.assertFalse(verify_loaded_test_class_bindings([replacement(
+            case._testMethodName
+        )]))
+        with patch.object(module, cls.__name__, replacement):
+            self.assertFalse(verify_loaded_test_class_bindings([case]))
+        self.assertTrue(verify_loaded_test_class_bindings([case]))
+
+    def test_security_test_class_rebinding_during_run_is_denied(self):
+        from pp_recovery_ci_inventory import audit_security_inventory
+        inventory = audit_security_inventory(SUITES)
+        for suite_name in SUITES:
+            __import__(suite_name)
+        name = SUITES[0]
+        module = __import__(name)
+        case = loaded_test_objects(
+            unittest.defaultTestLoader.loadTestsFromName(name)
+        )[0]
+        cls = type(case)
+        with patch.object(module, cls.__name__, cls):
+            def swap_class(_suite):
+                setattr(module, cls.__name__, unittest.TestCase)
+                return unittest.TestResult()
+            with patch("pp_recovery_strict_ci_runner.audit_security_inventory",
+                       return_value=inventory):
+                with patch("pp_recovery_strict_ci_runner.unittest.TextTestRunner.run",
+                           side_effect=swap_class) as execute:
+                    with redirect_stdout(StringIO()) as log:
+                        self.assertEqual(1, run())
+                    self.assertIn(
+                        "TEST_CLASS_BINDING_CHANGED_DURING_RUN",
+                        log.getvalue(),
+                    )
+                    execute.assert_called_once()
 
     def test_reject_arguments(self):
         with redirect_stdout(StringIO()):
