@@ -1232,3 +1232,27 @@ These are in-process unittest lifecycle observations, not signed
 third-party execution attestations, and they do not prove the semantic
 strength of the assertions or authenticate any owner identity.
 **HOLD / DENY / NOT_AUTHORIZED / BLOCKED** remains mandatory.
+
+
+## Per-test terminal outcome reconciliation (draft v46, 24 November 2026)
+
+Security suite execution evidence now requires more than a matching
+count, exact test identity, and paired `startTest`/`stopTest`.
+The `TrackingTextTestResult` additionally records unittest's
+per-test terminal callbacks, including `addSuccess`, `addFailure`,
+`addError`, `addSkip`, `addExpectedFailure` and
+`addUnexpectedSuccess`. A valid synthetic CI run must report
+**exactly one `success` per started test in the same sequence**.
+Missing, repeated, substituted or non-successful outcome entries
+fail closed with `PP_CI_TEST_OUTCOME_MISMATCH`, even if the
+framework-wide `wasSuccessful()` flag has been spoofed.
+
+Three negative policy regressions verify refusal of a missing
+outcome, a duplicate success, and a non-success outcome despite an
+otherwise successful-looking mock result. The real result
+recorder's success event is also covered.
+
+This is a consistency check of in-process unittest callback
+events, not a signed external attestation, assurance of test
+assertion quality, or authorization for identity recovery.
+**HOLD / DENY / NOT_AUTHORIZED / BLOCKED** remains mandatory.
