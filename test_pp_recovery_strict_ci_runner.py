@@ -14,6 +14,7 @@ from pp_recovery_strict_ci_runner import (SUITES, loaded_test_ids, loaded_test_o
     verify_imported_critical_module_origins, verify_loaded_test_class_bindings,
     snapshot_loaded_test_methods, verify_loaded_test_method_snapshot,
     snapshot_test_method_code, verify_test_method_code_snapshot,
+    verify_test_method_execution_parameters,
     TrackingTextTestResult)
 from pp_recovery_ci_inventory import CRITICAL_MODULES, ROOT
 
@@ -482,6 +483,96 @@ class StrictRunnerPolicyTests(unittest.TestCase):
             ("Fake", "test_guard"): ("not-a-function", None)
         }))
 
+    def test_security_test_methods_have_no_hidden_parameter_state(self):
+        for name in SUITES:
+            __import__(name)
+        cases = [
+            case for name in SUITES
+            for case in loaded_test_objects(
+                unittest.defaultTestLoader.loadTestsFromName(name)
+            )
+        ]
+        methods = snapshot_loaded_test_methods(cases)
+        self.assertTrue(verify_test_method_execution_parameters(methods))
+
+    def test_default_and_keyword_default_functions_are_refused(self):
+        def positional(self, hidden="ALLOW"):
+            return hidden
+        def keyword(self, *, hidden="ALLOW"):
+            return hidden
+        self.assertFalse(verify_test_method_execution_parameters({
+            ("Synthetic", "test_positional"): positional
+        }))
+        self.assertFalse(verify_test_method_execution_parameters({
+            ("Synthetic", "test_keyword"): keyword
+        }))
+        self.assertFalse(verify_test_method_execution_parameters({}))
+
+    def test_closure_bearing_security_test_function_is_refused(self):
+        secret = "ALLOW"
+        def closure(self):
+            return secret
+        self.assertIsNotNone(closure.__closure__)
+        self.assertFalse(verify_test_method_execution_parameters({
+            ("Synthetic", "test_closure"): closure
+        }))
+
+    def test_default_injected_during_run_fails_closed(self):
+        from pp_recovery_ci_inventory import audit_security_inventory
+        inventory = audit_security_inventory(SUITES)
+        for name in SUITES:
+            __import__(name)
+        case = loaded_test_objects(
+            unittest.defaultTestLoader.loadTestsFromName(SUITES[0])
+        )[0]
+        fn = vars(type(case))[case._testMethodName]
+        self.assertIsNone(fn.__defaults__)
+        try:
+            def mutate(_suite):
+                fn.__defaults__ = ("ALLOW",)
+                return unittest.TestResult()
+            with patch("pp_recovery_strict_ci_runner.audit_security_inventory",
+                       return_value=inventory):
+                with patch("pp_recovery_strict_ci_runner.unittest.TextTestRunner.run",
+                           side_effect=mutate) as execute:
+                    with redirect_stdout(StringIO()) as log:
+                        self.assertEqual(1, run())
+                    self.assertIn(
+                        "TEST_METHOD_PARAMETERS_CHANGED_DURING_RUN",
+                        log.getvalue(),
+                    )
+                    execute.assert_called_once()
+        finally:
+            fn.__defaults__ = None
+
+    def test_keyword_default_injected_during_run_fails_closed(self):
+        from pp_recovery_ci_inventory import audit_security_inventory
+        inventory = audit_security_inventory(SUITES)
+        for name in SUITES:
+            __import__(name)
+        case = loaded_test_objects(
+            unittest.defaultTestLoader.loadTestsFromName(SUITES[0])
+        )[0]
+        fn = vars(type(case))[case._testMethodName]
+        self.assertIsNone(fn.__kwdefaults__)
+        try:
+            def mutate(_suite):
+                fn.__kwdefaults__ = {"hidden": "ALLOW"}
+                return unittest.TestResult()
+            with patch("pp_recovery_strict_ci_runner.audit_security_inventory",
+                       return_value=inventory):
+                with patch("pp_recovery_strict_ci_runner.unittest.TextTestRunner.run",
+                           side_effect=mutate) as execute:
+                    with redirect_stdout(StringIO()) as log:
+                        self.assertEqual(1, run())
+                    self.assertIn(
+                        "TEST_METHOD_PARAMETERS_CHANGED_DURING_RUN",
+                        log.getvalue(),
+                    )
+                    execute.assert_called_once()
+        finally:
+            fn.__kwdefaults__ = None
+
     def test_reject_arguments(self):
         with redirect_stdout(StringIO()):
             self.assertEqual(2, run(["--unverified"]))
@@ -567,7 +658,8 @@ class StrictRunnerPolicyTests(unittest.TestCase):
     @patch("pp_recovery_strict_ci_runner.verify_loaded_test_method_snapshot", return_value=True)
     @patch("pp_recovery_strict_ci_runner.snapshot_test_method_code", return_value={})
     @patch("pp_recovery_strict_ci_runner.verify_test_method_code_snapshot", return_value=True)
-    def test_short_executed_count_cannot_report_pass(self, _code_verification, _code_snapshot, _method_verification, _method_snapshot, _class_binding, _origin):
+    @patch("pp_recovery_strict_ci_runner.verify_test_method_execution_parameters", return_value=True)
+    def test_short_executed_count_cannot_report_pass(self, _parameters, _code_verification, _code_snapshot, _method_verification, _method_snapshot, _class_binding, _origin):
         inventory = {
             **BOUNDARY_METADATA, "authorization": "HOLD",
             "accessDecision": "DENY",
