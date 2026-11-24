@@ -133,6 +133,79 @@ class StrictRunnerPolicyTests(unittest.TestCase):
                         self.assertIn("CRITICAL_IMPORT_ORIGIN_MISMATCH", log.getvalue())
                         execute.assert_not_called()
 
+    def test_critical_import_shadowed_during_run_fails_closed(self):
+        from pp_recovery_ci_inventory import audit_security_inventory
+        inventory = audit_security_inventory(SUITES)
+        name = CRITICAL_MODULES[0]
+        with TemporaryDirectory() as temporary:
+            external = Path(temporary) / f"{name}.py"
+            external.write_bytes((ROOT / f"{name}.py").read_bytes())
+            counterfeit = ModuleType(name)
+            counterfeit.__file__ = str(external)
+            with patch.dict("sys.modules", {}):
+                def inject_shadow(_suite):
+                    import sys
+                    sys.modules[name] = counterfeit
+                    return unittest.TestResult()
+                with patch("pp_recovery_strict_ci_runner.audit_security_inventory",
+                           return_value=inventory):
+                    with patch("pp_recovery_strict_ci_runner.unittest.TextTestRunner.run",
+                               side_effect=inject_shadow) as execute:
+                        with redirect_stdout(StringIO()) as log:
+                            self.assertEqual(1, run())
+                        self.assertIn(
+                            "CRITICAL_IMPORT_CHANGED_DURING_RUN",
+                            log.getvalue(),
+                        )
+                        execute.assert_called_once()
+
+    def test_same_origin_import_object_replacement_during_run_fails_closed(self):
+        from pp_recovery_ci_inventory import audit_security_inventory
+        import sys
+        inventory = audit_security_inventory(SUITES)
+        name = CRITICAL_MODULES[0]
+        original = ModuleType(name)
+        original.__file__ = str(ROOT / f"{name}.py")
+        substitute = ModuleType(name)
+        substitute.__file__ = original.__file__
+        with patch.dict("sys.modules", {name: original}):
+            def replace_module(_suite):
+                sys.modules[name] = substitute
+                return unittest.TestResult()
+            with patch("pp_recovery_strict_ci_runner.audit_security_inventory",
+                       return_value=inventory):
+                with patch("pp_recovery_strict_ci_runner.unittest.TextTestRunner.run",
+                           side_effect=replace_module) as execute:
+                    with redirect_stdout(StringIO()) as log:
+                        self.assertEqual(1, run())
+                    self.assertIn(
+                        "CRITICAL_IMPORT_OBJECT_CHANGED_DURING_RUN",
+                        log.getvalue(),
+                    )
+                    execute.assert_called_once()
+
+    def test_critical_import_disappearing_during_run_fails_closed(self):
+        from pp_recovery_ci_inventory import audit_security_inventory
+        import sys
+        inventory = audit_security_inventory(SUITES)
+        name = CRITICAL_MODULES[0]
+        original = ModuleType(name)
+        original.__file__ = str(ROOT / f"{name}.py")
+        with patch.dict("sys.modules", {name: original}):
+            def remove_module(_suite):
+                sys.modules.pop(name, None)
+                return unittest.TestResult()
+            with patch("pp_recovery_strict_ci_runner.audit_security_inventory",
+                       return_value=inventory):
+                with patch("pp_recovery_strict_ci_runner.unittest.TextTestRunner.run",
+                           side_effect=remove_module):
+                    with redirect_stdout(StringIO()) as log:
+                        self.assertEqual(1, run())
+                    self.assertIn(
+                        "CRITICAL_IMPORT_OBJECT_CHANGED_DURING_RUN",
+                        log.getvalue(),
+                    )
+
     def test_reject_arguments(self):
         with redirect_stdout(StringIO()):
             self.assertEqual(2, run(["--unverified"]))
