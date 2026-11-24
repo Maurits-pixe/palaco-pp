@@ -77,6 +77,27 @@ def verify_critical_source_integrity(hashes: object, root: Path = ROOT) -> bool:
     return True
 
 
+
+def verify_test_source_integrity(hashes: object, root: Path = ROOT) -> bool:
+    """Refuse test-source changes since the scoped inventory snapshot."""
+    if (type(hashes) is not dict or set(hashes) != set(SUITES)
+            or any(type(hashes.get(name)) is not str
+                   or re.fullmatch(r"[0-9a-f]{64}", hashes[name]) is None
+                   for name in SUITES)):
+        return False
+    try:
+        for name in SUITES:
+            path = root / f"{name}.py"
+            if (path.is_symlink() or not path.is_file()
+                    or hashlib.sha256(path.read_bytes()).hexdigest()
+                    != hashes[name]):
+                return False
+    except (OSError, ValueError, RuntimeError):
+        return False
+    return True
+
+
+
 SUITES = (
     "test_review_044_contract_parity",
     "test_review_044_recovery_chain_e2e",
@@ -128,6 +149,9 @@ def run(argv: list[str] | None = None) -> int:
                    for name in SUITES)):
         print("PP_CI_SOURCE_HASHES_INVALID / HOLD / DENY")
         return 1
+    if not verify_test_source_integrity(hashes):
+        print("PP_CI_TEST_SOURCE_INTEGRITY_FAILED / HOLD / DENY")
+        return 1
     critical_hashes = inventory.get("criticalSourceSha256ByModule")
     if not verify_critical_source_integrity(critical_hashes):
         print("PP_CI_CRITICAL_SOURCE_INTEGRITY_FAILED / HOLD / DENY")
@@ -155,12 +179,19 @@ def run(argv: list[str] | None = None) -> int:
             print("PP_CI_SUITE_ORIGIN_MISMATCH / HOLD / DENY")
             return 1
         combined.addTests(tests)
+    # Check every suite, including those loaded earlier in the loop.
+    if not verify_test_source_integrity(hashes):
+        print("PP_CI_TEST_SOURCE_CHANGED_DURING_LOAD / HOLD / DENY")
+        return 1
     # Detect changes occurring while the loader imported the test modules.
     if not verify_critical_source_integrity(critical_hashes):
         print("PP_CI_CRITICAL_SOURCE_CHANGED_DURING_LOAD / HOLD / DENY")
         return 1
     runner = unittest.TextTestRunner(verbosity=2)
     result = runner.run(combined)
+    if not verify_test_source_integrity(hashes):
+        print("PP_CI_TEST_SOURCE_CHANGED_DURING_RUN / HOLD / DENY")
+        return 1
     # A successful test run is invalid when the audited code changed mid-run.
     if not verify_critical_source_integrity(critical_hashes):
         print("PP_CI_CRITICAL_SOURCE_CHANGED_DURING_RUN / HOLD / DENY")
