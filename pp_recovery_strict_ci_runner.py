@@ -420,12 +420,86 @@ def run(argv: list[str] | None = None) -> int:
     if any(not verify_suite_origin(name, hashes[name]) for name in SUITES):
         print("PP_CI_TEST_IMPORT_ORIGIN_CHANGED_DURING_RUN / HOLD / DENY")
         return 1
-    if not verify_loaded_test_class_bindings(expected_test_objects):
-        print("PP_CI_TEST_CLASS_BINDING_CHANGED_DURING_RUN / HOLD / DENY")
-        return 1
     if not verify_loaded_test_method_snapshot(loaded_method_snapshot):
         print("PP_CI_TEST_METHOD_CHANGED_DURING_RUN / HOLD / DENY")
+        return 1    if not verify_loaded_test_class_bindings(expected_test_objects):
+        print("PP_CI_TEST_CLASS_BINDING_CHANGED_DURING_RUN / HOLD / DENY")
         return 1
+
+    if not verify_imported_critical_module_origins(critical_hashes):
+        print("PP_CI_CRITICAL_IMPORT_CHANGED_DURING_RUN / HOLD / DENY")
+        return 1
+    if any(sys.modules.get(name) is not module
+           for name, module in loaded_critical_modules.items()):
+        print("PP_CI_CRITICAL_IMPORT_OBJECT_CHANGED_DURING_RUN / HOLD / DENY")
+        return 1
+    # A count alone cannot detect duplicated or substituted executions.
+    started = getattr(result, "started_test_ids", None)
+    if (type(started) is not list
+            or any(type(item) is not str for item in started)
+            or sorted(started) != sorted(expected_started_ids)):
+        print("PP_CI_EXECUTED_TEST_ID_MISMATCH / HOLD / DENY")
+        return 1
+    # Each test must also finish exactly once. Equal start/stop multisets
+    # are insufficient if lifecycle events are misordered or interleaved.
+    stopped = getattr(result, "stopped_test_ids", None)
+    events = getattr(result, "test_lifecycle_events", None)
+    expected_events = [
+        event
+        for test_id in started
+        for event in (("start", test_id), ("stop", test_id))
+    ]
+    if (type(stopped) is not list
+            or any(type(item) is not str for item in stopped)
+            or stopped != started
+            or type(events) is not list
+            or events != expected_events):
+        print("PP_CI_TEST_LIFECYCLE_MISMATCH / HOLD / DENY")
+        return 1
+    # Every started test must produce exactly one successful unittest
+    # outcome, in the same order. A start/stop pair by itself is not a PASS.
+    outcomes = getattr(result, "test_outcome_events", None)
+    expected_outcomes = [("success", test_id) for test_id in started]
+    if type(outcomes) is not list or outcomes != expected_outcomes:
+        print("PP_CI_TEST_OUTCOME_MISMATCH / HOLD / DENY")
+        return 1
+    # Reconcile the actual chronological callbacks, not just independent
+    # start/stop and success lists. Each successful test is a triplet.
+    trace = getattr(result, "test_event_trace", None)
+    expected_trace = [
+        event
+        for test_id in started
+        for event in (("start", test_id), ("success", test_id), ("stop", test_id))
+    ]
+    if type(trace) is not list or trace != expected_trace:
+        print("PP_CI_TEST_EVENT_ORDER_MISMATCH / HOLD / DENY")
+        return 1
+    if (not result.wasSuccessful()
+            or result.testsRun != sum(declared.values())
+            or result.testsRun == 0
+            or result.skipped
+            or result.expectedFailures
+            or result.unexpectedSuccesses):
+        print("PP_CI_INCOMPLETE_OR_FAILED / HOLD / DENY")
+        return 1
+    # Same name is not the same loaded TestCase instance. Retain strong
+    # references above so Python cannot reuse an object identity mid-run.
+    expected_object_ids = [id(case) for case in expected_test_objects]
+    started_objects = getattr(result, "started_test_object_ids", None)
+    stopped_objects = getattr(result, "stopped_test_object_ids", None)
+    if (type(started_objects) is not list
+            or type(stopped_objects) is not list
+            or started_objects != expected_object_ids
+            or stopped_objects != expected_object_ids):
+        print("PP_CI_EXECUTED_TEST_OBJECT_MISMATCH / HOLD / DENY")
+        return 1
+    print(f"PP_CI_SYNTHETIC_PASS / {result.testsRun} tests / AUTHORIZATION_HOLD")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(run(sys.argv[1:]))
+
     if not verify_imported_critical_module_origins(critical_hashes):
         print("PP_CI_CRITICAL_IMPORT_CHANGED_DURING_RUN / HOLD / DENY")
         return 1
