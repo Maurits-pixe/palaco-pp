@@ -1426,3 +1426,26 @@ These checks observe an in-process import table and source
 locations, not independently attested bytecode, code-object
 integrity, or trustworthy interpreter execution.
 **DRAFT / HOLD / DENY / NOT_AUTHORIZED / BLOCKED** remain in force.
+
+
+## Loaded test-class binding (draft v54, 24 November 2026)
+
+The strict synthetic runner now checks that each loaded
+`unittest.TestCase` instance belongs to an explicitly registered
+security-suite module and that its concrete class is still exposed
+under its name by that imported module. Only top-level test classes
+with callable named `test_*` methods pass this boundary. The
+runner checks class bindings before suite execution and again after
+all scoped security tests, refusing pre-run mismatches as
+`PP_CI_LOADED_TEST_CLASS_BINDING_INVALID` and in-run changes as
+`PP_CI_TEST_CLASS_BINDING_CHANGED_DURING_RUN`.
+
+Three regressions check authentic class bindings, a different
+same-named TestCase class, and module class rebinding during
+execution. These checks complement the existing test-object,
+module-object, source-hash, lifecycle and per-test outcome checks.
+
+The result is in-process test-class identity consistency, **not**
+signed runtime provenance, proof of assertion effectiveness, or
+authorization to issue identities. The posture stays
+**DRAFT / HOLD / DENY / NOT_AUTHORIZED / BLOCKED**.
