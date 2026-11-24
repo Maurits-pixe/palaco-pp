@@ -513,7 +513,8 @@ class StrictRunnerPolicyTests(unittest.TestCase):
     @patch("pp_recovery_strict_ci_runner.verify_suite_origin", return_value=True)
     @patch("pp_recovery_strict_ci_runner.verify_loaded_test_class_bindings", return_value=True)
     @patch("pp_recovery_strict_ci_runner.snapshot_loaded_test_methods", return_value={})
-    def test_short_executed_count_cannot_report_pass(self, _method_snapshot, _class_binding, _origin):
+    @patch("pp_recovery_strict_ci_runner.verify_loaded_test_method_snapshot", return_value=True)
+    def test_short_executed_count_cannot_report_pass(self, _method_verification, _method_snapshot, _class_binding, _origin):
         inventory = {
             **BOUNDARY_METADATA, "authorization": "HOLD",
             "accessDecision": "DENY",
