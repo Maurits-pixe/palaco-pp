@@ -50,6 +50,8 @@ def audit_security_inventory(
         source_path = base / f"{module}.py"
         if not source_path.is_file():
             raise ValueError("PP_CI_MISSING_SOURCE")
+        if source_path.is_symlink():
+            raise ValueError("PP_CI_SOURCE_SYMLINK_FORBIDDEN")
         # A present file is not a valid testable module unless it parses.
         # Parse only; never import, evaluate or execute recovery sources.
         try:
@@ -68,9 +70,15 @@ def audit_security_inventory(
         path = base / f"{name}.py"
         if not path.is_file():
             raise ValueError("PP_CI_MISSING_TEST")
-        # Parse all relevant test files without running their imports.
-        raw_source = path.read_bytes()
-        tree = ast.parse(raw_source.decode("utf-8"), filename=str(path))
+        if path.is_symlink():
+            raise ValueError("PP_CI_TEST_SYMLINK_FORBIDDEN")
+        # Parse only valid UTF-8 tests; errors must fail closed and be
+        # distinguishable from defects in critical recovery modules.
+        try:
+            raw_source = path.read_bytes()
+            tree = ast.parse(raw_source.decode("utf-8"), filename=str(path))
+        except (SyntaxError, UnicodeError) as exc:
+            raise ValueError("PP_CI_TEST_SYNTAX_INVALID") from exc
         source_sha256[name] = hashlib.sha256(raw_source).hexdigest()
         # Only methods in a statically recognizable unittest.TestCase
         # subclass are registered here. A plain class with test_* names
