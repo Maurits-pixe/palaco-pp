@@ -123,10 +123,9 @@ class StrictRunnerPolicyTests(unittest.TestCase):
                 self.assertEqual("HOLD", "HOLD")
         stream = StringIO()
         case = SyntheticCase("test_hold")
-        result = TrackingTextTestResult(stream, True, 2)
-        result.startTest(case)
-        result.addSuccess(case)
-        result.stopTest(case)
+        result = unittest.TextTestRunner(
+            stream=stream, verbosity=2, resultclass=TrackingTextTestResult
+        ).run(unittest.TestSuite([case]))
         self.assertEqual([case.id()], result.started_test_ids)
         self.assertEqual([case.id()], result.stopped_test_ids)
         self.assertEqual([("success", case.id())], result.test_outcome_events)
