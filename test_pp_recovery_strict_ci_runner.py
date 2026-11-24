@@ -280,6 +280,20 @@ class StrictRunnerPolicyTests(unittest.TestCase):
                     self.assertEqual(3, integrity.call_count)
                     execute.assert_called_once()
 
+    def test_critical_source_changed_during_load_blocks_execution(self):
+        from pp_recovery_ci_inventory import audit_security_inventory
+        inventory = audit_security_inventory(SUITES)
+        with patch("pp_recovery_strict_ci_runner.audit_security_inventory",
+                   return_value=inventory):
+            with patch("pp_recovery_strict_ci_runner.verify_critical_source_integrity",
+                       side_effect=[True, False]) as integrity:
+                with patch("pp_recovery_strict_ci_runner.unittest.TextTestRunner.run") as execute:
+                    with redirect_stdout(StringIO()) as log:
+                        self.assertEqual(1, run())
+                    self.assertIn("CRITICAL_SOURCE_CHANGED_DURING_LOAD", log.getvalue())
+                    self.assertEqual(2, integrity.call_count)
+                    execute.assert_not_called()
+
     def test_critical_source_changed_during_run_rejects_success_result(self):
         from pp_recovery_ci_inventory import audit_security_inventory
         inventory = audit_security_inventory(SUITES)
