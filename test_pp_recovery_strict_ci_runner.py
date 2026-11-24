@@ -10,7 +10,8 @@ from unittest.mock import patch
 import unittest
 
 from pp_recovery_strict_ci_runner import (SUITES, loaded_test_ids, loaded_test_objects, run,
-    verify_suite_origin, verify_critical_source_integrity, verify_test_source_integrity, TrackingTextTestResult)
+    verify_suite_origin, verify_critical_source_integrity, verify_test_source_integrity,
+    verify_imported_critical_module_origins, TrackingTextTestResult)
 from pp_recovery_ci_inventory import CRITICAL_MODULES, ROOT
 
 BOUNDARY_METADATA = {
@@ -73,6 +74,64 @@ class StrictRunnerPolicyTests(unittest.TestCase):
                            return_value=inventory):
                     with redirect_stdout(StringIO()):
                         self.assertEqual(1, run())
+
+    def test_critical_import_origin_valid_for_real_module(self):
+        name = CRITICAL_MODULES[0]
+        module = ModuleType(name)
+        module.__file__ = str(ROOT / f"{name}.py")
+        digests = {
+            item: hashlib.sha256((ROOT / f"{item}.py").read_bytes()).hexdigest()
+            for item in CRITICAL_MODULES
+        }
+        with patch.dict("sys.modules", {name: module}):
+            self.assertTrue(verify_imported_critical_module_origins(digests))
+
+    def test_shadowed_critical_import_with_same_bytes_is_rejected(self):
+        name = CRITICAL_MODULES[0]
+        digests = {
+            item: hashlib.sha256((ROOT / f"{item}.py").read_bytes()).hexdigest()
+            for item in CRITICAL_MODULES
+        }
+        with TemporaryDirectory() as temporary:
+            external = Path(temporary) / f"{name}.py"
+            external.write_bytes((ROOT / f"{name}.py").read_bytes())
+            counterfeit = ModuleType(name)
+            counterfeit.__file__ = str(external)
+            with patch.dict("sys.modules", {name: counterfeit}):
+                self.assertFalse(
+                    verify_imported_critical_module_origins(digests)
+                )
+
+    def test_import_origin_absent_or_invalid_hash_map_fails_closed(self):
+        name = CRITICAL_MODULES[0]
+        digests = {
+            item: hashlib.sha256((ROOT / f"{item}.py").read_bytes()).hexdigest()
+            for item in CRITICAL_MODULES
+        }
+        counterfeit = ModuleType(name)
+        with patch.dict("sys.modules", {name: counterfeit}):
+            self.assertFalse(
+                verify_imported_critical_module_origins(digests)
+            )
+        self.assertFalse(verify_imported_critical_module_origins({}))
+
+    def test_shadowed_critical_import_blocks_runner_execution(self):
+        from pp_recovery_ci_inventory import audit_security_inventory
+        inventory = audit_security_inventory(SUITES)
+        name = CRITICAL_MODULES[0]
+        with TemporaryDirectory() as temporary:
+            external = Path(temporary) / f"{name}.py"
+            external.write_bytes((ROOT / f"{name}.py").read_bytes())
+            counterfeit = ModuleType(name)
+            counterfeit.__file__ = str(external)
+            with patch.dict("sys.modules", {name: counterfeit}):
+                with patch("pp_recovery_strict_ci_runner.audit_security_inventory",
+                           return_value=inventory):
+                    with patch("pp_recovery_strict_ci_runner.unittest.TextTestRunner.run") as execute:
+                        with redirect_stdout(StringIO()) as log:
+                            self.assertEqual(1, run())
+                        self.assertIn("CRITICAL_IMPORT_ORIGIN_MISMATCH", log.getvalue())
+                        execute.assert_not_called()
 
     def test_reject_arguments(self):
         with redirect_stdout(StringIO()):
