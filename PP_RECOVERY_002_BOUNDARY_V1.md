@@ -1402,3 +1402,27 @@ executing production identity-recovery actions.
 This is in-process runtime consistency evidence, not cryptographic
 module attestation or evidence of a trustworthy interpreter.
 **DRAFT / HOLD / DENY / NOT_AUTHORIZED / BLOCKED** continues.
+
+
+## Security-suite import stability (draft v53, 24 November 2026)
+
+The strict synthetic CI runner now pins the exact imported Python
+module objects for all eleven scoped security test suites after suite
+loading. It requires each source origin and SHA-256 digest to match
+the audited repository both before and after the test run. A change
+to a suite's module binding during execution is refused with
+`PP_CI_TEST_IMPORT_OBJECT_CHANGED_DURING_RUN`, even if a replacement
+has the same name, source path and file digest. An unchanged module
+object whose `__file__` origin is redirected during execution
+is refused under
+`PP_CI_TEST_IMPORT_ORIGIN_CHANGED_DURING_RUN`.
+
+Three negative runner-level regressions model same-path module
+substitution, removal from `sys.modules`, and same-object source
+origin redirection to a byte-identical external file. The original
+module state is restored after each synthetic test.
+
+These checks observe an in-process import table and source
+locations, not independently attested bytecode, code-object
+integrity, or trustworthy interpreter execution.
+**DRAFT / HOLD / DENY / NOT_AUTHORIZED / BLOCKED** remain in force.
