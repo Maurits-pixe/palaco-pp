@@ -216,6 +216,86 @@ class StrictRunnerPolicyTests(unittest.TestCase):
                         log.getvalue(),
                     )
 
+    def test_security_suite_module_replacement_during_run_is_denied(self):
+        from pp_recovery_ci_inventory import audit_security_inventory
+        import sys
+        inventory = audit_security_inventory(SUITES)
+        for suite_name in SUITES:
+            __import__(suite_name)
+        name = SUITES[0]
+        original = sys.modules[name]
+        substitute = ModuleType(name)
+        substitute.__file__ = original.__file__
+        with patch.dict("sys.modules", {name: original}):
+            def replace_module(_suite):
+                sys.modules[name] = substitute
+                return unittest.TestResult()
+            with patch("pp_recovery_strict_ci_runner.audit_security_inventory",
+                       return_value=inventory):
+                with patch("pp_recovery_strict_ci_runner.unittest.TextTestRunner.run",
+                           side_effect=replace_module) as execute:
+                    with redirect_stdout(StringIO()) as log:
+                        self.assertEqual(1, run())
+                    self.assertIn(
+                        "TEST_IMPORT_OBJECT_CHANGED_DURING_RUN",
+                        log.getvalue(),
+                    )
+                    execute.assert_called_once()
+
+    def test_security_suite_module_disappearing_during_run_is_denied(self):
+        from pp_recovery_ci_inventory import audit_security_inventory
+        import sys
+        inventory = audit_security_inventory(SUITES)
+        for suite_name in SUITES:
+            __import__(suite_name)
+        name = SUITES[0]
+        original = sys.modules[name]
+        with patch.dict("sys.modules", {name: original}):
+            def remove_module(_suite):
+                sys.modules.pop(name, None)
+                return unittest.TestResult()
+            with patch("pp_recovery_strict_ci_runner.audit_security_inventory",
+                       return_value=inventory):
+                with patch("pp_recovery_strict_ci_runner.unittest.TextTestRunner.run",
+                           side_effect=remove_module) as execute:
+                    with redirect_stdout(StringIO()) as log:
+                        self.assertEqual(1, run())
+                    self.assertIn(
+                        "TEST_IMPORT_OBJECT_CHANGED_DURING_RUN",
+                        log.getvalue(),
+                    )
+                    execute.assert_called_once()
+
+    def test_security_suite_origin_changed_without_object_swap_is_denied(self):
+        from pp_recovery_ci_inventory import audit_security_inventory
+        import sys
+        inventory = audit_security_inventory(SUITES)
+        for suite_name in SUITES:
+            __import__(suite_name)
+        name = SUITES[0]
+        module = sys.modules[name]
+        original_file = module.__file__
+        with TemporaryDirectory() as temporary:
+            external = Path(temporary) / f"{name}.py"
+            external.write_bytes((ROOT / f"{name}.py").read_bytes())
+            def redirect_origin(_suite):
+                module.__file__ = str(external)
+                return unittest.TestResult()
+            try:
+                with patch("pp_recovery_strict_ci_runner.audit_security_inventory",
+                           return_value=inventory):
+                    with patch("pp_recovery_strict_ci_runner.unittest.TextTestRunner.run",
+                               side_effect=redirect_origin) as execute:
+                        with redirect_stdout(StringIO()) as log:
+                            self.assertEqual(1, run())
+                        self.assertIn(
+                            "TEST_IMPORT_ORIGIN_CHANGED_DURING_RUN",
+                            log.getvalue(),
+                        )
+                        execute.assert_called_once()
+            finally:
+                module.__file__ = original_file
+
     def test_reject_arguments(self):
         with redirect_stdout(StringIO()):
             self.assertEqual(2, run(["--unverified"]))
