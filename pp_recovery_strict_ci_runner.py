@@ -22,41 +22,50 @@ class TrackingTextTestResult(unittest.TextTestResult):
         self.stopped_test_ids: list[str] = []
         self.test_lifecycle_events: list[tuple[str, str]] = []
         self.test_outcome_events: list[tuple[str, str]] = []
+        self.test_event_trace: list[tuple[str, str]] = []
 
     def addSuccess(self, test):
         self.test_outcome_events.append(("success", test.id()))
+        self.test_event_trace.append(("success", test.id()))
         super().addSuccess(test)
 
     def addFailure(self, test, err):
         self.test_outcome_events.append(("failure", test.id()))
+        self.test_event_trace.append(("failure", test.id()))
         super().addFailure(test, err)
 
     def addError(self, test, err):
         self.test_outcome_events.append(("error", test.id()))
+        self.test_event_trace.append(("error", test.id()))
         super().addError(test, err)
 
     def addSkip(self, test, reason):
         self.test_outcome_events.append(("skip", test.id()))
+        self.test_event_trace.append(("skip", test.id()))
         super().addSkip(test, reason)
 
     def addExpectedFailure(self, test, err):
         self.test_outcome_events.append(("expected_failure", test.id()))
+        self.test_event_trace.append(("expected_failure", test.id()))
         super().addExpectedFailure(test, err)
 
     def addUnexpectedSuccess(self, test):
         self.test_outcome_events.append(("unexpected_success", test.id()))
+        self.test_event_trace.append(("unexpected_success", test.id()))
         super().addUnexpectedSuccess(test)
 
     def startTest(self, test):
         test_id = test.id()
         self.started_test_ids.append(test_id)
         self.test_lifecycle_events.append(("start", test_id))
+        self.test_event_trace.append(("start", test_id))
         super().startTest(test)
 
     def stopTest(self, test):
         test_id = test.id()
         self.stopped_test_ids.append(test_id)
         self.test_lifecycle_events.append(("stop", test_id))
+        self.test_event_trace.append(("stop", test_id))
         super().stopTest(test)
 
 
@@ -274,6 +283,17 @@ def run(argv: list[str] | None = None) -> int:
     expected_outcomes = [("success", test_id) for test_id in started]
     if type(outcomes) is not list or outcomes != expected_outcomes:
         print("PP_CI_TEST_OUTCOME_MISMATCH / HOLD / DENY")
+        return 1
+    # Reconcile the actual chronological callbacks, not just independent
+    # start/stop and success lists. Each successful test is a triplet.
+    trace = getattr(result, "test_event_trace", None)
+    expected_trace = [
+        event
+        for test_id in started
+        for event in (("start", test_id), ("success", test_id), ("stop", test_id))
+    ]
+    if type(trace) is not list or trace != expected_trace:
+        print("PP_CI_TEST_EVENT_ORDER_MISMATCH / HOLD / DENY")
         return 1
     if (not result.wasSuccessful()
             or result.testsRun != sum(declared.values())
