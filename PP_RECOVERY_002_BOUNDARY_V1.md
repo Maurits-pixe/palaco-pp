@@ -1302,3 +1302,28 @@ cryptographic identity tokens or independent runtime attestations.
 A successful synthetic run cannot authorize identity recovery,
 P.P. number issuance, merge or deployment.
 **HOLD / DENY / NOT_AUTHORIZED / BLOCKED**.
+
+
+## Inventory authorization and boundary metadata enforcement (draft v49, 24 November 2026)
+
+The strict synthetic security runner now refuses to execute when the
+inventory omits or changes **any** of the mandatory denial decisions:
+`authorization=HOLD`, `accessDecision=DENY`,
+`issuance=NOT_AUTHORIZED`, and `deployment=BLOCKED`.
+This closes the previous gap where only HOLD and DENY were checked.
+
+Before loading security tests it also validates the exact inventory
+schema, `PP-RECOVERY-002` reference, explicitly non-executing
+coverage state, eleven registered suites, and nine critical source
+modules. Deviations fail closed under
+`PP_CI_INVENTORY_AUTHORIZATION_INVALID` or
+`PP_CI_INVENTORY_BOUNDARY_INVALID`, without attempting to run the
+security suites. New negative policy regressions exercise forbidden
+issuance/deployment values, changed schema/reference/coverage/counts,
+and missing mandatory fields.
+
+This is a guard on the in-process CI inventory, not an independent
+proof of source authenticity, account ownership, or authorization
+to operate. Never merge, deploy, issue identities or release P.P.
+numbers on the strength of these synthetic checks.
+**HOLD / DENY / NOT_AUTHORIZED / BLOCKED**.
