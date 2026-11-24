@@ -19,10 +19,20 @@ class TrackingTextTestResult(unittest.TextTestResult):
     def __init__(self, stream, descriptions, verbosity):
         super().__init__(stream, descriptions, verbosity)
         self.started_test_ids: list[str] = []
+        self.stopped_test_ids: list[str] = []
+        self.test_lifecycle_events: list[tuple[str, str]] = []
 
     def startTest(self, test):
-        self.started_test_ids.append(test.id())
+        test_id = test.id()
+        self.started_test_ids.append(test_id)
+        self.test_lifecycle_events.append(("start", test_id))
         super().startTest(test)
+
+    def stopTest(self, test):
+        test_id = test.id()
+        self.stopped_test_ids.append(test_id)
+        self.test_lifecycle_events.append(("stop", test_id))
+        super().stopTest(test)
 
 
 def loaded_test_ids(suite: unittest.TestSuite) -> list[str]:
@@ -216,6 +226,22 @@ def run(argv: list[str] | None = None) -> int:
             or any(type(item) is not str for item in started)
             or sorted(started) != sorted(expected_started_ids)):
         print("PP_CI_EXECUTED_TEST_ID_MISMATCH / HOLD / DENY")
+        return 1
+    # Each test must also finish exactly once. Equal start/stop multisets
+    # are insufficient if lifecycle events are misordered or interleaved.
+    stopped = getattr(result, "stopped_test_ids", None)
+    events = getattr(result, "test_lifecycle_events", None)
+    expected_events = [
+        event
+        for test_id in started
+        for event in (("start", test_id), ("stop", test_id))
+    ]
+    if (type(stopped) is not list
+            or any(type(item) is not str for item in stopped)
+            or stopped != started
+            or type(events) is not list
+            or events != expected_events):
+        print("PP_CI_TEST_LIFECYCLE_MISMATCH / HOLD / DENY")
         return 1
     if (not result.wasSuccessful()
             or result.testsRun != sum(declared.values())
