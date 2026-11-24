@@ -32,6 +32,7 @@ class StrictRunnerPolicyTests(unittest.TestCase):
         result.skipped.append((None, "dependency missing"))
         result.started_test_ids = ["SYNTHETIC_ID"] * len(SUITES)
         result.stopped_test_ids = ["SYNTHETIC_ID"] * len(SUITES)
+        result.test_outcome_events = [("success", "SYNTHETIC_ID")] * len(SUITES)
         result.test_lifecycle_events = [
             item
             for _ in SUITES
@@ -100,6 +101,7 @@ class StrictRunnerPolicyTests(unittest.TestCase):
         result.testsRun = 1
         result.started_test_ids = ["SYNTHETIC_ID"] * len(SUITES)
         result.stopped_test_ids = ["SYNTHETIC_ID"] * len(SUITES)
+        result.test_outcome_events = [("success", "SYNTHETIC_ID")] * len(SUITES)
         result.test_lifecycle_events = [
             item
             for _ in SUITES
@@ -123,9 +125,11 @@ class StrictRunnerPolicyTests(unittest.TestCase):
         case = SyntheticCase("test_hold")
         result = TrackingTextTestResult(stream, True, 2)
         result.startTest(case)
+        result.addSuccess(case)
         result.stopTest(case)
         self.assertEqual([case.id()], result.started_test_ids)
         self.assertEqual([case.id()], result.stopped_test_ids)
+        self.assertEqual([("success", case.id())], result.test_outcome_events)
         self.assertEqual(
             [("start", case.id()), ("stop", case.id())],
             result.test_lifecycle_events,
@@ -221,6 +225,78 @@ class StrictRunnerPolicyTests(unittest.TestCase):
                 with redirect_stdout(StringIO()) as log:
                     self.assertEqual(1, run())
                 self.assertIn("TEST_LIFECYCLE_MISMATCH", log.getvalue())
+
+    def test_missing_success_outcome_rejected_with_complete_lifecycle(self):
+        from pp_recovery_ci_inventory import audit_security_inventory
+        inventory = audit_security_inventory(SUITES)
+        ids = [item for name in SUITES
+               for item in inventory["declaredTestIdsBySuite"][name]]
+        result = unittest.TestResult()
+        result.testsRun = len(ids)
+        result.started_test_ids = ids
+        result.stopped_test_ids = ids
+        result.test_lifecycle_events = [
+            event for test_id in ids
+            for event in (("start", test_id), ("stop", test_id))
+        ]
+        result.test_outcome_events = [("success", test_id) for test_id in ids[:-1]]
+        with patch("pp_recovery_strict_ci_runner.audit_security_inventory",
+                   return_value=inventory):
+            with patch("pp_recovery_strict_ci_runner.unittest.TextTestRunner.run",
+                       return_value=result):
+                with redirect_stdout(StringIO()) as log:
+                    self.assertEqual(1, run())
+                self.assertIn("TEST_OUTCOME_MISMATCH", log.getvalue())
+
+    def test_double_success_outcome_rejected_with_complete_lifecycle(self):
+        from pp_recovery_ci_inventory import audit_security_inventory
+        inventory = audit_security_inventory(SUITES)
+        ids = [item for name in SUITES
+               for item in inventory["declaredTestIdsBySuite"][name]]
+        result = unittest.TestResult()
+        result.testsRun = len(ids)
+        result.started_test_ids = ids
+        result.stopped_test_ids = ids
+        result.test_lifecycle_events = [
+            event for test_id in ids
+            for event in (("start", test_id), ("stop", test_id))
+        ]
+        result.test_outcome_events = (
+            [("success", test_id) for test_id in ids]
+            + [("success", ids[-1])]
+        )
+        with patch("pp_recovery_strict_ci_runner.audit_security_inventory",
+                   return_value=inventory):
+            with patch("pp_recovery_strict_ci_runner.unittest.TextTestRunner.run",
+                       return_value=result):
+                with redirect_stdout(StringIO()) as log:
+                    self.assertEqual(1, run())
+                self.assertIn("TEST_OUTCOME_MISMATCH", log.getvalue())
+
+    def test_false_success_label_rejected_even_when_unittest_was_successful(self):
+        from pp_recovery_ci_inventory import audit_security_inventory
+        inventory = audit_security_inventory(SUITES)
+        ids = [item for name in SUITES
+               for item in inventory["declaredTestIdsBySuite"][name]]
+        result = unittest.TestResult()
+        result.testsRun = len(ids)
+        result.started_test_ids = ids
+        result.stopped_test_ids = ids
+        result.test_lifecycle_events = [
+            event for test_id in ids
+            for event in (("start", test_id), ("stop", test_id))
+        ]
+        result.test_outcome_events = [
+            ("failure" if index == 0 else "success", test_id)
+            for index, test_id in enumerate(ids)
+        ]
+        with patch("pp_recovery_strict_ci_runner.audit_security_inventory",
+                   return_value=inventory):
+            with patch("pp_recovery_strict_ci_runner.unittest.TextTestRunner.run",
+                       return_value=result):
+                with redirect_stdout(StringIO()) as log:
+                    self.assertEqual(1, run())
+                self.assertIn("TEST_OUTCOME_MISMATCH", log.getvalue())
 
     def test_same_count_with_substituted_method_id_fails_closed(self):
         inventory = {
