@@ -316,6 +316,12 @@ def run(argv: list[str] | None = None) -> int:
     if not verify_imported_critical_module_origins(critical_hashes):
         print("PP_CI_CRITICAL_IMPORT_ORIGIN_MISMATCH / HOLD / DENY")
         return 1
+    # Retain the imported module objects: a same-path substitute would
+    # otherwise pass the byte and location checks after execution.
+    loaded_critical_modules = {
+        name: sys.modules[name]
+        for name in CRITICAL_MODULES if name in sys.modules
+    }
     # Check every suite, including those loaded earlier in the loop.
     if not verify_test_source_integrity(hashes):
         print("PP_CI_TEST_SOURCE_CHANGED_DURING_LOAD / HOLD / DENY")
@@ -335,6 +341,10 @@ def run(argv: list[str] | None = None) -> int:
         return 1
     if not verify_imported_critical_module_origins(critical_hashes):
         print("PP_CI_CRITICAL_IMPORT_CHANGED_DURING_RUN / HOLD / DENY")
+        return 1
+    if any(sys.modules.get(name) is not module
+           for name, module in loaded_critical_modules.items()):
+        print("PP_CI_CRITICAL_IMPORT_OBJECT_CHANGED_DURING_RUN / HOLD / DENY")
         return 1
     # A count alone cannot detect duplicated or substituted executions.
     started = getattr(result, "started_test_ids", None)
