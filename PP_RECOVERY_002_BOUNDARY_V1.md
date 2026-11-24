@@ -1138,3 +1138,28 @@ a signed third-party provenance attestation, runtime memory
 integrity proof or guarantee against a hostile runner. No release
 or account authorization follows from test success.
 **HOLD / DENY / NOT_AUTHORIZED / BLOCKED**.
+
+
+## Security test files monitored throughout execution (draft v42, 24 November 2026)
+
+The v40 source SHA-256 inventory and v41 critical-module checks are
+extended to the **11 security test suite files themselves**. The
+strict runner compares all recorded `testSourceSha256BySuite`
+digests against exact current file bytes at three points: before
+loading tests, after every test suite is loaded, and after the
+synthetic test run returns. All expected files must exist, must
+not be symlinks and must retain their original SHA-256 values.
+
+The fail-closed diagnostic states are
+`PP_CI_TEST_SOURCE_INTEGRITY_FAILED`,
+`PP_CI_TEST_SOURCE_CHANGED_DURING_LOAD` and
+`PP_CI_TEST_SOURCE_CHANGED_DURING_RUN`.
+Regression tests cover valid synthetic files, mutation after
+inventory, symlink substitution and missing/invalid/extra digests.
+Existing mocked policy checks now use real scoped digests so they
+still reach their intended error and skip assertions.
+
+These same-process checks do **not** provide an independently
+signed provenance statement, immutable snapshot, hostile-runner
+security guarantee or live identity verification. Even a clean
+test run remains **HOLD / DENY / NOT_AUTHORIZED / BLOCKED**.
