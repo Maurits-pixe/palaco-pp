@@ -86,6 +86,28 @@ def loaded_test_objects(suite: unittest.TestSuite) -> list[unittest.TestCase]:
     return objects
 
 
+def verify_loaded_test_class_bindings(cases: object) -> bool:
+    """Each loaded TestCase class must be the named class in its suite module."""
+    if type(cases) is not list or not cases:
+        return False
+    for case in cases:
+        if not isinstance(case, unittest.TestCase):
+            return False
+        cls = type(case)
+        suite_name = cls.__module__
+        if suite_name not in SUITES:
+            return False
+        module = sys.modules.get(suite_name)
+        if (module is None or getattr(module, cls.__name__, None) is not cls
+                or cls.__qualname__ != cls.__name__):
+            return False
+        method = getattr(case, "_testMethodName", None)
+        if (type(method) is not str or not method.startswith("test_")
+                or not callable(getattr(cls, method, None))):
+            return False
+    return True
+
+
 def loaded_test_ids(suite: unittest.TestSuite) -> list[str]:
     """Flatten unittest's actual test cases without running any tests."""
     ids = []
@@ -313,6 +335,9 @@ def run(argv: list[str] | None = None) -> int:
         expected_test_objects.extend(cases)
         expected_started_ids.extend(expected_ids[name])
         combined.addTests(tests)
+    if not verify_loaded_test_class_bindings(expected_test_objects):
+        print("PP_CI_LOADED_TEST_CLASS_BINDING_INVALID / HOLD / DENY")
+        return 1
     # Pin every loaded security-suite module, not just each TestCase.
     # The module must remain the audited import for the whole test run.
     if any(not verify_suite_origin(name, hashes[name]) for name in SUITES):
@@ -344,6 +369,9 @@ def run(argv: list[str] | None = None) -> int:
     # A successful test run is invalid when the audited code changed mid-run.
     if not verify_critical_source_integrity(critical_hashes):
         print("PP_CI_CRITICAL_SOURCE_CHANGED_DURING_RUN / HOLD / DENY")
+        return 1
+    if not verify_loaded_test_class_bindings(expected_test_objects):
+        print("PP_CI_TEST_CLASS_BINDING_CHANGED_DURING_RUN / HOLD / DENY")
         return 1
     if any(sys.modules.get(name) is not module
            for name, module in loaded_suite_modules.items()):
