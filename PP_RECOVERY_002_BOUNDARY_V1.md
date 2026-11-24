@@ -1256,3 +1256,24 @@ This is a consistency check of in-process unittest callback
 events, not a signed external attestation, assurance of test
 assertion quality, or authorization for identity recovery.
 **HOLD / DENY / NOT_AUTHORIZED / BLOCKED** remains mandatory.
+
+
+## Chronological per-test outcome order (draft v47, 24 November 2026)
+
+The strict synthetic CI runner now records a unified ordered event
+trace from unittest callbacks for each scoped security regression:
+`startTest` → `addSuccess` → `stopTest`. It requires this precise
+three-event sequence for every declared, loaded and actually started
+test. Matching independent lists of starts, stops and successes
+alone are insufficient when the chronological relationship is wrong.
+
+Negative regressions verify rejection if a success is recorded
+after the corresponding stop, if another test ID is substituted
+in the event stream, or if the full chronological trace is absent.
+These cases fail closed with
+`PP_CI_TEST_EVENT_ORDER_MISMATCH`.
+
+This strengthens in-process consistency evidence only. It is not
+an independently signed attestation, proof of test assertion strength,
+or an account-authorizing identity decision. The P.P. recovery
+boundary remains **HOLD / DENY / NOT_AUTHORIZED / BLOCKED**.
