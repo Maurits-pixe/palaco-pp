@@ -1277,3 +1277,28 @@ This strengthens in-process consistency evidence only. It is not
 an independently signed attestation, proof of test assertion strength,
 or an account-authorizing identity decision. The P.P. recovery
 boundary remains **HOLD / DENY / NOT_AUTHORIZED / BLOCKED**.
+
+
+## Loaded test object identity binding (draft v48, 24 November 2026)
+
+The synthetic security runner now retains strong references to the
+actual loaded `unittest.TestCase` instances for the eleven scoped
+test suites. The tracking result records `id(test)` on each
+`startTest` and `stopTest` callback. After validating the loaded
+test names, full chronological `start/success/stop` traces, test
+counts and successful outcomes, the runner also verifies that
+the exact loaded objects — not different objects with identical
+`.id()` names — started and stopped in expected order.
+
+A mismatched or absent instance-identity record fails closed with
+`PP_CI_EXECUTED_TEST_OBJECT_MISMATCH`. Negative regression cases
+exercise replacement `TestCase` instances with the same test IDs
+and missing object identity metadata. Nested-suite object reference
+preservation and the real tracking result are tested as well.
+
+Object IDs here are local in-process references protected from
+accidental reuse by retaining their objects, **not** portable
+cryptographic identity tokens or independent runtime attestations.
+A successful synthetic run cannot authorize identity recovery,
+P.P. number issuance, merge or deployment.
+**HOLD / DENY / NOT_AUTHORIZED / BLOCKED**.
