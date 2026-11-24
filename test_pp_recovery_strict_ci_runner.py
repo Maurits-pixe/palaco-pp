@@ -12,6 +12,7 @@ import unittest
 from pp_recovery_strict_ci_runner import (SUITES, loaded_test_ids, loaded_test_objects, run,
     verify_suite_origin, verify_critical_source_integrity, verify_test_source_integrity,
     verify_imported_critical_module_origins, verify_loaded_test_class_bindings,
+    snapshot_loaded_test_methods, verify_loaded_test_method_snapshot,
     TrackingTextTestResult)
 from pp_recovery_ci_inventory import CRITICAL_MODULES, ROOT
 
@@ -354,6 +355,81 @@ class StrictRunnerPolicyTests(unittest.TestCase):
                         log.getvalue(),
                     )
                     execute.assert_called_once()
+
+    def test_real_security_test_method_snapshots_are_stable(self):
+        for name in SUITES:
+            __import__(name)
+        cases = [
+            case for name in SUITES
+            for case in loaded_test_objects(
+                unittest.defaultTestLoader.loadTestsFromName(name)
+            )
+        ]
+        snapshot = snapshot_loaded_test_methods(cases)
+        self.assertIsNotNone(snapshot)
+        self.assertTrue(verify_loaded_test_method_snapshot(snapshot))
+
+    def test_instance_overridden_test_method_is_denied(self):
+        name = SUITES[0]
+        __import__(name)
+        case = loaded_test_objects(
+            unittest.defaultTestLoader.loadTestsFromName(name)
+        )[0]
+        with patch.object(case, case._testMethodName, lambda: None):
+            self.assertIsNone(snapshot_loaded_test_methods([case]))
+
+    def test_class_method_rebinding_during_execution_is_denied(self):
+        from pp_recovery_ci_inventory import audit_security_inventory
+        inventory = audit_security_inventory(SUITES)
+        for name in SUITES:
+            __import__(name)
+        case = loaded_test_objects(
+            unittest.defaultTestLoader.loadTestsFromName(SUITES[0])
+        )[0]
+        cls = type(case)
+        method = case._testMethodName
+        original = vars(cls)[method]
+        def substitute(self):
+            return None
+        substitute.__module__ = cls.__module__
+        with patch.object(cls, method, original):
+            def swap(_suite):
+                setattr(cls, method, substitute)
+                return unittest.TestResult()
+            with patch("pp_recovery_strict_ci_runner.audit_security_inventory",
+                       return_value=inventory):
+                with patch("pp_recovery_strict_ci_runner.unittest.TextTestRunner.run",
+                           side_effect=swap) as execute:
+                    with redirect_stdout(StringIO()) as log:
+                        self.assertEqual(1, run())
+                    self.assertIn("TEST_METHOD_CHANGED_DURING_RUN", log.getvalue())
+                    execute.assert_called_once()
+
+    def test_class_method_deletion_during_execution_is_denied(self):
+        from pp_recovery_ci_inventory import audit_security_inventory
+        inventory = audit_security_inventory(SUITES)
+        for name in SUITES:
+            __import__(name)
+        case = loaded_test_objects(
+            unittest.defaultTestLoader.loadTestsFromName(SUITES[0])
+        )[0]
+        cls = type(case)
+        method = case._testMethodName
+        original = vars(cls)[method]
+        try:
+            def delete(_suite):
+                delattr(cls, method)
+                return unittest.TestResult()
+            with patch("pp_recovery_strict_ci_runner.audit_security_inventory",
+                       return_value=inventory):
+                with patch("pp_recovery_strict_ci_runner.unittest.TextTestRunner.run",
+                           side_effect=delete) as execute:
+                    with redirect_stdout(StringIO()) as log:
+                        self.assertEqual(1, run())
+                    self.assertIn("TEST_METHOD_CHANGED_DURING_RUN", log.getvalue())
+                    execute.assert_called_once()
+        finally:
+            setattr(cls, method, original)
 
     def test_reject_arguments(self):
         with redirect_stdout(StringIO()):
