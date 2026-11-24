@@ -131,6 +131,41 @@ def verify_suite_origin(name: str, expected_sha256: str | None = None) -> bool:
 
 
 
+
+def verify_imported_critical_module_origins(hashes: object) -> bool:
+    """Reject imported critical modules shadowed by another file.
+
+    Absence from sys.modules is allowed: not all review modules need importing.
+    This is an in-process origin check, not code execution provenance.
+    """
+    if (type(hashes) is not dict or set(hashes) != set(CRITICAL_MODULES)
+            or any(type(hashes.get(name)) is not str
+                   or re.fullmatch(r"[0-9a-f]{64}", hashes[name]) is None
+                   for name in CRITICAL_MODULES)):
+        return False
+    try:
+        root = ROOT.resolve(strict=True)
+        for name in CRITICAL_MODULES:
+            if name not in sys.modules:
+                continue
+            module = sys.modules[name]
+            origin = getattr(module, "__file__", None)
+            if type(origin) is not str:
+                return False
+            expected = root / f"{name}.py"
+            imported = Path(origin)
+            if (not expected.is_file() or expected.is_symlink()
+                    or not imported.is_file() or imported.is_symlink()
+                    or imported.resolve(strict=True)
+                    != expected.resolve(strict=True)
+                    or hashlib.sha256(imported.read_bytes()).hexdigest()
+                    != hashes[name]):
+                return False
+    except (OSError, ValueError, RuntimeError):
+        return False
+    return True
+
+
 def verify_critical_source_integrity(hashes: object, root: Path = ROOT) -> bool:
     """Compare current security source bytes to inventory; never import them."""
     if (type(hashes) is not dict or set(hashes) != set(CRITICAL_MODULES)
@@ -278,6 +313,9 @@ def run(argv: list[str] | None = None) -> int:
         expected_test_objects.extend(cases)
         expected_started_ids.extend(expected_ids[name])
         combined.addTests(tests)
+    if not verify_imported_critical_module_origins(critical_hashes):
+        print("PP_CI_CRITICAL_IMPORT_ORIGIN_MISMATCH / HOLD / DENY")
+        return 1
     # Check every suite, including those loaded earlier in the loop.
     if not verify_test_source_integrity(hashes):
         print("PP_CI_TEST_SOURCE_CHANGED_DURING_LOAD / HOLD / DENY")
@@ -294,6 +332,9 @@ def run(argv: list[str] | None = None) -> int:
     # A successful test run is invalid when the audited code changed mid-run.
     if not verify_critical_source_integrity(critical_hashes):
         print("PP_CI_CRITICAL_SOURCE_CHANGED_DURING_RUN / HOLD / DENY")
+        return 1
+    if not verify_imported_critical_module_origins(critical_hashes):
+        print("PP_CI_CRITICAL_IMPORT_CHANGED_DURING_RUN / HOLD / DENY")
         return 1
     # A count alone cannot detect duplicated or substituted executions.
     started = getattr(result, "started_test_ids", None)
