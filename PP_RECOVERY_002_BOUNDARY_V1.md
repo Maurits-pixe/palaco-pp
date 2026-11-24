@@ -1449,3 +1449,25 @@ The result is in-process test-class identity consistency, **not**
 signed runtime provenance, proof of assertion effectiveness, or
 authorization to issue identities. The posture stays
 **DRAFT / HOLD / DENY / NOT_AUTHORIZED / BLOCKED**.
+
+
+## Test method function binding across CI execution (draft v55, 24 November 2026)
+
+The strict synthetic security runner now snapshots the original
+class-level Python function objects for every discovered, loaded
+`unittest.TestCase.test_*` method after validation of suite,
+class and instance identities. Instance-level method overrides,
+inherited or non-function test method descriptors are refused before
+execution with `PP_CI_LOADED_TEST_METHOD_INVALID`. After execution,
+the runner requires that each audited class still exports the exact
+same method function object; deletion and replacement are rejected
+with `PP_CI_TEST_METHOD_CHANGED_DURING_RUN`, even where a substitute
+has the original method name.
+
+Four unit regressions cover authentic snapshots, per-instance
+overrides, in-run function replacement and deletion with
+test isolation restoring all mutated class bindings. This adds
+in-process binding evidence; it does **not** cryptographically attest
+the Python bytecode, prove the trustworthiness of the runner, or
+authorize account recovery. **DRAFT / HOLD / DENY /
+NOT_AUTHORIZED / BLOCKED** continues.
