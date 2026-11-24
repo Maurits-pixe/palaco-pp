@@ -1327,3 +1327,27 @@ proof of source authenticity, account ownership, or authorization
 to operate. Never merge, deploy, issue identities or release P.P.
 numbers on the strength of these synthetic checks.
 **HOLD / DENY / NOT_AUTHORIZED / BLOCKED**.
+
+
+## Source path and decoding fail-closed enforcement (draft v50, 24 November 2026)
+
+The static CI security inventory now refuses symlinked source files
+for both the nine critical recovery modules and eleven registered
+regression suites. A symlink with identical contents to a regular
+Python file is not acceptable: `PP_CI_SOURCE_SYMLINK_FORBIDDEN`
+or `PP_CI_TEST_SYMLINK_FORBIDDEN` stops inventory before test
+loading or execution. A valid regular UTF-8 source is still
+parsed without importing the recovery module.
+
+Invalid UTF-8 or malformed syntax in either scoped file category
+is normalized to a fail-closed `ValueError`:
+`PP_CI_SOURCE_SYNTAX_INVALID` for critical modules or
+`PP_CI_TEST_SYNTAX_INVALID` for test suites. Four new negative
+unit regressions verify symlink and decoding refusal independently
+for both categories, and the existing malformed-suite regression
+expects the normalized diagnostic. The test runner already
+declines inventory errors; it cannot turn these cases into PASS.
+
+This is a local CI repository source guard, not protection against
+a hostile runner or independently signed provenance evidence.
+**DRAFT / HOLD / DENY / NOT_AUTHORIZED / BLOCKED**.
