@@ -175,6 +175,23 @@ def verify_test_method_code_snapshot(snapshot: object) -> bool:
             ))
 
 
+def verify_test_method_execution_parameters(methods: object) -> bool:
+    """Scoped TestCase methods must have no mutable call-time defaults/closures.
+
+    unittest runs the selected methods without supplying extra arguments.
+    Disallow hidden default and closure state instead of attempting to
+    certify that mutable objects have not changed.
+    """
+    return (type(methods) is dict and bool(methods)
+            and all(
+                type(fn) is type(verify_test_method_execution_parameters)
+                and fn.__defaults__ is None
+                and fn.__kwdefaults__ is None
+                and fn.__closure__ is None
+                for fn in methods.values()
+            ))
+
+
 def loaded_test_ids(suite: unittest.TestSuite) -> list[str]:
     """Flatten unittest's actual test cases without running any tests."""
     ids = []
@@ -409,6 +426,9 @@ def run(argv: list[str] | None = None) -> int:
     if loaded_method_snapshot is None:
         print("PP_CI_LOADED_TEST_METHOD_INVALID / HOLD / DENY")
         return 1
+    if not verify_test_method_execution_parameters(loaded_method_snapshot):
+        print("PP_CI_TEST_METHOD_PARAMETERS_INVALID / HOLD / DENY")
+        return 1
     loaded_code_snapshot = snapshot_test_method_code(loaded_method_snapshot)
     if loaded_code_snapshot is None:
         print("PP_CI_LOADED_TEST_CODE_INVALID / HOLD / DENY")
@@ -457,6 +477,9 @@ def run(argv: list[str] | None = None) -> int:
         return 1
     if not verify_test_method_code_snapshot(loaded_code_snapshot):
         print("PP_CI_TEST_CODE_CHANGED_DURING_RUN / HOLD / DENY")
+        return 1
+    if not verify_test_method_execution_parameters(loaded_method_snapshot):
+        print("PP_CI_TEST_METHOD_PARAMETERS_CHANGED_DURING_RUN / HOLD / DENY")
         return 1
     if not verify_loaded_test_class_bindings(expected_test_objects):
         print("PP_CI_TEST_CLASS_BINDING_CHANGED_DURING_RUN / HOLD / DENY")
