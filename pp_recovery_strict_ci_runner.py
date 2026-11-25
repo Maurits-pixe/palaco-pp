@@ -6,6 +6,7 @@ produce nonzero exit status. Intended for CI; no production operations.
 from __future__ import annotations
 
 import hashlib
+import inspect
 import re
 import sys
 import unittest
@@ -212,6 +213,70 @@ def verify_test_method_global_namespace(methods: object) -> bool:
             return False
         module = sys.modules.get(cls.__module__)
         if module is None or fn.__globals__ is not vars(module):
+            return False
+    return True
+
+
+TEST_FIXTURE_HOOKS = ("setUp", "tearDown", "setUpClass", "tearDownClass")
+
+
+def snapshot_test_fixture_hooks(cases: object) -> dict | None:
+    """Pin static unittest fixture descriptors and their exact code objects.
+
+    inspect.getattr_static avoids invoking descriptors while taking the
+    snapshot. Instance-level hook shadowing is never accepted.
+    """
+    if type(cases) is not list or not cases:
+        return None
+    result = {}
+    for case in cases:
+        if not isinstance(case, unittest.TestCase):
+            return None
+        cls = type(case)
+        for hook in TEST_FIXTURE_HOOKS:
+            if hook in vars(case):
+                return None
+            try:
+                descriptor = inspect.getattr_static(cls, hook)
+            except AttributeError:
+                return None
+            fn = descriptor.__func__ if isinstance(
+                descriptor, (classmethod, staticmethod)
+            ) else descriptor
+            if type(fn) is not type(snapshot_test_fixture_hooks):
+                return None
+            key = (cls, hook)
+            if key not in result:
+                result[key] = (descriptor, fn, fn.__code__)
+    return result if result else None
+
+
+def verify_test_fixture_hook_snapshot(snapshot: object, cases: object) -> bool:
+    """Reject fixture rebinding, code replacement or instance shadowing."""
+    if (type(snapshot) is not dict or not snapshot
+            or type(cases) is not list or not cases):
+        return False
+    if any(
+        not isinstance(case, unittest.TestCase)
+        or any(hook in vars(case) for hook in TEST_FIXTURE_HOOKS)
+        for case in cases
+    ):
+        return False
+    expected_keys = {
+        (type(case), hook)
+        for case in cases for hook in TEST_FIXTURE_HOOKS
+    }
+    if set(snapshot) != expected_keys:
+        return False
+    for (cls, hook), record in snapshot.items():
+        if type(record) is not tuple or len(record) != 3:
+            return False
+        descriptor, fn, code = record
+        try:
+            current = inspect.getattr_static(cls, hook)
+        except AttributeError:
+            return False
+        if current is not descriptor or fn.__code__ is not code:
             return False
     return True
 
@@ -460,6 +525,10 @@ def run(argv: list[str] | None = None) -> int:
     if loaded_code_snapshot is None:
         print("PP_CI_LOADED_TEST_CODE_INVALID / HOLD / DENY")
         return 1
+    loaded_fixture_snapshot = snapshot_test_fixture_hooks(expected_test_objects)
+    if loaded_fixture_snapshot is None:
+        print("PP_CI_TEST_FIXTURE_HOOKS_INVALID / HOLD / DENY")
+        return 1
     # Pin every loaded security-suite module, not just each TestCase.
     # The module must remain the audited import for the whole test run.
     if any(not verify_suite_origin(name, hashes[name]) for name in SUITES):
@@ -513,6 +582,10 @@ def run(argv: list[str] | None = None) -> int:
         return 1
     if not verify_loaded_test_class_bindings(expected_test_objects):
         print("PP_CI_TEST_CLASS_BINDING_CHANGED_DURING_RUN / HOLD / DENY")
+        return 1
+    if not verify_test_fixture_hook_snapshot(
+            loaded_fixture_snapshot, expected_test_objects):
+        print("PP_CI_TEST_FIXTURE_HOOKS_CHANGED_DURING_RUN / HOLD / DENY")
         return 1
 
     if not verify_imported_critical_module_origins(critical_hashes):
