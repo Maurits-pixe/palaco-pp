@@ -1521,3 +1521,28 @@ it neither monitors all module globals nor proves that transient
 mutations undone before the final check did not occur. It is not a
 trusted interpreter or independent code execution attestation.
 **DRAFT / HOLD / DENY / NOT_AUTHORIZED / BLOCKED**.
+
+
+## Actual test function module-global binding (draft v58, 25 November 2026)
+
+For every selected `unittest.TestCase.test_*` function, the strict
+synthetic runner now checks that the function's actual
+`__globals__` dictionary is **the exact dictionary** of its
+registered security-suite module in `sys.modules`. Matching
+`__module__` labels and even identical `__code__` objects are
+insufficient: a copied function built with `types.FunctionType`
+and a foreign global namespace is rejected before executing the
+security suites with `PP_CI_TEST_GLOBAL_NAMESPACE_INVALID`.
+A repeat check after execution also refuses inconsistencies under
+`PP_CI_TEST_GLOBAL_NAMESPACE_CHANGED_DURING_RUN`.
+
+Four policy regressions verify authentic module-global bindings,
+a same-named foreign-global function using identical bytecode, the
+strict runner's pre-execution refusal, and invalid input maps.
+The integration test restores the audited class binding on exit.
+
+This verifies dictionary **identity**, not the identity or values of
+individual names inside that dictionary. It does not detect
+temporary in-run mutations later restored, certify the Python
+interpreter, attest signed bytecode, or provide recovery authority.
+**DRAFT / HOLD / DENY / NOT_AUTHORIZED / BLOCKED**.
