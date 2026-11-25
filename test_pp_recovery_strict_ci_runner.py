@@ -16,6 +16,7 @@ from pp_recovery_strict_ci_runner import (SUITES, loaded_test_ids, loaded_test_o
     snapshot_test_method_code, verify_test_method_code_snapshot,
     verify_test_method_execution_parameters,
     verify_test_method_global_namespace,
+    snapshot_test_fixture_hooks, verify_test_fixture_hook_snapshot,
     TrackingTextTestResult)
 from pp_recovery_ci_inventory import CRITICAL_MODULES, ROOT
 
@@ -637,6 +638,96 @@ class StrictRunnerPolicyTests(unittest.TestCase):
         self.assertFalse(verify_test_method_global_namespace({
             ("invalid", "test_fake"): lambda self: None
         }))
+
+    def test_real_security_fixture_hooks_are_bound(self):
+        for suite_name in SUITES:
+            __import__(suite_name)
+        cases = [
+            case for suite_name in SUITES
+            for case in loaded_test_objects(
+                unittest.defaultTestLoader.loadTestsFromName(suite_name)
+            )
+        ]
+        snapshot = snapshot_test_fixture_hooks(cases)
+        self.assertIsNotNone(snapshot)
+        self.assertTrue(verify_test_fixture_hook_snapshot(snapshot, cases))
+
+    def test_fixture_hook_instance_override_is_denied(self):
+        class SyntheticCase(unittest.TestCase):
+            def test_hold(self):
+                pass
+        case = SyntheticCase("test_hold")
+        snapshot = snapshot_test_fixture_hooks([case])
+        self.assertIsNotNone(snapshot)
+        with patch.object(case, "setUp", lambda: None):
+            self.assertIsNone(snapshot_test_fixture_hooks([case]))
+            self.assertFalse(verify_test_fixture_hook_snapshot(snapshot, [case]))
+
+    def test_fixture_hook_code_mutation_is_denied_without_rebinding(self):
+        class SyntheticCase(unittest.TestCase):
+            def setUp(self):
+                self.stage = "HOLD"
+            def test_hold(self):
+                pass
+        case = SyntheticCase("test_hold")
+        snapshot = snapshot_test_fixture_hooks([case])
+        self.assertTrue(verify_test_fixture_hook_snapshot(snapshot, [case]))
+        fn = SyntheticCase.__dict__["setUp"]
+        old_code = fn.__code__
+        def substitute(self):
+            self.stage = "ALLOW"
+        try:
+            fn.__code__ = substitute.__code__
+            self.assertFalse(verify_test_fixture_hook_snapshot(snapshot, [case]))
+        finally:
+            fn.__code__ = old_code
+        self.assertTrue(verify_test_fixture_hook_snapshot(snapshot, [case]))
+
+    def test_fixture_setup_rebinding_during_run_fails_closed(self):
+        from pp_recovery_ci_inventory import audit_security_inventory
+        inventory = audit_security_inventory(SUITES)
+        for suite_name in SUITES:
+            __import__(suite_name)
+        case = loaded_test_objects(
+            unittest.defaultTestLoader.loadTestsFromName(SUITES[0])
+        )[0]
+        cls = type(case)
+        with patch.object(cls, "setUp", unittest.TestCase.setUp):
+            def mutate(_suite):
+                setattr(cls, "setUp", lambda self: None)
+                return unittest.TestResult()
+            with patch("pp_recovery_strict_ci_runner.audit_security_inventory",
+                       return_value=inventory):
+                with patch("pp_recovery_strict_ci_runner.unittest.TextTestRunner.run",
+                           side_effect=mutate) as execute:
+                    with redirect_stdout(StringIO()) as log:
+                        self.assertEqual(1, run())
+                    self.assertIn("TEST_FIXTURE_HOOKS_CHANGED_DURING_RUN",
+                                  log.getvalue())
+                    execute.assert_called_once()
+
+    def test_fixture_class_setup_rebinding_during_run_fails_closed(self):
+        from pp_recovery_ci_inventory import audit_security_inventory
+        inventory = audit_security_inventory(SUITES)
+        for suite_name in SUITES:
+            __import__(suite_name)
+        case = loaded_test_objects(
+            unittest.defaultTestLoader.loadTestsFromName(SUITES[0])
+        )[0]
+        cls = type(case)
+        with patch.object(cls, "setUpClass", classmethod(lambda cls: None)):
+            def mutate(_suite):
+                setattr(cls, "setUpClass", classmethod(lambda cls: None))
+                return unittest.TestResult()
+            with patch("pp_recovery_strict_ci_runner.audit_security_inventory",
+                       return_value=inventory):
+                with patch("pp_recovery_strict_ci_runner.unittest.TextTestRunner.run",
+                           side_effect=mutate) as execute:
+                    with redirect_stdout(StringIO()) as log:
+                        self.assertEqual(1, run())
+                    self.assertIn("TEST_FIXTURE_HOOKS_CHANGED_DURING_RUN",
+                                  log.getvalue())
+                    execute.assert_called_once()
 
     def test_reject_arguments(self):
         with redirect_stdout(StringIO()):
