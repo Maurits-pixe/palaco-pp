@@ -192,6 +192,30 @@ def verify_test_method_execution_parameters(methods: object) -> bool:
             ))
 
 
+def verify_test_method_global_namespace(methods: object) -> bool:
+    """Each selected test function must execute in its audited suite module.
+
+    The __module__ string alone is spoofable. The actual __globals__ mapping
+    must be the dictionary of the same registered module that owns the class.
+    This does not attest changes to individual globals within that mapping.
+    """
+    if type(methods) is not dict or not methods:
+        return False
+    for key, fn in methods.items():
+        if type(key) is not tuple or len(key) != 2:
+            return False
+        cls, method = key
+        if (type(cls) is not type or type(method) is not str
+                or cls.__module__ not in SUITES
+                or type(fn) is not type(verify_test_method_global_namespace)
+                or fn.__module__ != cls.__module__):
+            return False
+        module = sys.modules.get(cls.__module__)
+        if module is None or fn.__globals__ is not vars(module):
+            return False
+    return True
+
+
 def loaded_test_ids(suite: unittest.TestSuite) -> list[str]:
     """Flatten unittest's actual test cases without running any tests."""
     ids = []
@@ -429,6 +453,9 @@ def run(argv: list[str] | None = None) -> int:
     if not verify_test_method_execution_parameters(loaded_method_snapshot):
         print("PP_CI_TEST_METHOD_PARAMETERS_INVALID / HOLD / DENY")
         return 1
+    if not verify_test_method_global_namespace(loaded_method_snapshot):
+        print("PP_CI_TEST_GLOBAL_NAMESPACE_INVALID / HOLD / DENY")
+        return 1
     loaded_code_snapshot = snapshot_test_method_code(loaded_method_snapshot)
     if loaded_code_snapshot is None:
         print("PP_CI_LOADED_TEST_CODE_INVALID / HOLD / DENY")
@@ -480,6 +507,9 @@ def run(argv: list[str] | None = None) -> int:
         return 1
     if not verify_test_method_execution_parameters(loaded_method_snapshot):
         print("PP_CI_TEST_METHOD_PARAMETERS_CHANGED_DURING_RUN / HOLD / DENY")
+        return 1
+    if not verify_test_method_global_namespace(loaded_method_snapshot):
+        print("PP_CI_TEST_GLOBAL_NAMESPACE_CHANGED_DURING_RUN / HOLD / DENY")
         return 1
     if not verify_loaded_test_class_bindings(expected_test_objects):
         print("PP_CI_TEST_CLASS_BINDING_CHANGED_DURING_RUN / HOLD / DENY")
