@@ -1546,3 +1546,28 @@ individual names inside that dictionary. It does not detect
 temporary in-run mutations later restored, certify the Python
 interpreter, attest signed bytecode, or provide recovery authority.
 **DRAFT / HOLD / DENY / NOT_AUTHORIZED / BLOCKED**.
+
+
+## Unittest fixture hook integrity (draft v59, 25 November 2026)
+
+The strict synthetic runner now snapshots the exact static descriptors
+and Python code objects for `setUp`, `tearDown`, `setUpClass`,
+and `tearDownClass` on every loaded scoped security TestCase class.
+`inspect.getattr_static` avoids triggering descriptors during
+inspection. Direct per-instance overrides of these four lifecycle
+hooks are forbidden. Before execution, invalid or shadowed hooks
+fail closed under `PP_CI_TEST_FIXTURE_HOOKS_INVALID`. After
+execution, replaced, removed or code-mutated hooks and new
+instance overrides fail closed under
+`PP_CI_TEST_FIXTURE_HOOKS_CHANGED_DURING_RUN`.
+
+Five negative and positive regressions cover authentic suite
+fixtures, instance shadowing, mutation of a hook's code object,
+and simulated replacement of ordinary and class-level setup hooks.
+This detects persistent in-process hook changes observed at the
+runner's validation points; it does not monitor every invocation,
+temporary changes reverted during execution, other callable
+dependencies, or a hostile Python interpreter.
+
+**DRAFT / HOLD / DENY / NOT_AUTHORIZED / BLOCKED**;
+no merge, deployment, account recovery or P.P. issuance.
