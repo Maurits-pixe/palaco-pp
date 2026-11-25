@@ -5,7 +5,7 @@ from io import StringIO
 import hashlib
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from types import ModuleType
+from types import ModuleType, FunctionType
 from unittest.mock import patch
 import unittest
 
@@ -15,6 +15,7 @@ from pp_recovery_strict_ci_runner import (SUITES, loaded_test_ids, loaded_test_o
     snapshot_loaded_test_methods, verify_loaded_test_method_snapshot,
     snapshot_test_method_code, verify_test_method_code_snapshot,
     verify_test_method_execution_parameters,
+    verify_test_method_global_namespace,
     TrackingTextTestResult)
 from pp_recovery_ci_inventory import CRITICAL_MODULES, ROOT
 
@@ -573,6 +574,70 @@ class StrictRunnerPolicyTests(unittest.TestCase):
         finally:
             fn.__kwdefaults__ = None
 
+    def test_real_security_test_methods_use_audited_module_globals(self):
+        for name in SUITES:
+            __import__(name)
+        cases = [
+            case for name in SUITES
+            for case in loaded_test_objects(
+                unittest.defaultTestLoader.loadTestsFromName(name)
+            )
+        ]
+        methods = snapshot_loaded_test_methods(cases)
+        self.assertTrue(verify_test_method_global_namespace(methods))
+
+    def test_same_named_foreign_global_namespace_is_denied(self):
+        name = SUITES[0]
+        __import__(name)
+        case = loaded_test_objects(
+            unittest.defaultTestLoader.loadTestsFromName(name)
+        )[0]
+        cls = type(case)
+        method = case._testMethodName
+        original = vars(cls)[method]
+        foreign = FunctionType(original.__code__, {"__name__": name}, method)
+        foreign.__module__ = name
+        self.assertEqual(original.__module__, foreign.__module__)
+        self.assertEqual(original.__code__, foreign.__code__)
+        self.assertIsNot(original.__globals__, foreign.__globals__)
+        self.assertFalse(verify_test_method_global_namespace({
+            (cls, method): foreign
+        }))
+        self.assertTrue(verify_test_method_global_namespace({
+            (cls, method): original
+        }))
+
+    def test_foreign_global_namespace_refused_before_test_execution(self):
+        from pp_recovery_ci_inventory import audit_security_inventory
+        inventory = audit_security_inventory(SUITES)
+        for name in SUITES:
+            __import__(name)
+        case = loaded_test_objects(
+            unittest.defaultTestLoader.loadTestsFromName(SUITES[0])
+        )[0]
+        cls = type(case)
+        method = case._testMethodName
+        original = vars(cls)[method]
+        foreign = FunctionType(original.__code__,
+                               {"__name__": cls.__module__}, method)
+        foreign.__module__ = cls.__module__
+        with patch.object(cls, method, foreign):
+            with patch("pp_recovery_strict_ci_runner.audit_security_inventory",
+                       return_value=inventory):
+                with patch("pp_recovery_strict_ci_runner.unittest.TextTestRunner.run") as execute:
+                    with redirect_stdout(StringIO()) as log:
+                        self.assertEqual(1, run())
+                    self.assertIn("TEST_GLOBAL_NAMESPACE_INVALID",
+                                  log.getvalue())
+                    execute.assert_not_called()
+
+    def test_invalid_global_namespace_mapping_fails_closed(self):
+        self.assertFalse(verify_test_method_global_namespace({}))
+        self.assertFalse(verify_test_method_global_namespace(None))
+        self.assertFalse(verify_test_method_global_namespace({
+            ("invalid", "test_fake"): lambda self: None
+        }))
+
     def test_reject_arguments(self):
         with redirect_stdout(StringIO()):
             self.assertEqual(2, run(["--unverified"]))
@@ -659,7 +724,8 @@ class StrictRunnerPolicyTests(unittest.TestCase):
     @patch("pp_recovery_strict_ci_runner.snapshot_test_method_code", return_value={})
     @patch("pp_recovery_strict_ci_runner.verify_test_method_code_snapshot", return_value=True)
     @patch("pp_recovery_strict_ci_runner.verify_test_method_execution_parameters", return_value=True)
-    def test_short_executed_count_cannot_report_pass(self, _parameters, _code_verification, _code_snapshot, _method_verification, _method_snapshot, _class_binding, _origin):
+    @patch("pp_recovery_strict_ci_runner.verify_test_method_global_namespace", return_value=True)
+    def test_short_executed_count_cannot_report_pass(self, _namespace, _parameters, _code_verification, _code_snapshot, _method_verification, _method_snapshot, _class_binding, _origin):
         inventory = {
             **BOUNDARY_METADATA, "authorization": "HOLD",
             "accessDecision": "DENY",
