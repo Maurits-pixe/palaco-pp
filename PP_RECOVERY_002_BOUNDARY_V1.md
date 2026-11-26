@@ -1571,3 +1571,30 @@ dependencies, or a hostile Python interpreter.
 
 **DRAFT / HOLD / DENY / NOT_AUTHORIZED / BLOCKED**;
 no merge, deployment, account recovery or P.P. issuance.
+
+
+## Fixture hook execution context guard (draft v60, 26 November 2026)
+
+The synthetic CI runner now validates each recorded unittest fixture
+hook function's effective execution context, in addition to v59's
+descriptor and code-object identity checks. The selected `setUp`,
+`tearDown`, `setUpClass` and `tearDownClass` functions must
+have no positional defaults (`__defaults__`), keyword defaults
+(`__kwdefaults__`) or closure cells (`__closure__`). Their
+`__globals__` mapping must also be the exact dictionary of the
+module identified by the function's `__module__`, rather than a
+forged namespace with the same label. Missing modules are rejected.
+
+Disallowed initial state fails closed as
+`PP_CI_TEST_FIXTURE_CONTEXT_INVALID`; changes still present after
+the synthetic security tests fail as
+`PP_CI_TEST_FIXTURE_CONTEXT_CHANGED_DURING_RUN`.
+Four regressions verify actual suite contexts, forbidden hidden
+parameters, a same-code foreign-global function, and adding defaults
+during a mocked run.
+
+The validation happens at two boundaries; it does not prove that
+temporary mutations were absent between them, that all referenced
+module globals remain immutable, or that the Python interpreter is
+independently attested. No identity authorization follows from PASS.
+**DRAFT / HOLD / DENY / NOT_AUTHORIZED / BLOCKED** remain in force.
