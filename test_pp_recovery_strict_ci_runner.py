@@ -20,6 +20,7 @@ from pp_recovery_strict_ci_runner import (SUITES, loaded_test_ids, loaded_test_o
     verify_fixture_hook_execution_context,
     verify_module_fixture_hooks_absent,
     verify_suite_loader_hook_absent, verify_loader_hook_not_declared,
+    verify_unittest_loader_configuration,
     TrackingTextTestResult)
 from pp_recovery_ci_inventory import CRITICAL_MODULES, ROOT
 
@@ -934,6 +935,67 @@ class StrictRunnerPolicyTests(unittest.TestCase):
                         self.assertEqual(1, run())
                     self.assertIn("LOAD_TESTS_HOOK_PRESENT", log.getvalue())
                     execute.assert_not_called()
+
+    def test_canonical_unfiltered_unittest_loader_is_accepted(self):
+        self.assertTrue(verify_unittest_loader_configuration(
+            unittest.defaultTestLoader
+        ))
+
+    def test_loader_prefix_and_name_filter_are_rejected(self):
+        loader = unittest.defaultTestLoader
+        for field, altered in (
+            ("testMethodPrefix", "skip_everything"),
+            ("testNamePatterns", ["test_*_allowed"]),
+        ):
+            with self.subTest(field=field):
+                with patch.object(loader, field, altered):
+                    self.assertFalse(verify_unittest_loader_configuration(loader))
+                self.assertTrue(verify_unittest_loader_configuration(loader))
+
+    def test_loader_suite_factory_and_sorter_are_rejected(self):
+        loader = unittest.defaultTestLoader
+        for field, altered in (
+            ("suiteClass", list),
+            ("sortTestMethodsUsing", lambda a, b: 0),
+        ):
+            with self.subTest(field=field):
+                with patch.object(loader, field, altered):
+                    self.assertFalse(verify_unittest_loader_configuration(loader))
+                self.assertTrue(verify_unittest_loader_configuration(loader))
+
+    def test_modified_loader_configuration_prevents_execution(self):
+        from pp_recovery_ci_inventory import audit_security_inventory
+        inventory = audit_security_inventory(SUITES)
+        with patch.object(unittest.defaultTestLoader,
+                          "testMethodPrefix", "unreviewed"):
+            with patch("pp_recovery_strict_ci_runner.audit_security_inventory",
+                       return_value=inventory):
+                with patch("pp_recovery_strict_ci_runner.unittest.TextTestRunner.run") as execute:
+                    with redirect_stdout(StringIO()) as log:
+                        self.assertEqual(1, run())
+                    self.assertIn("TEST_LOADER_CONFIGURATION_INVALID",
+                                  log.getvalue())
+                    execute.assert_not_called()
+
+    def test_loader_settings_mutated_during_run_fail_closed(self):
+        from pp_recovery_ci_inventory import audit_security_inventory
+        inventory = audit_security_inventory(SUITES)
+        for name in SUITES:
+            __import__(name)
+        loader = unittest.defaultTestLoader
+        with patch.object(loader, "testNamePatterns", None):
+            def tamper(_suite):
+                loader.testNamePatterns = ["test_only_one"]
+                return unittest.TestResult()
+            with patch("pp_recovery_strict_ci_runner.audit_security_inventory",
+                       return_value=inventory):
+                with patch("pp_recovery_strict_ci_runner.unittest.TextTestRunner.run",
+                           side_effect=tamper) as execute:
+                    with redirect_stdout(StringIO()) as log:
+                        self.assertEqual(1, run())
+                    self.assertIn("TEST_LOADER_CHANGED_DURING_RUN",
+                                  log.getvalue())
+                    execute.assert_called_once()
 
     def test_reject_arguments(self):
         with redirect_stdout(StringIO()):
