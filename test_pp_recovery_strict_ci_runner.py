@@ -19,6 +19,7 @@ from pp_recovery_strict_ci_runner import (SUITES, loaded_test_ids, loaded_test_o
     snapshot_test_fixture_hooks, verify_test_fixture_hook_snapshot,
     verify_fixture_hook_execution_context,
     verify_module_fixture_hooks_absent,
+    verify_suite_loader_hook_absent, verify_loader_hook_not_declared,
     TrackingTextTestResult)
 from pp_recovery_ci_inventory import CRITICAL_MODULES, ROOT
 
@@ -865,6 +866,73 @@ class StrictRunnerPolicyTests(unittest.TestCase):
                         self.assertEqual(1, run())
                     self.assertIn("MODULE_FIXTURE_HOOKS_FORBIDDEN",
                                   log.getvalue())
+                    execute.assert_not_called()
+
+    def test_scoped_suite_sources_have_no_load_tests_hook(self):
+        for name in SUITES:
+            __import__(name)
+        self.assertTrue(verify_loader_hook_not_declared())
+        self.assertTrue(verify_suite_loader_hook_absent())
+
+    def test_loader_hook_source_preflight_refuses_declarations(self):
+        with TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            for name in SUITES:
+                (root / f"{name}.py").write_text(
+                    "import unittest\n", encoding="utf-8"
+                )
+            self.assertTrue(verify_loader_hook_not_declared(root))
+            target = root / f"{SUITES[0]}.py"
+            for bad in (
+                "def load_tests(loader, tests, pattern):\n    return tests\n",
+                "load_tests = lambda loader, tests, pattern: tests\n",
+                "def inject():\n    global load_tests\n    load_tests = None\n",
+            ):
+                target.write_text(bad, encoding="utf-8")
+                self.assertFalse(verify_loader_hook_not_declared(root))
+
+    def test_loader_hook_injected_during_run_is_denied(self):
+        from pp_recovery_ci_inventory import audit_security_inventory
+        import sys
+        inventory = audit_security_inventory(SUITES)
+        for name in SUITES:
+            __import__(name)
+        module = sys.modules[SUITES[0]]
+        def synthetic_hook(loader, tests, pattern):
+            return tests
+        with patch.dict(vars(module), {}, clear=False):
+            def inject(_suite):
+                setattr(module, "load_tests", synthetic_hook)
+                return unittest.TestResult()
+            try:
+                with patch("pp_recovery_strict_ci_runner.audit_security_inventory",
+                           return_value=inventory):
+                    with patch("pp_recovery_strict_ci_runner.unittest.TextTestRunner.run",
+                               side_effect=inject) as execute:
+                        with redirect_stdout(StringIO()) as log:
+                            self.assertEqual(1, run())
+                        self.assertIn("LOAD_TESTS_HOOK_CHANGED_DURING_RUN",
+                                      log.getvalue())
+                        execute.assert_called_once()
+            finally:
+                if getattr(module, "load_tests", None) is synthetic_hook:
+                    delattr(module, "load_tests")
+
+    def test_loader_hook_runtime_presence_is_denied(self):
+        from pp_recovery_ci_inventory import audit_security_inventory
+        import sys
+        inventory = audit_security_inventory(SUITES)
+        for name in SUITES:
+            __import__(name)
+        module = sys.modules[SUITES[0]]
+        with patch.dict(vars(module), {"load_tests": None}):
+            self.assertFalse(verify_suite_loader_hook_absent())
+            with patch("pp_recovery_strict_ci_runner.audit_security_inventory",
+                       return_value=inventory):
+                with patch("pp_recovery_strict_ci_runner.unittest.TextTestRunner.run") as execute:
+                    with redirect_stdout(StringIO()) as log:
+                        self.assertEqual(1, run())
+                    self.assertIn("LOAD_TESTS_HOOK_PRESENT", log.getvalue())
                     execute.assert_not_called()
 
     def test_reject_arguments(self):
