@@ -1644,3 +1644,30 @@ is a source-boundary control, not a sandbox or independently
 attested interpreter, and cannot detect transient mutations later
 restored. CI results remain unsigned and do not authorize P.P.
 issuance. **DRAFT / HOLD / DENY / NOT_AUTHORIZED / BLOCKED**.
+
+
+## Canonical unittest loader configuration (draft v63, 26 November 2026)
+
+The strict recovery CI runner now enforces the concrete, unfiltered
+`unittest.defaultTestLoader` configuration before loading the scoped
+security suites, again after suite discovery, and after test execution.
+The loader must be the exact default `unittest.TestLoader` instance,
+with `testMethodPrefix == "test"`, `testNamePatterns is None`,
+`suiteClass is unittest.TestSuite`, and the default
+`unittest.util.three_way_cmp` method-order comparator.
+
+An invalid initial configuration fails closed as
+`PP_CI_TEST_LOADER_CONFIGURATION_INVALID`; alterations persisting
+after discovery or execution fail as
+`PP_CI_TEST_LOADER_CHANGED_DURING_LOAD` or
+`PP_CI_TEST_LOADER_CHANGED_DURING_RUN`. Five policy regressions
+cover the canonical baseline, injected method prefix and name filter,
+changed suite factory and comparator, refusal before execution,
+and mutation of name filters during a simulated execution.
+
+This protects observed loader settings rather than attesting all
+unittest internals, Python interpreter behavior, or transient
+settings changed and restored between observations. A successful
+synthetic CI check remains **DRAFT / HOLD / DENY / NOT_AUTHORIZED /
+BLOCKED**, and is not authorization for recovery, issuance or
+production deployment.
