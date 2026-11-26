@@ -1620,3 +1620,27 @@ instrumentation. It cannot detect hooks introduced and removed
 entirely between the two checks and does not verify the interpreter
 itself. The synthetic CI matrix remains unsigned and untrusted as
 production authority: **DRAFT / HOLD / DENY / NOT_AUTHORIZED / BLOCKED**.
+
+
+## Unittest custom test discovery refusal (draft v62, 26 November 2026)
+
+The strict recovery CI runner now preflights every registered security
+suite's source with the Python AST, before using unittest's module
+loader. A declared or assigned `load_tests` name anywhere in the
+reviewed test source is refused under
+`PP_CI_LOAD_TESTS_HOOK_DECLARED`, so an unreviewed module-specific
+loader cannot silently redefine the scoped execution inventory.
+Runtime checks also refuse a `load_tests` attribute introduced
+after import under `PP_CI_LOAD_TESTS_HOOK_PRESENT`, or still
+present after suite execution under
+`PP_CI_LOAD_TESTS_HOOK_CHANGED_DURING_RUN`.
+
+Four focused regressions cover clean suite sources, static function
+and assignment declarations, pre-execution injected runtime
+`load_tests` attributes, and post-load injection during simulated
+test execution. The check is deliberately conservative; it may
+reject otherwise harmless uses of the reserved name. An AST scan
+is a source-boundary control, not a sandbox or independently
+attested interpreter, and cannot detect transient mutations later
+restored. CI results remain unsigned and do not authorize P.P.
+issuance. **DRAFT / HOLD / DENY / NOT_AUTHORIZED / BLOCKED**.
