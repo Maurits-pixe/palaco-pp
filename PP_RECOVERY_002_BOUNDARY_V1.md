@@ -1598,3 +1598,25 @@ temporary mutations were absent between them, that all referenced
 module globals remain immutable, or that the Python interpreter is
 independently attested. No identity authorization follows from PASS.
 **DRAFT / HOLD / DENY / NOT_AUTHORIZED / BLOCKED** remain in force.
+
+
+## Scoped module-level unittest fixture refusal (draft v61, 26 November 2026)
+
+All eleven reviewed synthetic recovery security suites currently have no
+module-level `setUpModule` or `tearDownModule` functions. The strict
+runner now refuses either name in any registered suite module, including
+a noncallable value at the name, before test execution under
+`PP_CI_MODULE_FIXTURE_HOOKS_FORBIDDEN`. It repeats the check after
+test execution and refuses newly introduced hooks under
+`PP_CI_MODULE_FIXTURE_HOOKS_CHANGED_DURING_RUN`.
+
+Four regressions cover current clean suite modules, both hook names,
+an injected module-level setup hook during a simulated execution,
+and an injected teardown hook before test execution. All test
+mutations are scoped to the synthetic policy tests and restored.
+
+This is a deliberately narrow absence policy, not generic lifecycle
+instrumentation. It cannot detect hooks introduced and removed
+entirely between the two checks and does not verify the interpreter
+itself. The synthetic CI matrix remains unsigned and untrusted as
+production authority: **DRAFT / HOLD / DENY / NOT_AUTHORIZED / BLOCKED**.
