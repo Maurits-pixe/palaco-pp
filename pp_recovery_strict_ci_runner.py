@@ -376,6 +376,39 @@ def verify_unittest_loader_configuration(loader: object) -> bool:
     )
 
 
+LOADER_METHODS = (
+    "loadTestsFromName", "loadTestsFromModule",
+    "loadTestsFromTestCase", "getTestCaseNames",
+)
+
+
+def snapshot_unittest_loader_methods() -> dict | None:
+    """Pin actual unittest.TestLoader methods and executable code objects."""
+    snapshot = {}
+    for method in LOADER_METHODS:
+        fn = vars(unittest.TestLoader).get(method)
+        if type(fn) is not type(snapshot_unittest_loader_methods):
+            return None
+        snapshot[method] = (fn, fn.__code__)
+    return snapshot
+
+
+def verify_unittest_loader_method_snapshot(snapshot: object) -> bool:
+    """Reject changed loader class methods even when settings remain normal."""
+    return (
+        type(snapshot) is dict
+        and set(snapshot) == set(LOADER_METHODS)
+        and all(
+            type(record) is tuple
+            and len(record) == 2
+            and type(record[0]) is type(snapshot_unittest_loader_methods)
+            and vars(unittest.TestLoader).get(method) is record[0]
+            and record[0].__code__ is record[1]
+            for method, record in snapshot.items()
+        )
+    )
+
+
 def loaded_test_ids(suite: unittest.TestSuite) -> list[str]:
     """Flatten unittest's actual test cases without running any tests."""
     ids = []
@@ -575,6 +608,10 @@ def run(argv: list[str] | None = None) -> int:
     if not verify_unittest_loader_configuration(loader):
         print("PP_CI_TEST_LOADER_CONFIGURATION_INVALID / HOLD / DENY")
         return 1
+    loader_method_snapshot = snapshot_unittest_loader_methods()
+    if loader_method_snapshot is None:
+        print("PP_CI_TEST_LOADER_METHODS_INVALID / HOLD / DENY")
+        return 1
     combined = unittest.TestSuite()
     expected_started_ids = []
     expected_test_objects = []
@@ -617,6 +654,9 @@ def run(argv: list[str] | None = None) -> int:
         combined.addTests(tests)
     if not verify_unittest_loader_configuration(loader):
         print("PP_CI_TEST_LOADER_CHANGED_DURING_LOAD / HOLD / DENY")
+        return 1
+    if not verify_unittest_loader_method_snapshot(loader_method_snapshot):
+        print("PP_CI_TEST_LOADER_METHODS_CHANGED_DURING_LOAD / HOLD / DENY")
         return 1
     if not verify_loaded_test_class_bindings(expected_test_objects):
         print("PP_CI_LOADED_TEST_CLASS_BINDING_INVALID / HOLD / DENY")
@@ -675,6 +715,9 @@ def run(argv: list[str] | None = None) -> int:
     result = runner.run(combined)
     if not verify_unittest_loader_configuration(loader):
         print("PP_CI_TEST_LOADER_CHANGED_DURING_RUN / HOLD / DENY")
+        return 1
+    if not verify_unittest_loader_method_snapshot(loader_method_snapshot):
+        print("PP_CI_TEST_LOADER_METHODS_CHANGED_DURING_RUN / HOLD / DENY")
         return 1
     if not verify_test_source_integrity(hashes):
         print("PP_CI_TEST_SOURCE_CHANGED_DURING_RUN / HOLD / DENY")
