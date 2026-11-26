@@ -305,6 +305,25 @@ def verify_fixture_hook_execution_context(snapshot: object) -> bool:
     return True
 
 
+MODULE_FIXTURE_HOOKS = ("setUpModule", "tearDownModule")
+
+
+def verify_module_fixture_hooks_absent() -> bool:
+    """Refuse module-level unittest hooks in every registered security suite.
+
+    None of the audited suites declares module-wide fixtures. Rejecting any
+    such hook, including a new one introduced during execution, prevents
+    unreviewed module-level setup/teardown from influencing test outcomes.
+    """
+    for name in SUITES:
+        module = sys.modules.get(name)
+        if module is None or type(vars(module)) is not dict:
+            return False
+        if any(hook in vars(module) for hook in MODULE_FIXTURE_HOOKS):
+            return False
+    return True
+
+
 def loaded_test_ids(suite: unittest.TestSuite) -> list[str]:
     """Flatten unittest's actual test cases without running any tests."""
     ids = []
@@ -556,6 +575,9 @@ def run(argv: list[str] | None = None) -> int:
     if not verify_fixture_hook_execution_context(loaded_fixture_snapshot):
         print("PP_CI_TEST_FIXTURE_CONTEXT_INVALID / HOLD / DENY")
         return 1
+    if not verify_module_fixture_hooks_absent():
+        print("PP_CI_MODULE_FIXTURE_HOOKS_FORBIDDEN / HOLD / DENY")
+        return 1
     # Pin every loaded security-suite module, not just each TestCase.
     # The module must remain the audited import for the whole test run.
     if any(not verify_suite_origin(name, hashes[name]) for name in SUITES):
@@ -609,6 +631,9 @@ def run(argv: list[str] | None = None) -> int:
         return 1
     if not verify_loaded_test_class_bindings(expected_test_objects):
         print("PP_CI_TEST_CLASS_BINDING_CHANGED_DURING_RUN / HOLD / DENY")
+        return 1
+    if not verify_module_fixture_hooks_absent():
+        print("PP_CI_MODULE_FIXTURE_HOOKS_CHANGED_DURING_RUN / HOLD / DENY")
         return 1
     if not verify_test_fixture_hook_snapshot(
             loaded_fixture_snapshot, expected_test_objects):
