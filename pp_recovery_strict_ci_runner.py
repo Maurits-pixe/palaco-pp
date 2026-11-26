@@ -281,6 +281,30 @@ def verify_test_fixture_hook_snapshot(snapshot: object, cases: object) -> bool:
     return True
 
 
+def verify_fixture_hook_execution_context(snapshot: object) -> bool:
+    """Fail closed on hidden fixture parameters or foreign function globals.
+
+    The module-name attribute is insufficient: each callable must execute
+    with the actual dictionary of the module declaring its function.
+    """
+    if type(snapshot) is not dict or not snapshot:
+        return False
+    for record in snapshot.values():
+        if type(record) is not tuple or len(record) != 3:
+            return False
+        _, fn, _ = record
+        if (type(fn) is not type(verify_fixture_hook_execution_context)
+                or fn.__defaults__ is not None
+                or fn.__kwdefaults__ is not None
+                or fn.__closure__ is not None
+                or type(fn.__module__) is not str):
+            return False
+        module = sys.modules.get(fn.__module__)
+        if module is None or fn.__globals__ is not vars(module):
+            return False
+    return True
+
+
 def loaded_test_ids(suite: unittest.TestSuite) -> list[str]:
     """Flatten unittest's actual test cases without running any tests."""
     ids = []
@@ -529,6 +553,9 @@ def run(argv: list[str] | None = None) -> int:
     if loaded_fixture_snapshot is None:
         print("PP_CI_TEST_FIXTURE_HOOKS_INVALID / HOLD / DENY")
         return 1
+    if not verify_fixture_hook_execution_context(loaded_fixture_snapshot):
+        print("PP_CI_TEST_FIXTURE_CONTEXT_INVALID / HOLD / DENY")
+        return 1
     # Pin every loaded security-suite module, not just each TestCase.
     # The module must remain the audited import for the whole test run.
     if any(not verify_suite_origin(name, hashes[name]) for name in SUITES):
@@ -586,6 +613,9 @@ def run(argv: list[str] | None = None) -> int:
     if not verify_test_fixture_hook_snapshot(
             loaded_fixture_snapshot, expected_test_objects):
         print("PP_CI_TEST_FIXTURE_HOOKS_CHANGED_DURING_RUN / HOLD / DENY")
+        return 1
+    if not verify_fixture_hook_execution_context(loaded_fixture_snapshot):
+        print("PP_CI_TEST_FIXTURE_CONTEXT_CHANGED_DURING_RUN / HOLD / DENY")
         return 1
 
     if not verify_imported_critical_module_origins(critical_hashes):
