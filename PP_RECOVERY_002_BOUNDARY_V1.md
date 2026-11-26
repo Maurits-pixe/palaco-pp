@@ -1671,3 +1671,28 @@ settings changed and restored between observations. A successful
 synthetic CI check remains **DRAFT / HOLD / DENY / NOT_AUTHORIZED /
 BLOCKED**, and is not authorization for recovery, issuance or
 production deployment.
+
+
+## Unittest loader class-method integrity (draft v64, 26 November 2026)
+
+The strict runner now records the original `unittest.TestLoader`
+class function and executable `__code__` objects for
+`loadTestsFromName`, `loadTestsFromModule`,
+`loadTestsFromTestCase` and `getTestCaseNames`. It validates
+these class method bindings after security suite discovery and again
+after synthetic test execution. Missing or non-function baseline
+methods fail under `PP_CI_TEST_LOADER_METHODS_INVALID`;
+persisting class-method or bytecode changes fail under
+`PP_CI_TEST_LOADER_METHODS_CHANGED_DURING_LOAD` or
+`PP_CI_TEST_LOADER_METHODS_CHANGED_DURING_RUN`.
+
+Four policy regressions exercise the authentic baseline, changed
+class-method binding, an in-place code-object mutation, and a
+simulated post-load class-method substitution. Tests restore
+modified references in `finally` or patch cleanup.
+
+The guard snapshots **class-level methods**, not all possible
+per-instance method shadowing or interpreter-level monkeypatching.
+It does not prove that temporary mutations later reverted were
+absent. It gives no authority for recovery or issuance.
+**DRAFT / HOLD / DENY / NOT_AUTHORIZED / BLOCKED**.
