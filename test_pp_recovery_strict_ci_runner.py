@@ -18,6 +18,7 @@ from pp_recovery_strict_ci_runner import (SUITES, loaded_test_ids, loaded_test_o
     verify_test_method_global_namespace,
     snapshot_test_fixture_hooks, verify_test_fixture_hook_snapshot,
     verify_fixture_hook_execution_context,
+    verify_module_fixture_hooks_absent,
     TrackingTextTestResult)
 from pp_recovery_ci_inventory import CRITICAL_MODULES, ROOT
 
@@ -803,6 +804,68 @@ class StrictRunnerPolicyTests(unittest.TestCase):
                         execute.assert_called_once()
             finally:
                 hook.__defaults__ = None
+
+    def test_real_security_suites_have_no_module_fixture_hooks(self):
+        for name in SUITES:
+            __import__(name)
+        self.assertTrue(verify_module_fixture_hooks_absent())
+
+    def test_module_setup_and_teardown_hooks_are_rejected(self):
+        import sys
+        for name in SUITES:
+            __import__(name)
+        module = sys.modules[SUITES[0]]
+        for hook in ("setUpModule", "tearDownModule"):
+            with self.subTest(hook=hook):
+                with patch.dict(vars(module), {hook: lambda: None}):
+                    self.assertFalse(verify_module_fixture_hooks_absent())
+                self.assertTrue(verify_module_fixture_hooks_absent())
+
+    def test_module_fixture_inserted_during_execution_fails_closed(self):
+        from pp_recovery_ci_inventory import audit_security_inventory
+        import sys
+        inventory = audit_security_inventory(SUITES)
+        for name in SUITES:
+            __import__(name)
+        module = sys.modules[SUITES[0]]
+        def forged_setup():
+            return None
+        with patch.dict(vars(module), {}, clear=False):
+            def inject(_suite):
+                setattr(module, "setUpModule", forged_setup)
+                return unittest.TestResult()
+            try:
+                with patch("pp_recovery_strict_ci_runner.audit_security_inventory",
+                           return_value=inventory):
+                    with patch("pp_recovery_strict_ci_runner.unittest.TextTestRunner.run",
+                               side_effect=inject) as execute:
+                        with redirect_stdout(StringIO()) as log:
+                            self.assertEqual(1, run())
+                        self.assertIn(
+                            "MODULE_FIXTURE_HOOKS_CHANGED_DURING_RUN",
+                            log.getvalue(),
+                        )
+                        execute.assert_called_once()
+            finally:
+                if getattr(module, "setUpModule", None) is forged_setup:
+                    delattr(module, "setUpModule")
+
+    def test_module_fixture_present_before_execution_fails_closed(self):
+        from pp_recovery_ci_inventory import audit_security_inventory
+        import sys
+        inventory = audit_security_inventory(SUITES)
+        for name in SUITES:
+            __import__(name)
+        module = sys.modules[SUITES[0]]
+        with patch.dict(vars(module), {"tearDownModule": lambda: None}):
+            with patch("pp_recovery_strict_ci_runner.audit_security_inventory",
+                       return_value=inventory):
+                with patch("pp_recovery_strict_ci_runner.unittest.TextTestRunner.run") as execute:
+                    with redirect_stdout(StringIO()) as log:
+                        self.assertEqual(1, run())
+                    self.assertIn("MODULE_FIXTURE_HOOKS_FORBIDDEN",
+                                  log.getvalue())
+                    execute.assert_not_called()
 
     def test_reject_arguments(self):
         with redirect_stdout(StringIO()):
