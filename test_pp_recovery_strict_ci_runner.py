@@ -17,6 +17,7 @@ from pp_recovery_strict_ci_runner import (SUITES, loaded_test_ids, loaded_test_o
     verify_test_method_execution_parameters,
     verify_test_method_global_namespace,
     snapshot_test_fixture_hooks, verify_test_fixture_hook_snapshot,
+    verify_fixture_hook_execution_context,
     TrackingTextTestResult)
 from pp_recovery_ci_inventory import CRITICAL_MODULES, ROOT
 
@@ -728,6 +729,80 @@ class StrictRunnerPolicyTests(unittest.TestCase):
                     self.assertIn("TEST_FIXTURE_HOOKS_CHANGED_DURING_RUN",
                                   log.getvalue())
                     execute.assert_called_once()
+
+    def test_real_fixture_contexts_match_declaring_module_globals(self):
+        for suite_name in SUITES:
+            __import__(suite_name)
+        cases = [
+            case for suite_name in SUITES
+            for case in loaded_test_objects(
+                unittest.defaultTestLoader.loadTestsFromName(suite_name)
+            )
+        ]
+        self.assertTrue(verify_fixture_hook_execution_context(
+            snapshot_test_fixture_hooks(cases)
+        ))
+
+    def test_hidden_fixture_defaults_and_closure_are_rejected(self):
+        def default_hook(self, state="ALLOW"):
+            return state
+        def keyword_hook(self, *, state="ALLOW"):
+            return state
+        secret = "ALLOW"
+        def closure_hook(self):
+            return secret
+        for fn in (default_hook, keyword_hook, closure_hook):
+            with self.subTest(name=fn.__name__):
+                self.assertFalse(verify_fixture_hook_execution_context({
+                    (unittest.TestCase, "setUp"): (fn, fn, fn.__code__)
+                }))
+
+    def test_foreign_globals_fixture_function_rejected_with_same_code(self):
+        def authentic(self):
+            return None
+        foreign = FunctionType(authentic.__code__,
+                               {"__name__": authentic.__module__},
+                               authentic.__name__)
+        foreign.__module__ = authentic.__module__
+        self.assertIs(foreign.__code__, authentic.__code__)
+        self.assertFalse(verify_fixture_hook_execution_context({
+            (unittest.TestCase, "setUp"):
+                (foreign, foreign, foreign.__code__)
+        }))
+        self.assertTrue(verify_fixture_hook_execution_context({
+            (unittest.TestCase, "setUp"):
+                (authentic, authentic, authentic.__code__)
+        }))
+
+    def test_fixture_default_injected_during_run_fails_closed(self):
+        from pp_recovery_ci_inventory import audit_security_inventory
+        inventory = audit_security_inventory(SUITES)
+        for suite_name in SUITES:
+            __import__(suite_name)
+        case = loaded_test_objects(
+            unittest.defaultTestLoader.loadTestsFromName(SUITES[0])
+        )[0]
+        cls = type(case)
+        def hook(self):
+            return None
+        with patch.object(cls, "setUp", hook):
+            def mutate(_suite):
+                hook.__defaults__ = ("ALLOW",)
+                return unittest.TestResult()
+            try:
+                with patch("pp_recovery_strict_ci_runner.audit_security_inventory",
+                           return_value=inventory):
+                    with patch("pp_recovery_strict_ci_runner.unittest.TextTestRunner.run",
+                               side_effect=mutate) as execute:
+                        with redirect_stdout(StringIO()) as log:
+                            self.assertEqual(1, run())
+                        self.assertIn(
+                            "TEST_FIXTURE_CONTEXT_CHANGED_DURING_RUN",
+                            log.getvalue(),
+                        )
+                        execute.assert_called_once()
+            finally:
+                hook.__defaults__ = None
 
     def test_reject_arguments(self):
         with redirect_stdout(StringIO()):
