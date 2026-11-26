@@ -359,6 +359,23 @@ def verify_loader_hook_not_declared(root: Path = ROOT) -> bool:
     return True
 
 
+def verify_unittest_loader_configuration(loader: object) -> bool:
+    """Require a standard, unfiltered unittest loader for scoped discovery.
+
+    Do not merely compare with mutable TestLoader class attributes: enforce
+    concrete expected values and reject replacement of the default loader.
+    """
+    return (
+        type(loader) is unittest.TestLoader
+        and unittest.defaultTestLoader is loader
+        and type(loader.testMethodPrefix) is str
+        and loader.testMethodPrefix == "test"
+        and loader.testNamePatterns is None
+        and loader.suiteClass is unittest.TestSuite
+        and loader.sortTestMethodsUsing is unittest.util.three_way_cmp
+    )
+
+
 def loaded_test_ids(suite: unittest.TestSuite) -> list[str]:
     """Flatten unittest's actual test cases without running any tests."""
     ids = []
@@ -555,6 +572,9 @@ def run(argv: list[str] | None = None) -> int:
         print("PP_CI_LOAD_TESTS_HOOK_DECLARED / HOLD / DENY")
         return 1
     loader = unittest.defaultTestLoader
+    if not verify_unittest_loader_configuration(loader):
+        print("PP_CI_TEST_LOADER_CONFIGURATION_INVALID / HOLD / DENY")
+        return 1
     combined = unittest.TestSuite()
     expected_started_ids = []
     expected_test_objects = []
@@ -595,6 +615,9 @@ def run(argv: list[str] | None = None) -> int:
         expected_test_objects.extend(cases)
         expected_started_ids.extend(expected_ids[name])
         combined.addTests(tests)
+    if not verify_unittest_loader_configuration(loader):
+        print("PP_CI_TEST_LOADER_CHANGED_DURING_LOAD / HOLD / DENY")
+        return 1
     if not verify_loaded_test_class_bindings(expected_test_objects):
         print("PP_CI_LOADED_TEST_CLASS_BINDING_INVALID / HOLD / DENY")
         return 1
@@ -650,6 +673,9 @@ def run(argv: list[str] | None = None) -> int:
         return 1
     runner = unittest.TextTestRunner(verbosity=2, resultclass=TrackingTextTestResult)
     result = runner.run(combined)
+    if not verify_unittest_loader_configuration(loader):
+        print("PP_CI_TEST_LOADER_CHANGED_DURING_RUN / HOLD / DENY")
+        return 1
     if not verify_test_source_integrity(hashes):
         print("PP_CI_TEST_SOURCE_CHANGED_DURING_RUN / HOLD / DENY")
         return 1
