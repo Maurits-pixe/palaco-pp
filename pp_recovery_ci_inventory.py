@@ -1,0 +1,144 @@
+"""Fail-closed inventory audit of PALACO-PP critical regression coverage.
+
+This checks the explicitly scoped security boundary modules and their
+regression-suite registration. It does not claim to discover all historical
+repository tests or grant release authority.
+"""
+from __future__ import annotations
+
+import ast
+import hashlib
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent
+CRITICAL_MODULES = (
+    "review_044_release_boundary_snapshot",
+    "review_044_release_boundary_snapshot_cli",
+    "review_044_boundary_reconciliation",
+    "review_044_evidence_manifest",
+    "review_044_detached_signature_inspection",
+    "review_044_trust_anchor_preflight",
+    "review_044_proposed_key_binding",
+    "review_044_unsigned_revocation_notice",
+    "review_044_revocation_signature_inspection",
+)
+INTEGRATION_SUITES = (
+    "test_review_044_contract_parity",
+    "test_review_044_recovery_chain_e2e",
+)
+
+
+def audit_security_inventory(
+    runner_suites: tuple[str, ...], base: Path = ROOT,
+) -> dict:
+    """Reject missing source files, tests, duplicate suites and omissions."""
+    if (type(runner_suites) is not tuple
+            or any(type(name) is not str for name in runner_suites)):
+        raise ValueError("PP_CI_INVENTORY_INVALID")
+    required = frozenset(
+        f"test_{module}" for module in CRITICAL_MODULES
+    ) | frozenset(INTEGRATION_SUITES)
+    if len(set(runner_suites)) != len(runner_suites):
+        raise ValueError("PP_CI_DUPLICATE_SUITE")
+    actual = frozenset(runner_suites)
+    if required - actual:
+        raise ValueError("PP_CI_MISSING_SUITE")
+    if actual - required:
+        raise ValueError("PP_CI_UNREGISTERED_SUITE")
+    critical_sha256 = {}
+    for module in CRITICAL_MODULES:
+        source_path = base / f"{module}.py"
+        if not source_path.is_file():
+            raise ValueError("PP_CI_MISSING_SOURCE")
+        if source_path.is_symlink():
+            raise ValueError("PP_CI_SOURCE_SYMLINK_FORBIDDEN")
+        # A present file is not a valid testable module unless it parses.
+        # Parse only; never import, evaluate or execute recovery sources.
+        try:
+            source_bytes = source_path.read_bytes()
+            ast.parse(
+                source_bytes.decode("utf-8"),
+                filename=str(source_path),
+            )
+        except (SyntaxError, UnicodeError) as exc:
+            raise ValueError("PP_CI_SOURCE_SYNTAX_INVALID") from exc
+        critical_sha256[module] = hashlib.sha256(source_bytes).hexdigest()
+    declared_counts = {}
+    declared_ids = {}
+    source_sha256 = {}
+    for name in runner_suites:
+        path = base / f"{name}.py"
+        if not path.is_file():
+            raise ValueError("PP_CI_MISSING_TEST")
+        if path.is_symlink():
+            raise ValueError("PP_CI_TEST_SYMLINK_FORBIDDEN")
+        # Parse only valid UTF-8 tests; errors must fail closed and be
+        # distinguishable from defects in critical recovery modules.
+        try:
+            raw_source = path.read_bytes()
+            tree = ast.parse(raw_source.decode("utf-8"), filename=str(path))
+        except (SyntaxError, UnicodeError) as exc:
+            raise ValueError("PP_CI_TEST_SYNTAX_INVALID") from exc
+        source_sha256[name] = hashlib.sha256(raw_source).hexdigest()
+        # Only methods in a statically recognizable unittest.TestCase
+        # subclass are registered here. A plain class with test_* names
+        # would satisfy the old AST inventory but be ignored by unittest.
+        test_classes = [
+            node for node in tree.body
+            if isinstance(node, ast.ClassDef)
+            and any(
+                isinstance(base_class, ast.Attribute)
+                and isinstance(base_class.value, ast.Name)
+                and base_class.value.id == "unittest"
+                and base_class.attr == "TestCase"
+                for base_class in node.bases
+            )
+        ]
+        # unittest.TestCase does not await async test methods: an async
+        # method may return a coroutine without executing assertions.
+        # It is therefore never acceptable as a security regression.
+        async_tests = [
+            method
+            for test_class in test_classes
+            for method in test_class.body
+            if isinstance(method, ast.AsyncFunctionDef)
+            and method.name.startswith("test_")
+        ]
+        if async_tests:
+            raise ValueError("PP_CI_ASYNC_TEST_UNSUPPORTED")
+        methods = [
+            method
+            for test_class in test_classes
+            for method in test_class.body
+            if isinstance(method, ast.FunctionDef)
+            and method.name.startswith("test_")
+        ]
+        if not methods:
+            raise ValueError("PP_CI_SUITE_WITHOUT_DISCOVERABLE_TESTS")
+        # Keep per-suite counts for a separate comparison with unittest's
+        # actual loader. This is only an inventory, not execution proof.
+        declared_counts[name] = len(methods)
+        declared_ids[name] = sorted(
+            f"{name}.{test_class.name}.{method.name}"
+            for test_class in test_classes
+            for method in test_class.body
+            if isinstance(method, ast.FunctionDef)
+            and method.name.startswith("test_")
+        )
+        if len(set(declared_ids[name])) != len(declared_ids[name]):
+            raise ValueError("PP_CI_DUPLICATE_DECLARED_TEST")
+    return {
+        "schema": "palaco.pp.recovery-002-ci-inventory-observation.v1",
+        "reference": "PP-RECOVERY-002",
+        "registeredSuites": len(runner_suites),
+        "criticalModules": len(CRITICAL_MODULES),
+        "declaredTestMethodsBySuite": declared_counts,
+        "declaredTestIdsBySuite": declared_ids,
+        "testSourceSha256BySuite": source_sha256,
+        "criticalSourceSha256ByModule": critical_sha256,
+        "coverageState": "ALL_SCOPED_FILES_PRESENT_NOT_EXECUTION_PROOF",
+        "authorization": "HOLD",
+        "accessDecision": "DENY",
+        "issuance": "NOT_AUTHORIZED",
+        "deployment": "BLOCKED",
+    }

@@ -1,0 +1,259 @@
+"""Synthetic checks for PP critical-suite coverage inventory."""
+from pathlib import Path
+import hashlib
+from tempfile import TemporaryDirectory
+import unittest
+
+from pp_recovery_ci_inventory import (
+    CRITICAL_MODULES, INTEGRATION_SUITES,
+    ROOT, audit_security_inventory,
+)
+from pp_recovery_strict_ci_runner import SUITES
+
+
+class RecoveryCiInventoryTests(unittest.TestCase):
+    def test_current_explicit_scope_is_complete_and_denied(self):
+        result = audit_security_inventory(SUITES, ROOT)
+        self.assertEqual(len(CRITICAL_MODULES), result["criticalModules"])
+        self.assertEqual(len(SUITES), result["registeredSuites"])
+        counts = result["declaredTestMethodsBySuite"]
+        self.assertEqual(set(SUITES), set(counts))
+        self.assertTrue(all(type(count) is int and count > 0 for count in counts.values()))
+        identities = result["declaredTestIdsBySuite"]
+        self.assertEqual(set(SUITES), set(identities))
+        for name in SUITES:
+            self.assertEqual(counts[name], len(identities[name]))
+            self.assertEqual(len(identities[name]), len(set(identities[name])))
+            self.assertTrue(all(test_id.startswith(name + ".") for test_id in identities[name]))
+        digests = result["testSourceSha256BySuite"]
+        self.assertEqual(set(SUITES), set(digests))
+        for name in SUITES:
+            expected = hashlib.sha256((ROOT / f"{name}.py").read_bytes()).hexdigest()
+            self.assertEqual(expected, digests[name])
+        critical = result["criticalSourceSha256ByModule"]
+        self.assertEqual(set(CRITICAL_MODULES), set(critical))
+        for name in CRITICAL_MODULES:
+            self.assertEqual(
+                hashlib.sha256((ROOT / f"{name}.py").read_bytes()).hexdigest(),
+                critical[name],
+            )
+        self.assertEqual("HOLD", result["authorization"])
+        self.assertEqual("DENY", result["accessDecision"])
+        self.assertEqual("BLOCKED", result["deployment"])
+
+    def test_missing_suite_is_rejected(self):
+        with self.assertRaisesRegex(ValueError, "MISSING_SUITE"):
+            audit_security_inventory(SUITES[:-1], ROOT)
+
+    def test_missing_and_unknown_suite_fail_closed(self):
+        # An unknown suite must never compensate for a missing required one.
+        replaced = SUITES[:-1] + ("test_fake_automatic_release",)
+        with self.assertRaisesRegex(ValueError, "MISSING_SUITE"):
+            audit_security_inventory(replaced, ROOT)
+        with self.assertRaisesRegex(ValueError, "UNREGISTERED_SUITE"):
+            audit_security_inventory(SUITES + ("test_fake_automatic_release",), ROOT)
+
+    def test_duplicate_suite_is_rejected(self):
+        with self.assertRaisesRegex(ValueError, "DUPLICATE_SUITE"):
+            audit_security_inventory(SUITES + (SUITES[0],), ROOT)
+
+    def test_unknown_suite_is_rejected(self):
+        with self.assertRaisesRegex(ValueError, "UNREGISTERED"):
+            audit_security_inventory(SUITES + ("test_fake_automatic_release",), ROOT)
+
+    def test_missing_source_is_rejected_without_executing_imports(self):
+        with TemporaryDirectory() as temp:
+            base = Path(temp)
+            for module in CRITICAL_MODULES[1:]:
+                (base / f"{module}.py").write_text("", encoding="utf-8")
+            for suite in SUITES:
+                (base / f"{suite}.py").write_text(
+                    "class Tests:\n    def test_guard(self):\n        pass\n",
+                    encoding="utf-8",
+                )
+            with self.assertRaisesRegex(ValueError, "MISSING_SOURCE"):
+                audit_security_inventory(SUITES, base)
+
+    def test_malformed_critical_source_fails_before_suite_loading(self):
+        with TemporaryDirectory() as temp:
+            base = Path(temp)
+            for module in CRITICAL_MODULES:
+                (base / f"{module}.py").write_text(
+                    "DENY = 'HOLD'\n", encoding="utf-8",
+                )
+            for suite in SUITES:
+                (base / f"{suite}.py").write_text(
+                    "import unittest\nclass Tests(unittest.TestCase):\n"
+                    "    def test_guard(self):\n        pass\n",
+                    encoding="utf-8",
+                )
+            (base / f"{CRITICAL_MODULES[0]}.py").write_text(
+                "from import BROKEN\n", encoding="utf-8",
+            )
+            with self.assertRaisesRegex(ValueError, "SOURCE_SYNTAX_INVALID"):
+                audit_security_inventory(SUITES, base)
+
+    def test_malformed_security_suite_is_not_accepted(self):
+        with TemporaryDirectory() as temp:
+            base = Path(temp)
+            for module in CRITICAL_MODULES:
+                (base / f"{module}.py").write_text(
+                    "DENY = 'HOLD'\n", encoding="utf-8",
+                )
+            for suite in SUITES:
+                (base / f"{suite}.py").write_text(
+                    "import unittest\nclass Tests(unittest.TestCase):\n"
+                    "    def test_guard(self):\n        pass\n",
+                    encoding="utf-8",
+                )
+            (base / f"{SUITES[0]}.py").write_text(
+                "import unittest\nclass Broken(\n", encoding="utf-8",
+            )
+            with self.assertRaisesRegex(ValueError, "TEST_SYNTAX_INVALID"):
+                audit_security_inventory(SUITES, base)
+
+    def _create_valid_synthetic_inventory_sources(self, base):
+        for module in CRITICAL_MODULES:
+            (base / f"{module}.py").write_text(
+                "AUTHORIZATION = 'HOLD'\n", encoding="utf-8"
+            )
+        for suite in SUITES:
+            (base / f"{suite}.py").write_text(
+                "import unittest\n"
+                "class Tests(unittest.TestCase):\n"
+                "    def test_denial(self):\n"
+                "        self.assertEqual('HOLD', 'HOLD')\n",
+                encoding="utf-8",
+            )
+
+    def test_symlinked_critical_module_rejected_even_with_valid_target(self):
+        with TemporaryDirectory() as temp:
+            base = Path(temp)
+            self._create_valid_synthetic_inventory_sources(base)
+            target = base / f"{CRITICAL_MODULES[0]}.py"
+            outside = base / "same_source.py"
+            outside.write_bytes(target.read_bytes())
+            target.unlink()
+            target.symlink_to(outside)
+            with self.assertRaisesRegex(ValueError, "SOURCE_SYMLINK_FORBIDDEN"):
+                audit_security_inventory(SUITES, base)
+
+    def test_symlinked_security_suite_rejected_even_with_valid_target(self):
+        with TemporaryDirectory() as temp:
+            base = Path(temp)
+            self._create_valid_synthetic_inventory_sources(base)
+            target = base / f"{SUITES[0]}.py"
+            outside = base / "same_test.py"
+            outside.write_bytes(target.read_bytes())
+            target.unlink()
+            target.symlink_to(outside)
+            with self.assertRaisesRegex(ValueError, "TEST_SYMLINK_FORBIDDEN"):
+                audit_security_inventory(SUITES, base)
+
+    def test_invalid_utf8_critical_module_fails_closed(self):
+        with TemporaryDirectory() as temp:
+            base = Path(temp)
+            self._create_valid_synthetic_inventory_sources(base)
+            (base / f"{CRITICAL_MODULES[0]}.py").write_bytes(b"\xff\xfe")
+            with self.assertRaisesRegex(ValueError, "SOURCE_SYNTAX_INVALID"):
+                audit_security_inventory(SUITES, base)
+
+    def test_invalid_utf8_security_suite_fails_closed(self):
+        with TemporaryDirectory() as temp:
+            base = Path(temp)
+            self._create_valid_synthetic_inventory_sources(base)
+            (base / f"{SUITES[0]}.py").write_bytes(b"\xff\xfe")
+            with self.assertRaisesRegex(ValueError, "TEST_SYNTAX_INVALID"):
+                audit_security_inventory(SUITES, base)
+
+    def test_plain_class_test_method_does_not_count_as_coverage(self):
+        with TemporaryDirectory() as temp:
+            base = Path(temp)
+            for module in CRITICAL_MODULES:
+                (base / f"{module}.py").write_text(
+                    "AUTHORIZATION = 'HOLD'\n", encoding="utf-8",
+                )
+            for suite in SUITES:
+                (base / f"{suite}.py").write_text(
+                    "import unittest\n"
+                    "class Valid(unittest.TestCase):\n"
+                    "    def test_denial(self):\n"
+                    "        self.assertEqual('HOLD', 'HOLD')\n",
+                    encoding="utf-8",
+                )
+            (base / f"{SUITES[0]}.py").write_text(
+                "class FakeTests:\n"
+                "    def test_should_run(self):\n"
+                "        raise AssertionError('NOT_DISCOVERED')\n",
+                encoding="utf-8",
+            )
+            with self.assertRaisesRegex(ValueError, "WITHOUT_DISCOVERABLE_TESTS"):
+                audit_security_inventory(SUITES, base)
+
+    def test_async_unittest_method_is_rejected(self):
+        with TemporaryDirectory() as temp:
+            base = Path(temp)
+            for module in CRITICAL_MODULES:
+                (base / f"{module}.py").write_text(
+                    "DENY = 'HOLD'\n", encoding="utf-8",
+                )
+            for suite in SUITES:
+                (base / f"{suite}.py").write_text(
+                    "import unittest\n"
+                    "class Tests(unittest.TestCase):\n"
+                    "    def test_guard(self):\n        pass\n",
+                    encoding="utf-8",
+                )
+            (base / f"{SUITES[0]}.py").write_text(
+                "import unittest\n"
+                "class Tests(unittest.TestCase):\n"
+                "    async def test_false_pass(self):\n"
+                "        raise AssertionError('ASYNC_ASSERTION_NEVER_AWAITED')\n",
+                encoding="utf-8",
+            )
+            with self.assertRaisesRegex(ValueError, "ASYNC_TEST_UNSUPPORTED"):
+                audit_security_inventory(SUITES, base)
+
+    def test_mixed_sync_async_suite_is_rejected(self):
+        with TemporaryDirectory() as temp:
+            base = Path(temp)
+            for module in CRITICAL_MODULES:
+                (base / f"{module}.py").write_text(
+                    "DENY = 'HOLD'\n", encoding="utf-8",
+                )
+            for suite in SUITES:
+                (base / f"{suite}.py").write_text(
+                    "import unittest\n"
+                    "class Tests(unittest.TestCase):\n"
+                    "    def test_guard(self):\n        pass\n",
+                    encoding="utf-8",
+                )
+            (base / f"{SUITES[0]}.py").write_text(
+                "import unittest\n"
+                "class Tests(unittest.TestCase):\n"
+                "    def test_sync(self):\n        pass\n"
+                "    async def test_async(self):\n        assert False\n",
+                encoding="utf-8",
+            )
+            with self.assertRaisesRegex(ValueError, "ASYNC_TEST_UNSUPPORTED"):
+                audit_security_inventory(SUITES, base)
+
+    def test_empty_test_file_rejected(self):
+        with TemporaryDirectory() as temp:
+            base = Path(temp)
+            for module in CRITICAL_MODULES:
+                (base / f"{module}.py").write_text("", encoding="utf-8")
+            for suite in SUITES:
+                (base / f"{suite}.py").write_text(
+                    "class Tests:\n    def test_guard(self):\n        pass\n",
+                    encoding="utf-8",
+                )
+            (base / f"{INTEGRATION_SUITES[0]}.py").write_text(
+                "class Tests:\n    pass\n", encoding="utf-8"
+            )
+            with self.assertRaisesRegex(ValueError, "WITHOUT_DISCOVERABLE_TESTS"):
+                audit_security_inventory(SUITES, base)
+
+
+if __name__ == "__main__":
+    unittest.main()

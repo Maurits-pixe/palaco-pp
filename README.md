@@ -1,5 +1,220 @@
 # PALACO Phone / lokaal prototype v0.7
 
+## PP-RECOVERY-002 / hersteldossier (bouwfase)
+
+Na aanmelden toont de consumentenpagina een afzonderlijk, alleen-lezen
+registratiedossier. De gebruiker kan zelf een JSON-overzicht downloaden met
+accountreferentie, lokale registratiestatus en bestaande keuze/tijdstippen.
+Er worden geen wachtwoorden, cookies, e-mailadressen, geheugenbanknotities of
+sessietokens geëxporteerd. Het overzicht is geen onafhankelijke verificatie:
+`identityVerification=NOT_VERIFIED`, `authorization=HOLD`,
+`accessDecision=DENY` en `issuance=NOT_AUTHORIZED` zijn vaste grenzen.
+De download schrijft niets naar de database en verbindt niets met PALACO ONE.
+Deze wijziging is nog niet getest; acceptatie blijft voor de eigenaar.
+
+Een lokale JSON-inspectie kan een eerder geëxporteerd bestand (max. 64 KiB)
+vergelijken met de actieve accountreferenties en de actuele P.P.-registratie.
+Ongeldige contracten, andere accounts en afwijkende/historische registraties
+krijgen afzonderlijke meldingen. De inspector gebruikt uitsluitend de File API
+in de browser en schrijft of uploadt geen data. Zelfs een volledige match
+betekent **geen** handtekeningcontrole, onafhankelijke identiteitsverificatie,
+herstel, autorisatie of PALACO ONE-aanmelding. HOLD/DENY blijven behouden.
+
+## PALACO ONE / handmatige overdracht v0 (DRAFT)
+
+Bij een bestaande `ACTIVE` of `REVOKED` registratie kan de gebruiker een
+afzonderlijk `palaco.pp.one.review-handoff.v0`-pakket downloaden. Het bevat
+de lokale consumer-/optie-ID, de laatste vier P.P.-cijfers en tijdstippen;
+het bevat uitdrukkelijk geen volledig nummer, gebruikersnaam, wachtwoord,
+sessie, geheugenbank of e-mailadres. Het bestand wordt niet verstuurd.
+De ontvanger moet het als **ongetekende, door gebruiker beheerste input**
+behandelen. Status `PENDING_HUMAN_REVIEW`, `NOT_VERIFIED`, `HOLD`, `DENY`,
+`NOT_AUTHORIZED` verbiedt automatische accountkoppeling, authenticatie en
+uitgifte. Een toekomstig PALACO ONE-importcontract dient eigen server-side
+authenticatie, bronbewijs en onafhankelijke beslisregels toe te voegen.
+
+### Ontvangende contractgrens (alleen-lezen, DRAFT)
+
+`review_handoff.py` biedt `parse_review_handoff(raw: bytes)` voor een toekomstige
+handmatige beoordelingsroute. De parser weigert onbekende velden, onjuiste
+statusovergangen, tijdstempels zonder tijdzone, ongeldige ID's en pakketten
+groter dan 16 KiB. Een structurele controle levert uitsluitend
+`STRUCTURE_ACCEPTED_UNTRUSTED` met onveranderlijk `HOLD`/`DENY` terug.
+De validator heeft geen database-, netwerk-, login-, import- of schrijfrechten.
+Er is geen API-route die inkomende gegevens toepast. Deze bouwfase is ongetest.
+
+De consumentenpagina heeft daarnaast een lokale handoff-inspectie voor de
+eigenaar. Deze vergelijkt een gekozen bestand met de actuele registratie, zonder
+netwerk of opslag. Een overeenkomst is alleen een gebruikersinterface-waarneming;
+de striktere Python-parser blijft een afzonderlijke contractgrens. Geen van
+beide inspecties bewijst authenticiteit of verleent rechten. Tests zijn aan de
+eigenaar voorbehouden.
+
+### Backoffice / lokaal HOLD-beoordelingsrapport (DRAFT)
+
+Het bestaande `/admin`-scherm bevat nu een alleen-lezen werkruimte voor een
+door de beheerder gekozen handoff-JSON (max. 16 KiB). De browser beoordeelt
+uitsluitend de contractstructuur en berekent lokaal een SHA-256-vingerafdruk.
+Er is geen upload, persistente opslag, accountkoppeling of databasewijziging.
+De beheerder kan een JSON-rapport downloaden met bestandsvingerafdruk,
+structuuruitkomst, optionele niet-persoonsgebonden notitie en onvoorwaardelijk
+`NOT_VERIFIED` / `HOLD` / `DENY` / `NOT_AUTHORIZED`. Een hash bewijst geen
+herkomst en dit rapport is geen onafhankelijke menselijke verificatie.
+
+### Offline bewijsbinding (DRAFT)
+
+`review_bundle.py` voegt `link_hold_evidence(handoff, report)` toe. Deze
+puur lokale, alleen-lezen functie accepteert een strikt P.P.-handoffcontract
+en een lokaal HOLD-beoordelingsrapport uitsluitend als de SHA-256-hash van de
+exacte handoff-bytes overeenkomt met de rapportreferentie. Beide JSON-parsers
+weigeren nu ook dubbele sleutels. Er worden geen namen, nummers of consumer-ID's
+in de uitkomst opgenomen. Een geslaagde binding heet
+`HASH_MATCH_UNTRUSTED`, met uitsluitend `NOT_VERIFIED`, `HOLD` en `DENY`.
+Er bestaat nog geen automatische invoerroute in PALACO ONE. Geen tests of
+uitrol uitgevoerd in deze bouwfase.
+
+Het backoffice-scherm kan daarnaast twee lokale bestanden (handoff + HOLD-rapport)
+in de browser vergelijken en een beperkte `palaco.pp.evidence-index.v0`
+downloaden met uitsluitend de twee bestandsvingerafdrukken en HOLD/DENY.
+Dit is een gebruikersinterface-waarneming, geen vervanging van de strengere
+Python-bundelcontrole of bewijs van authenticiteit. De bestanden worden
+niet geïmporteerd, geüpload of persistent opgeslagen.
+
+`review_index.py` sluit de derde lokale schakel af met
+`link_hold_index(handoff, report, index)`. De functie controleert eerst de
+strikte handoff/rapport-binding en vervolgens het vaste indexschema, dubbele
+JSON-sleutels, tijdstempel, HOLD/DENY-velden en de SHA-256-hashes van **beide**
+oorspronkelijke bytebestanden. Bij afwijkingen volgt `PP_INDEX_INVALID`;
+bij overeenstemming uitsluitend `THREE_FILE_HASH_MATCH_UNTRUSTED`. Ook deze
+controle is geen digitale handtekening, identiteitscontrole, inlogrecht of
+uitgifteautoriteit. De nieuwe code is DRAFT; tests en runtimeverificatie
+zijn uitgesteld op verzoek van de eigenaar.
+
+De backoffice heeft nu ook een afzonderlijk **drie-bestanden-reviewpaneel**.
+Daarin kan de eigenaar de handoff, het HOLD-rapport en de eerder geëxporteerde
+bewijsindex lokaal selecteren en hun onderlinge SHA-256-verwijzingen vergelijken.
+Na iedere nieuwe bestandskeuze vervalt de eerdere waarneming; de controle is
+uitsluitend indicatief en geeft geen bevoegdheid. De browserparser kan (anders
+dan de Python-validator) dubbele JSON-sleutels niet zelfstandig uitsluiten.
+Daarom vervangt dit paneel de onafhankelijke, strengere validatie niet.
+Na een positieve lokale indicatie kan het paneel nu een afzonderlijk
+`palaco.pp.chain-observation.v0`-rapport downloaden. Dat bevat alleen de
+SHA-256-hashes van de drie exacte bestanden, een waarnemingstijd, een expliciet
+`UNSIGNED_LOCAL_BROWSER_OBSERVATION`-herkomstlabel en uitsluitend HOLD/DENY.
+Er worden geen identifiers, P.P.-nummers of authenticatiegegevens geëxporteerd.
+Bij een nieuwe bestandskeuze vervalt het rapport in het geheugen en wordt de
+downloadknop opnieuw geblokkeerd. De uitvoer is niet ondertekend en vormt
+geen bewijs van een uitgevoerde menselijke identiteitscontrole.
+
+`review_chain.py` biedt de strengere, lokale controle
+`link_hold_chain(handoff, report, index, observation)` voor alle **vier**
+oorspronkelijke bytebestanden. Eerst moet de bestaande drie-bestandenketen
+strikt geldig zijn. Vervolgens controleert de functie het vaste
+`palaco.pp.chain-observation.v0`-contract, de UTC-tijd, dubbele sleutels,
+de HOLD/DENY-velden en drie SHA-256-vingerafdrukken. Bij enige afwijking:
+`PP_CHAIN_INVALID`; anders uitsluitend
+`FOUR_FILE_HASH_MATCH_UNTRUSTED` met onveranderlijke HOLD/DENY-uitkomst.
+Dit is geen bewijs van authenticiteit of bevoegdheid. Er is geen automatische
+koppeling naar PALACO ONE of uitgifte. Tests blijven NOT EXECUTED op verzoek.
+
+Voor een latere, door de eigenaar uitgevoerde controle is
+`REVIEW_044_DRAFT.md` voorbereid, samen met `review_fixtures.py`: negen
+synthetische, deterministische vier-bestandenscenario's inclusief
+verwachte negatieve weigeringen. De fixtures schrijven niets naar schijf
+en voeren geen validators uit. Er worden geen PASS-resultaten geclaimd.
+De bijbehorende `review_044_runner.py` is een afzonderlijk, opt-in lokaal
+uitvoerscript: zonder expliciete `--run` start geen review. Met `--run --json`
+kan de eigenaar later technische waarnemingen naar de terminal laten schrijven.
+Het script verandert geen autorisatie en schrijft geen bestanden.
+Voor aparte eigenaarwaarnemingen is bovendien de pure functie
+`review_044_observations.make_self_report()` voorbereid. Zij markeert elke
+ingevoerde waarneming uitsluitend als `SELF_REPORTED` en laat ontbrekende
+scenario's `NOT_OBSERVED`; ook deze uitvoer blijft `NOT_VERIFIED` en HOLD/DENY.
+De bestaande lokale beheerpagina heeft nu ook het formulier **Review 044 /
+mijn eigen waarneming**: selecteer een van de negen scenario's, registreer
+expliciet de eigen waarneming en download desgewenst een JSON-zelfrapport.
+Het formulier voert geen tests uit, uploadt niets en bewaart invoer alleen
+in het geheugen van de open pagina (niet na afmelden of herladen).
+Een gelijke uitkomst is `MATCH_CLAIMED`, nooit `PASS` of toestemming;
+alle autorisatievelden blijven HOLD/DENY.
+Een aparte pure adapter `review_044_identity_preview.py` bereidt een
+alleen-lezen PALACO ONE-overdrachtspreview voor. Hij weigert afwijkende
+zelfrapportstructuren en geeft nooit identity binding, sessietoegang of
+uitgifte vrij. De adapter is DRAFT en niet uitgevoerd of aangesloten.
+`review_044_preview_fixtures.py` levert daarbij synthetische positieve en
+negatieve bytevoorbeelden met verwachtingen, zonder de adapter aan te roepen.
+Ook deze regressies zijn nog niet uitgevoerd.
+De afzonderlijke `review_044_preview_runner.py` voert ze alleen uit na
+expliciet `--run` (optioneel `--json`); hij schrijft geen bestanden en
+maakt geen verbinding met een PALACO ONE-runtime.
+Voor de latere handmatige rapportbeoordeling is tevens de pure parser
+`review_044_preview_assessment.py` voorbereid. Die vat uitsluitend
+geclaimde technische resultaten samen en kan geen onafhankelijke
+uitvoering, identiteit of autorisatie bevestigen.
+`review_044_owner_review.py` kan later een lokaal, niet-ondertekend
+eigenaarwerkblad opstellen dat de ingevoerde technische rapportbytes met
+SHA-256 identificeert. Dit is geen authenticiteitsbewijs en geeft nooit
+autorisatie vrij.
+De lokale backoffice bevat nu tevens een Review 044-eigenaarwerkbladpaneel:
+selecteer een bestaand synthetisch technisch JSON-rapport, leg per 13 scenario's
+een eigenaarsmarkering vast en download een niet-ondertekend HOLD-werkblad.
+De browser voert geen tests of uploads uit. De ingebouwde structuurindicatie
+kan dubbele JSON-sleutels niet betrouwbaar afwijzen; de Python-parser hierboven
+blijft het striktere controlecontract. De markeringen zijn alleen tijdelijk
+in het browsergeheugen; bewaren vereist een expliciete lokale download.
+De pure module `review_044_owner_index.py` kan de originele bytes van een
+technisch rapport en een eigenaarwerkblad vervolgens fail-closed koppelen tot
+een niet-ondertekende bewijsindex met twee SHA-256-vingerafdrukken. Die
+index bewijst geen herkomst, identiteit of bevoegdheid en blijft HOLD / DENY.
+Ook deze twee-bestandenbinding heeft nu een afzonderlijk paneel in de lokale
+backoffice. De gebruiker kiest beide oorspronkelijke JSON-bestanden, laat
+uitsluitend een indicatieve browservergelijking maken en kan de bewijsindex
+downloaden. De browser weigert structurele mismatches, maar kan dubbele
+JSON-sleutels niet strikt detecteren; de Python-module blijft normatief.
+Er zijn geen uploads of automatische autorisatieacties.
+`review_044_owner_dossier.py` voegt een strikte offline drie-bestandencontrole
+toe: het oorspronkelijke technische rapport, het eigenaarwerkblad en de
+bewijsindex moeten inhoudelijk en via hun vingerafdrukken overeenkomen.
+De uitkomst is uitsluitend `THREE_FILE_HASH_MATCH_UNTRUSTED` en blijft
+NOT_VERIFIED / HOLD / DENY; er worden geen tests of runtimeacties gestart.
+De backoffice bevat ook een apart drie-bestandenpaneel: technische rapportbytes,
+eigenaarswerkbladbytes en bewijsindexbytes worden uitsluitend lokaal gelezen.
+Na een indicatieve browservergelijking kan een niet-ondertekend dossierresultaat
+worden gedownload. De Python-dossierbeoordelaar blijft het striktere contract,
+omdat de browser geen dubbele JSON-sleutels kan uitsluiten.
+Het nieuwe `review_044_owner_registry.py` bouwt optioneel een lokaal,
+append-only geordend JSON-registersnapshot met hashverwijzingen tussen
+dossierregels. De functie schrijft geen bestanden en voegt alleen een
+strikt gecontroleerd drie-bestandendossier toe. Hashketens zonder externe
+verankering bewijzen geen onveranderlijke geschiedenis of identiteit.
+Het backofficepaneel **Review 044 / lokaal bewijsregister** biedt dezelfde
+voorbereidende handeling in de browser: na de indicatieve dossierbeoordeling
+kan de eigenaar optioneel een eerder JSON-register kiezen, de interne
+hashketen op consistentie laten controleren, één dossierverwijzing toevoegen
+en de nieuwe versie downloaden. De vorige download wordt nooit overschreven;
+een nieuwe bestandskeuze maakt de voorbereide export ongeldig. Browsercontrole
+is niet normatief, detecteert geen dubbele JSON-sleutels en verleent geen
+bevoegdheid. Gebruik de Python-module voor de strikte beoordeling.
+Na een consistente voorbereiding toont de backoffice een scrollbaar overzicht
+met dossiernummer, verkorte entry- en voorgangerhash, indicatieve
+consistentiemarkering en ongewijzigde HOLD/DENY-beslissing. Bij een wijziging
+van het dossier of register verdwijnt dit overzicht meteen.
+Via het volgnummer van een rij kan de eigenaar nu ook een inspectiepaneel
+openen met alle drie de volledige bronhashes, de entry-hash en de hash van
+de voorganger. Het paneel onderscheidt interne consistentie expliciet van
+`NOT_VERIFIED` en behoudt `HOLD / DENY / NOT_AUTHORIZED`.
+Een geselecteerde rij kan als afzonderlijk JSON-inspectierapport worden
+gedownload. Het bevat alle volledige hashes, volgnummer, voorgangerbinding,
+de beperkte browserconsistentie-indicatie en expliciete beperkingen van
+herkomst-, tijds-, historie- en identiteitsbewijs. De download is geen
+attestatie en wijzigt het oorspronkelijke register niet.
+`review_044_owner_inspection.py` valideert het gedownloade inspectierapport
+strikt tegen de oorspronkelijke registerbytes. Dubbele JSON-sleutels,
+afwijkende velden, gewijzigd volgnummer, mismatches in de vijf hashbindingsvelden
+en ongeldige registerketens worden geweigerd. Een geldige uitkomst betekent
+uitsluitend `REGISTER_ROW_HASH_BINDING_CONSISTENT_UNTRUSTED`, nooit identiteit,
+onveranderlijke geschiedenis of uitvoeringsbevoegdheid.
+
 Zelfstandig prototype met een Nederlandstalige, responsive interface. De lokale
 PP-engine gebruikt de Python-standaardbibliotheek; geen externe lettertypen of
 analytics. Python 3.11+ vereist. Optionele e-mail gebruikt een externe SMTP-provider;
