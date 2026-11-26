@@ -5,6 +5,7 @@ produce nonzero exit status. Intended for CI; no production operations.
 """
 from __future__ import annotations
 
+import ast
 import hashlib
 import inspect
 import re
@@ -324,6 +325,40 @@ def verify_module_fixture_hooks_absent() -> bool:
     return True
 
 
+def verify_suite_loader_hook_absent() -> bool:
+    """Refuse registered module load_tests hooks in current import state."""
+    for name in SUITES:
+        module = sys.modules.get(name)
+        if module is None or "load_tests" in vars(module):
+            return False
+    return True
+
+
+def verify_loader_hook_not_declared(root: Path = ROOT) -> bool:
+    """Source preflight before unittest's loader could invoke load_tests.
+
+    Forbid any binding of the reserved module-loader hook name in the
+    registered source. AST inspection does not execute the suite.
+    """
+    try:
+        for name in SUITES:
+            source = root / f"{name}.py"
+            if source.is_symlink() or not source.is_file():
+                return False
+            tree = ast.parse(source.read_text(encoding="utf-8"))
+            if any(
+                (isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef,
+                                   ast.ClassDef)) and node.name == "load_tests")
+                or (isinstance(node, ast.Name) and node.id == "load_tests"
+                    and isinstance(node.ctx, (ast.Store, ast.Del)))
+                for node in ast.walk(tree)
+            ):
+                return False
+    except (OSError, UnicodeError, SyntaxError, ValueError):
+        return False
+    return True
+
+
 def loaded_test_ids(suite: unittest.TestSuite) -> list[str]:
     """Flatten unittest's actual test cases without running any tests."""
     ids = []
@@ -516,12 +551,21 @@ def run(argv: list[str] | None = None) -> int:
     if not verify_critical_source_integrity(critical_hashes):
         print("PP_CI_CRITICAL_SOURCE_INTEGRITY_FAILED / HOLD / DENY")
         return 1
+    if not verify_loader_hook_not_declared():
+        print("PP_CI_LOAD_TESTS_HOOK_DECLARED / HOLD / DENY")
+        return 1
     loader = unittest.defaultTestLoader
     combined = unittest.TestSuite()
     expected_started_ids = []
     expected_test_objects = []
     for name in SUITES:
         tests = loader.loadTestsFromName(name)
+        # loadTestsFromName can invoke a module's load_tests hook; the
+        # static preflight above must refuse such definitions beforehand.
+        module = sys.modules.get(name)
+        if module is not None and "load_tests" in vars(module):
+            print("PP_CI_LOAD_TESTS_HOOK_PRESENT / HOLD / DENY")
+            return 1
         actual_count = tests.countTestCases()
         if actual_count == 0:
             print("PP_CI_EMPTY_SUITE / HOLD / DENY")
@@ -574,6 +618,9 @@ def run(argv: list[str] | None = None) -> int:
         return 1
     if not verify_fixture_hook_execution_context(loaded_fixture_snapshot):
         print("PP_CI_TEST_FIXTURE_CONTEXT_INVALID / HOLD / DENY")
+        return 1
+    if not verify_suite_loader_hook_absent():
+        print("PP_CI_LOAD_TESTS_HOOK_PRESENT / HOLD / DENY")
         return 1
     if not verify_module_fixture_hooks_absent():
         print("PP_CI_MODULE_FIXTURE_HOOKS_FORBIDDEN / HOLD / DENY")
@@ -631,6 +678,9 @@ def run(argv: list[str] | None = None) -> int:
         return 1
     if not verify_loaded_test_class_bindings(expected_test_objects):
         print("PP_CI_TEST_CLASS_BINDING_CHANGED_DURING_RUN / HOLD / DENY")
+        return 1
+    if not verify_suite_loader_hook_absent():
+        print("PP_CI_LOAD_TESTS_HOOK_CHANGED_DURING_RUN / HOLD / DENY")
         return 1
     if not verify_module_fixture_hooks_absent():
         print("PP_CI_MODULE_FIXTURE_HOOKS_CHANGED_DURING_RUN / HOLD / DENY")
