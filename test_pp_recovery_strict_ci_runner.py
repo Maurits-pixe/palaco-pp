@@ -21,6 +21,7 @@ from pp_recovery_strict_ci_runner import (SUITES, loaded_test_ids, loaded_test_o
     verify_module_fixture_hooks_absent,
     verify_suite_loader_hook_absent, verify_loader_hook_not_declared,
     verify_unittest_loader_configuration,
+    snapshot_unittest_loader_methods, verify_unittest_loader_method_snapshot,
     TrackingTextTestResult)
 from pp_recovery_ci_inventory import CRITICAL_MODULES, ROOT
 
@@ -996,6 +997,55 @@ class StrictRunnerPolicyTests(unittest.TestCase):
                     self.assertIn("TEST_LOADER_CHANGED_DURING_RUN",
                                   log.getvalue())
                     execute.assert_called_once()
+
+    def test_actual_unittest_loader_method_snapshot_is_stable(self):
+        snapshot = snapshot_unittest_loader_methods()
+        self.assertIsNotNone(snapshot)
+        self.assertTrue(verify_unittest_loader_method_snapshot(snapshot))
+
+    def test_loader_class_method_replacement_is_refused(self):
+        snapshot = snapshot_unittest_loader_methods()
+        original = unittest.TestLoader.loadTestsFromTestCase
+        with patch.object(unittest.TestLoader, "loadTestsFromTestCase",
+                          lambda self, case: None):
+            self.assertFalse(verify_unittest_loader_method_snapshot(snapshot))
+        self.assertIs(unittest.TestLoader.loadTestsFromTestCase, original)
+        self.assertTrue(verify_unittest_loader_method_snapshot(snapshot))
+
+    def test_loader_method_code_replacement_is_refused(self):
+        snapshot = snapshot_unittest_loader_methods()
+        fn = unittest.TestLoader.getTestCaseNames
+        original_code = fn.__code__
+        def substitute(self, case):
+            return []
+        try:
+            fn.__code__ = substitute.__code__
+            self.assertFalse(verify_unittest_loader_method_snapshot(snapshot))
+        finally:
+            fn.__code__ = original_code
+        self.assertTrue(verify_unittest_loader_method_snapshot(snapshot))
+
+    def test_loader_method_rebinding_during_execution_blocks_pass(self):
+        from pp_recovery_ci_inventory import audit_security_inventory
+        inventory = audit_security_inventory(SUITES)
+        for suite_name in SUITES:
+            __import__(suite_name)
+        original = unittest.TestLoader.getTestCaseNames
+        def tamper(_suite):
+            unittest.TestLoader.getTestCaseNames = lambda self, cls: []
+            return unittest.TestResult()
+        try:
+            with patch("pp_recovery_strict_ci_runner.audit_security_inventory",
+                       return_value=inventory):
+                with patch("pp_recovery_strict_ci_runner.unittest.TextTestRunner.run",
+                           side_effect=tamper) as execute:
+                    with redirect_stdout(StringIO()) as log:
+                        self.assertEqual(1, run())
+                    self.assertIn("TEST_LOADER_METHODS_CHANGED_DURING_RUN",
+                                  log.getvalue())
+                    execute.assert_called_once()
+        finally:
+            unittest.TestLoader.getTestCaseNames = original
 
     def test_reject_arguments(self):
         with redirect_stdout(StringIO()):
